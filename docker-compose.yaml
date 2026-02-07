@@ -1,0 +1,17 @@
+name: sundlf-replace
+services:
+  mariadb:
+    image: mariadb:12
+    container_name: sundlf-mariadb
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./infra/dev/mariadb/.env
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./infra/dev/mariadb/init:/docker-entrypoint-initdb.d
+      - ./infra/dev/mariadb/my.conf:/etc/mysql/conf.d/my.cnf
+
+volumes:
+  mariadb_data:

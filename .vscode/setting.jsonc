@@ -1,0 +1,29 @@
+{
+  // ===== 保存時のコードアクション（全体） =====
+  // 明示的に定義された自動修正のみ実行（安全寄り）
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  // 保存時に自動フォーマットを実行
+  "editor.formatOnSave": true,
+  // デフォルトのフォーマッタを Prettier に設定
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // ===== TypeScript 専用設定 =====
+  "[typescript]": {
+    // TypeScript では必ず Prettier を使う
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    // 保存時フォーマットを有効化
+    "editor.formatOnSave": true,
+    // 保存時に ESLint の autofix を実行（explicit のみ）
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    }
+  },
+  // ===== PHP（Laravel）専用設定 =====
+  "[php]": {
+    // PHP のフォーマッタを Laravel Pint に指定
+    "editor.defaultFormatter": "open-southeners.laravel-pint",
+    // 保存時に Pint で自動整形
+    "editor.formatOnSave": true
+  }
+}
