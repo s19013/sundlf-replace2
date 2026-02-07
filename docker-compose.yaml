@@ -1,5 +1,19 @@
 name: sundlf-replace
 services:
+  laravel:
+    build: ./infra/dev/laravel
+    container_name: sundlf-laravel
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www/html
+      - ./infra/laravel/php.ini:/usr/local/etc/php/php.ini
+    tty: true
+    stdin_open: true
+    depends_on:
+      - mariadb
+
   mariadb:
     image: mariadb:12
     container_name: sundlf-mariadb
