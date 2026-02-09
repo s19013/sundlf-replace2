@@ -3,7 +3,6 @@ services:
   laravel:
     build: ./infra/dev/laravel
     container_name: sundlf-laravel
-    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
@@ -17,7 +16,6 @@ services:
   mariadb:
     image: mariadb:12
     container_name: sundlf-mariadb
-    restart: unless-stopped
     ports:
       - "3306:3306"
     env_file:
