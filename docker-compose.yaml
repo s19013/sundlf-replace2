@@ -24,6 +24,16 @@ services:
       - mariadb_data:/var/lib/mysql
       - ./infra/dev/mariadb/init:/docker-entrypoint-initdb.d
       - ./infra/dev/mariadb/my.conf:/etc/mysql/conf.d/my.cnf
+  
+  vue:
+    build: ./infra/dev/vue
+    container_name: sundlf-vue
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+    tty: true
+    stdin_open: true
 
 volumes:
   mariadb_data:
