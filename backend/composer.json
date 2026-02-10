@@ -72,6 +72,9 @@
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ],
+        "phpstan": [
+            "phpstan analyse --memory-limit=2G --error-format=json > phpstan-result.json"
         ]
     },
     "extra": {
