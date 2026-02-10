@@ -4,4 +4,8 @@ parameters:
     level: 9
     paths:
         - app
+        - bootstrap
+        - config
+        - database
+        - routes
         - tests
