@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/var/www/html
+      - ./backend:/var/www
       - ./infra/laravel/php.ini:/usr/local/etc/php/php.ini
     tty: true
     stdin_open: true
@@ -24,7 +24,7 @@ services:
       - mariadb_data:/var/lib/mysql
       - ./infra/dev/mariadb/init:/docker-entrypoint-initdb.d
       - ./infra/dev/mariadb/my.conf:/etc/mysql/conf.d/my.cnf
-  
+
   vue:
     build: ./infra/dev/vue
     container_name: sundlf-vue
