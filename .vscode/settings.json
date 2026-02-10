@@ -25,5 +25,13 @@
     "editor.defaultFormatter": "open-southeners.laravel-pint",
     // 保存時に Pint で自動整形
     "editor.formatOnSave": true
-  }
+  },
+  "phpstan.dockerContainerName": "sundlf-laravel",
+  "phpstan.enabled": true,
+  "phpstan.binPath": "./vendor/bin/phpstan",
+  "phpstan.configFile": "./phpstan.neon",
+  "phpstan.paths": {
+    "./backend": "/var/www"
+  },
+  "phpstan.rootDir": "backend",
 }
