@@ -31,6 +31,7 @@
   "phpstan.binPath": "./vendor/bin/phpstan",
   "phpstan.configFile": "./phpstan.neon",
   "phpstan.paths": {
+    // ローカル : コンテナのワークスペース
     "./backend": "/var/www/html"
   },
   "phpstan.rootDir": "backend",
