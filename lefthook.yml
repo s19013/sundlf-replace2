@@ -1,0 +1,31 @@
+pre-commit:
+  parallel: true
+  commands:
+    # pint -> phpstan の順で動かす
+    pint-fix:
+      priority: 1
+      stage_fixed: true
+      glob: "*.php"
+      run: ./.lefthook/pre-commit/pint-fix.sh {staged_files}
+
+    phpstan:
+      priority: 2
+      glob: "*.php"
+      run: ./.lefthook/pre-commit/phpstan.sh {staged_files}
+
+    # prettier -> eslint の順で動かす
+    prettier-fix:
+      priority: 1
+      stage_fixed: true
+      glob: "*.{ts,tsx,json,css,vue}"
+      exclude: ".claude/*"
+      run: ./.lefthook/pre-commit/prettier.sh {staged_files}
+
+    eslint-fix:
+      priority: 2
+      stage_fixed: true
+      glob: "*.{ts,tsx,vue}"
+      run: ./.lefthook/pre-commit/eslint.sh {staged_files}
+
+# pre-push:
+# テスト系を実行

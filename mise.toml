@@ -9,5 +9,8 @@ description = "vueコンテナのdocker execのalias"
 run = """
 docker compose exec vue bash -ic 
 """
+
+[tools]
+lefthook = "latest"
 # コンテナ名じゃなくてサービス名じゃないといけない
 
