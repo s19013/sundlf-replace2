@@ -1,0 +1,13 @@
+[tasks."exec:laravel"]
+description = "laravelコンテナのdocker execのalias"
+run = """
+docker compose exec laravel bash -ic 
+"""
+
+[tasks."exec:vue"]
+description = "vueコンテナのdocker execのalias"
+run = """
+docker compose exec vue bash -ic 
+"""
+# コンテナ名じゃなくてサービス名じゃないといけない
+
