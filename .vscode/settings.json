@@ -31,7 +31,7 @@
   "phpstan.binPath": "./vendor/bin/phpstan",
   "phpstan.configFile": "./phpstan.neon",
   "phpstan.paths": {
-    "./backend": "/var/www"
+    "./backend": "/var/www/html"
   },
   "phpstan.rootDir": "backend",
   "emeraldwalk.runonsave": {
