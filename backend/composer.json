@@ -80,6 +80,9 @@
         "phpstan": [
             "phpstan analyse --memory-limit=2G --error-format=json > phpstan-result.json"
         ],
+        "phpstan-lefthook": [
+            "phpstan analyse --memory-limit=2G --error-format=json "
+        ],
         "pint": [
             "./vendor/bin/pint"
         ]
