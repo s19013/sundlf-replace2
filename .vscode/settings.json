@@ -34,4 +34,15 @@
     "./backend": "/var/www"
   },
   "phpstan.rootDir": "backend",
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        // pint実行
+        "match": "\\.php$",
+        // 先頭のbackendを消す
+        // ${relativeFile} ワークスペースをルートにしたパス
+        "cmd": "mise exec:laravel 'FILE=${relativeFile}; FILE=${FILE#backend/};  composer run pint $FILE'"
+      }
+    ]
+  }
 }
