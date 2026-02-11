@@ -20,10 +20,8 @@ fi
 # 配列 files に格納
 files=()
 for f in "$@"; do
-files+="${f/#frontend\//./}"
+files+=("${f/#frontend\//./}")
 done
-
-echo $files
 
 # ${files[@]} Bash 配列を 安全に展開
 mise exec:vue "pnpm run format ${files[@]}"

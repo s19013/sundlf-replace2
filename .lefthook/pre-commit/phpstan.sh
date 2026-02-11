@@ -20,8 +20,8 @@ fi
 # 配列 files に格納
 files=()
 for f in "$@"; do
-files+="${f/#backend\//./}"
+files+=("${f/#backend\//./}")
 done
 
 # ${files[@]} Bash 配列を 安全に展開
-mise exec:laravel " composer run phpstan ${files[@]}"
+mise exec:laravel "composer run phpstan ${files[@]}"
