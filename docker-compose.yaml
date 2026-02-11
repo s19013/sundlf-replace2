@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/var/www
+      - ./backend:/var/www/html
       - ./infra/laravel/php.ini:/usr/local/etc/php/php.ini
     tty: true
     stdin_open: true
