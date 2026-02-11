@@ -15,5 +15,6 @@ export default defineConfig({
   server: {
     // --hostと同義
     host: true,
+    port: 5173,
   },
 })
