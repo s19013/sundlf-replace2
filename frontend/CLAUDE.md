@@ -53,3 +53,4 @@ mise exec:vue "[command]"
 
 - utcで受け取る
 - day.jsを使いローカルの日時に修正
+- バックへの送信時はutcに変換して送信する
