@@ -36,3 +36,8 @@ mise exec:laravel "composer run pint"
 mise exec:laravel "[command]"
 
 ```
+
+# 日時類のフォーマットについて
+
+- UTCでデータベースに保存
+- UTCのISO8601形式でフロントに返す
