@@ -48,3 +48,8 @@ mise exec:vue "pnpm run test:unit"
 mise exec:vue "[command]"
 
 ```
+
+# 日時類のフォーマットについて
+
+- utcで受け取る
+- day.jsを使いローカルの日時に修正
