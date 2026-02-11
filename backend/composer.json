@@ -11,6 +11,7 @@
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1"
     },
     "require-dev": {
@@ -78,6 +79,9 @@
         ],
         "phpstan": [
             "phpstan analyse --memory-limit=2G --error-format=json > phpstan-result.json"
+        ],
+        "phpstan-lefthook": [
+            "phpstan analyse --memory-limit=2G --error-format=json "
         ],
         "pint": [
             "./vendor/bin/pint"

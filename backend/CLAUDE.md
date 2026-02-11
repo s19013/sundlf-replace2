@@ -16,6 +16,12 @@ MVC + usecase
 # 全部テスト
 mise exec:laravel "composer run test"
 
+# phpstan
+mise exec:laravel "composer run phpstan"
+
+# pint
+mise exec:laravel "composer run pint"
+
 ```
 
 # 主要技術

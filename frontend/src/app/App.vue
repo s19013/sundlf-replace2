@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from '@/shared/ui/HelloWorld.vue'
+import { axios } from '@/shared/api'
+
+import { onMounted } from 'vue'
+
+onMounted(async () => {
+  const response = await axios.get('/test')
+  console.log(response.data)
+})
 </script>
 
 <template>
