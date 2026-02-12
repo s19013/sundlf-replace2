@@ -21,7 +21,7 @@ async function handleLogin() {
   errorMessage.value = ''
   try {
     await authStore.login({ email: email.value, password: password.value })
-    router.push('/')
+    router.push({ name: 'home' })
   } catch (error: unknown) {
     if (axios.isAxiosError<{ errors?: Record<string, string[]> }>(error)) {
       if (error.response?.status === 401) {
