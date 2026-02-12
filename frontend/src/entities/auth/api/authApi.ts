@@ -5,8 +5,7 @@ import type { LoginCredentials, User } from '../types/auth'
 export function getCsrfCookie() {
   const backendWebUrl = import.meta.env.VITE_BACKEND_WEB_URL
 
-  if (backendWebUrl === undefined) {
-    console.log('backendWebUrl が設定されていません')
+  if (!backendWebUrl) {
     throw new Error('backendWebUrl が設定されていません')
   }
 
