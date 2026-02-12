@@ -36,11 +36,14 @@ export const useAuthStore = defineStore('auth', () => {
   async function checkAuth() {
     if (user.value) return
 
+    isLoading.value = true
     try {
       const response = await getCurrentUser()
       user.value = response.data
     } catch {
       user.value = null
+    } finally {
+      isLoading.value = false
     }
   }
 
