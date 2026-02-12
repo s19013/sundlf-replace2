@@ -12,7 +12,7 @@ class LoginUsecase
     {
         if (! Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-                'message' => 'メールアドレスまたはパスワードが正しくありません。',
+                'message' => __('auth.failed'),
             ], 401);
         }
 
