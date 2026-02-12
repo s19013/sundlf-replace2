@@ -40,8 +40,11 @@ router.beforeEach(async (to) => {
   }
 
   // ログインユーザー制御
-  if (to.name === 'login' && authStore.isAuthenticated) {
-    return { name: 'home' }
+  if (to.name === 'login') {
+    await authStore.checkAuth()
+    if (authStore.isAuthenticated) {
+      return { name: 'home' }
+    }
   }
 })
 
