@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import Button from 'primevue/button'
+import { mdiAccount } from '@mdi/js'
 </script>
 
 <template>
   <div class="about">
     <h1>This is an about page</h1>
-    <Button label="Submit" severity="success" />
+    <Button severity="success">
+      <SvgIcon type="mdi" :path="mdiAccount" />
+      Submit
+    </Button>
   </div>
 </template>
 
