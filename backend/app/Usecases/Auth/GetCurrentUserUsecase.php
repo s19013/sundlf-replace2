@@ -15,6 +15,8 @@ class GetCurrentUserUsecase
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        return response()->json($user);
+        return response()->json([
+            'user' => $user,
+        ]);
     }
 }
