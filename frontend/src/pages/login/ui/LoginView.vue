@@ -65,7 +65,13 @@ async function handleLogin() {
           <Password id="password" v-model="password" :feedback="false" toggle-mask required fluid />
         </div>
 
-        <Button type="submit" label="ログイン" :loading="authStore.isLoading" fluid />
+        <Button
+          type="submit"
+          label="ログイン"
+          :loading="authStore.isLoading"
+          :disabled="authStore.isLoading"
+          fluid
+        />
       </form>
     </div>
   </div>
