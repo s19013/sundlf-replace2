@@ -16,6 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(credentials: LoginCredentials) {
     isLoading.value = true
+    user.value = null
     try {
       await getCsrfCookie()
       user.value = await apiLogin(credentials)
