@@ -18,8 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       await getCsrfCookie()
-      const response = await apiLogin(credentials)
-      user.value = response.data.user
+      user.value = await apiLogin(credentials)
     } finally {
       isLoading.value = false
     }
@@ -38,8 +37,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     isLoading.value = true
     try {
-      const response = await getCurrentUser()
-      user.value = response.data
+      user.value = await getCurrentUser()
     } catch {
       user.value = null
     } finally {

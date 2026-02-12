@@ -10,14 +10,16 @@ export function getCsrfCookie() {
   })
 }
 
-export function login(credentials: LoginCredentials) {
-  return apiClient.post<{ user: User }>('/login', credentials)
+export async function login(credentials: LoginCredentials): Promise<User> {
+  const response = await apiClient.post<{ user: User }>('/login', credentials)
+  return response.data.user
 }
 
 export function logout() {
   return apiClient.post('/logout')
 }
 
-export function getCurrentUser() {
-  return apiClient.get<User>('/user')
+export async function getCurrentUser(): Promise<User> {
+  const response = await apiClient.get<User>('/user')
+  return response.data
 }
