@@ -27,6 +27,7 @@ async function handleLogin() {
       if (error.response?.status === 401) {
         errorMessage.value = 'メールアドレスまたはパスワードが正しくありません。'
       } else if (error.response?.status === 422 && error.response.data?.errors) {
+        // 今は仮だが、本組は配列でエラーメッセージが帰ってくる予定
         errorMessage.value = Object.values(error.response.data.errors).flat().join('\n')
       } else {
         errorMessage.value = GENERIC_ERROR_MESSAGE
