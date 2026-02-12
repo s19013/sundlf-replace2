@@ -2,10 +2,14 @@ import axios from 'axios'
 import { apiClient } from '@/shared/api/apiClient'
 import type { LoginCredentials, User } from '../types/auth'
 
-const backendBaseUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/api$/, '')
-
 export function getCsrfCookie() {
-  return axios.get(`${backendBaseUrl}/sanctum/csrf-cookie`, {
+  const backendWebUrl = import.meta.env.BACKEND_WEB_URL
+
+  if (backendWebUrl === null) {
+    throw new Error('backendWebUrl が設定されていません')
+  }
+
+  return axios.get(`${backendWebUrl}/sanctum/csrf-cookie`, {
     withCredentials: true,
   })
 }
