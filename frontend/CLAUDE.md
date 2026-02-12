@@ -40,6 +40,7 @@ mise exec:vue "pnpm run test:unit"
 - eslint
 - prettier
 - axios
+- primevue
 
 # 開発コマンド
 
