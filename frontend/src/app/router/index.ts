@@ -30,10 +30,10 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
+  await authStore.checkAuth()
 
   // 非ログインユーザー制御
   if (to.meta.requiresAuth) {
-    await authStore.checkAuth()
     if (!authStore.isAuthenticated) {
       return { name: 'login' }
     }
@@ -41,7 +41,6 @@ router.beforeEach(async (to) => {
 
   // ログインユーザー制御
   if (to.name === 'login') {
-    await authStore.checkAuth()
     if (authStore.isAuthenticated) {
       return { name: 'home' }
     }
