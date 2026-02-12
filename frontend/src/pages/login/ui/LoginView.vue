@@ -15,6 +15,8 @@ const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 
+const GENERIC_ERROR_MESSAGE = 'ログインに失敗しました。しばらくしてからお試しください。'
+
 async function handleLogin() {
   errorMessage.value = ''
   try {
@@ -27,10 +29,10 @@ async function handleLogin() {
       } else if (error.response?.status === 422 && error.response.data?.errors) {
         errorMessage.value = Object.values(error.response.data.errors).flat().join('\n')
       } else {
-        errorMessage.value = 'ログインに失敗しました。しばらくしてからお試しください。'
+        errorMessage.value = GENERIC_ERROR_MESSAGE
       }
     } else {
-      errorMessage.value = 'ログインに失敗しました。しばらくしてからお試しください。'
+      errorMessage.value = GENERIC_ERROR_MESSAGE
     }
   }
 }
