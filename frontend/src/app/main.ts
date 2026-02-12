@@ -6,6 +6,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
+import SvgIcon from '@jamescoyle/vue-icon'
 import PrimeVue from 'primevue/config'
 // まだどれが良いか決めかねるから一旦全部出しとく
 import Aura from '@primeuix/themes/aura'
@@ -22,5 +23,8 @@ app.use(PrimeVue, {
     preset: Aura,
   },
 })
+
+// 一部コンポーネントをグローバルに登録しどこからでも使えるようにする
+app.component('SvgIcon', SvgIcon)
 
 app.mount('#app')
