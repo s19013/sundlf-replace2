@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Usecases\Auth;
+namespace App\Usecases\Auth\SPA;
 
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\JsonResponse;

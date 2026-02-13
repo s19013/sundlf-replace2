@@ -4,13 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Usecases\Auth\GetCurrentUserUsecase;
-use App\Usecases\Auth\LoginUsecase;
-use App\Usecases\Auth\LogoutUsecase;
+use App\Usecases\Auth\SPA\GetCurrentUserUsecase;
+use App\Usecases\Auth\SPA\LoginUsecase;
+use App\Usecases\Auth\SPA\LogoutUsecase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class AuthController extends Controller
+class SPAAuthController extends Controller
 {
     public function login(LoginRequest $request, LoginUsecase $usecase): JsonResponse
     {
