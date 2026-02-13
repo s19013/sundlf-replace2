@@ -3,6 +3,7 @@
 namespace App\Usecases\Auth\SPA;
 
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,8 +19,11 @@ class LoginUsecase
 
         $request->session()->regenerate();
 
+        /** @var User $user */
+        $user = Auth::user();
+
         return response()->json([
-            'user' => Auth::user(),
+            'user' => $user->setVisible(User::MINIMUM_VISIBLE)->toArray(),
         ]);
     }
 }

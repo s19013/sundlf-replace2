@@ -2,6 +2,7 @@
 
 namespace App\Usecases\Auth\SPA;
 
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,7 +17,8 @@ class GetCurrentUserUsecase
         }
 
         return response()->json([
-            'user' => $user,
+            /** @var User $user */
+            'user' => $user->setVisible(User::MINIMUM_VISIBLE)->toArray(),
         ]);
     }
 }
