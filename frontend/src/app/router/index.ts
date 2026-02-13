@@ -30,6 +30,9 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
+
+  // セッションはサーバーにある、トークンが失効してる可能性がある、別タブでログアウトしてる可能性がある
+  // なので毎度サーバーに確認をとる必要がある。
   await authStore.checkAuth()
 
   // 非ログインユーザー制御
