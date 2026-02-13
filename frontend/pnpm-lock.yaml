@@ -35,6 +35,9 @@ importers:
       vue-router:
         specifier: ^5.0.1
         version: 5.0.2(@vue/compiler-sfc@3.5.28)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.28(typescript@5.9.3)))(vue@3.5.28(typescript@5.9.3))
+      ziggy-js:
+        specifier: ^2.6.0
+        version: 2.6.0
     devDependencies:
       '@playwright/test':
         specifier: ^1.58.1
@@ -1903,6 +1906,10 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
+  qs-esm@7.0.3:
+    resolution: {integrity: sha512-8jbjCR0PPbqoQcv83C2K/zvVeytRPwPpt3WPDbq51qyLAxcWGtXVRjSe6GHtLCoVbg9+NEFkv7GyUxqjcDIJzw==}
+    engines: {node: '>=18'}
+
   quansync@0.2.11:
     resolution: {integrity: sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==}
 
@@ -2348,6 +2355,9 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  ziggy-js@2.6.0:
+    resolution: {integrity: sha512-V6xeZKEG67xt5Qtli5nCpQrc5TXW/tf3dKu2QLJS2TCxe+xxo/5AusT7M3MwX4nNeSEKBJMIvVJz2dlt+ziWYQ==}
 
 snapshots:
 
@@ -4135,6 +4145,8 @@ snapshots:
 
   punycode@2.3.1: {}
 
+  qs-esm@7.0.3: {}
+
   quansync@0.2.11: {}
 
   queue-microtask@1.2.3: {}
@@ -4561,3 +4573,7 @@ snapshots:
   yaml@2.8.2: {}
 
   yocto-queue@0.1.0: {}
+
+  ziggy-js@2.6.0:
+    dependencies:
+      qs-esm: 7.0.3
