@@ -20,8 +20,9 @@ fi
 # 配列 files に格納
 files=()
 for f in "$@"; do
-files+=("${f/#frontend\//./}")
+  files+=("${f/#frontend\//./}")
 done
 
 # ${files[@]} Bash 配列を 安全に展開
-mise exec:vue "pnpm run lint:oxlint ${files[@]}"
+# ファイル名にスペースが含まれる場合に備える
+mise exec:vue "pnpm run lint:oxlint $(printf '%q ' "${files[@]}")"
