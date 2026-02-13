@@ -15,3 +15,10 @@ declare module '@jamescoyle/vue-icon' {
 
   export default SvgIcon
 }
+
+// こちらも同様
+declare module '@/app/ziggy' {
+  import type { Config } from 'ziggy-js'
+  const Ziggy: Config
+  export { Ziggy }
+}
