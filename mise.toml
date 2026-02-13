@@ -21,6 +21,12 @@ mv -f ./backend/resources/js/ziggy.js ./frontend/src/shared/api
 mv -f ./backend/resources/js/ziggy.d.ts ./frontend/src/shared/types
 """
 
+[tasks."reset-database"]
+description = "データベースをリセット"
+run = """
+docker compose exec laravel bash -ic "php artisan migrate:fresh; php artisan db:seed"
+"""
+
 [tools]
 lefthook = "latest"
 # コンテナ名じゃなくてサービス名じゃないといけない
