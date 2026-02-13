@@ -38,6 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     isLoading.value = true
     try {
+      // ページ移動やリロード時にuserが破棄された場合は再度取得
       user.value = await getCurrentUser()
     } catch {
       user.value = null
