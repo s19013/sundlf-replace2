@@ -10,6 +10,17 @@ run = """
 docker compose exec vue bash -ic 
 """
 
+[tasks."generate:ziggy"]
+description = "vueコンテナのdocker execのalias"
+run = """
+# laravelコンテナ内部でziggyファイルを生成
+mise exec:laravel "php artisan ziggy:generate --types"
+
+# ziggyファイルをvueコンテナ内部に移動
+mv -f ./backend/resources/js/ziggy.js ./frontend/src/app/
+mkdir -p ./frontend/src/app/types/ && mv -f ./backend/resources/js/ziggy.d.ts ./frontend/src/app/types/
+"""
+
 [tools]
 lefthook = "latest"
 # コンテナ名じゃなくてサービス名じゃないといけない
