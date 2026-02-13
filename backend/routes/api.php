@@ -8,8 +8,8 @@ Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
-});
 
-Route::get('/test', function () {
-    return response()->json(['message' => 'api test']);
+    Route::get('/test/auth', function () {
+        return response()->json(['message' => 'api auth test']);
+    });
 });
