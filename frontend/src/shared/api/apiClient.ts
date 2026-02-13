@@ -1,5 +1,6 @@
 import axios from 'axios'
 
+// ziggyにより/apiがついた状態で出力されるのでbaseurlに"/api"はつけない
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
 if (!apiBaseUrl) {
