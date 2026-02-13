@@ -179,9 +179,8 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
-        ],
+        // 属性ごとのカスタムメッセージをここに追加
+        // 例: 'email' => ['required' => 'メールアドレスを入力してください。'],
     ],
 
     /*
