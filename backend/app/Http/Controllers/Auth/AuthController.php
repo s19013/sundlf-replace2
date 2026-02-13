@@ -14,16 +14,16 @@ class AuthController extends Controller
 {
     public function login(LoginRequest $request, LoginUsecase $usecase): JsonResponse
     {
-        return ($usecase)($request);
+        return $usecase($request);
     }
 
     public function logout(Request $request, LogoutUsecase $usecase): JsonResponse
     {
-        return ($usecase)($request);
+        return $usecase($request);
     }
 
     public function user(Request $request, GetCurrentUserUsecase $usecase): JsonResponse
     {
-        return ($usecase)($request);
+        return $usecase($request);
     }
 }
