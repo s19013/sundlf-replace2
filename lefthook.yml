@@ -27,8 +27,14 @@ pre-commit:
       glob: "*.{ts,tsx,vue}"
       run: ./.lefthook/pre-commit/eslint.sh {staged_files}
 
-    typecheck:
+    oxlint-fix:
       priority: 3
+      stage_fixed: true
+      glob: "*.{ts,tsx,vue}"
+      run: ./.lefthook/pre-commit/oxlint.sh {staged_files}
+
+    typecheck:
+      priority: 4
       stage_fixed: true
       glob: "*.{ts,tsx,vue}"
       exclude: ".claude/*"
