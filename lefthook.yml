@@ -33,12 +33,13 @@ pre-commit:
       glob: "*.{ts,tsx,vue}"
       run: ./.lefthook/pre-commit/oxlint.sh {staged_files}
 
+pre-push:
+  parallel: true
+  commands:
     typecheck:
-      priority: 4
+      priority: 1
       stage_fixed: true
       glob: "*.{ts,tsx,vue}"
       exclude: ".claude/*"
-      run: ./.lefthook/pre-commit/typecheck.sh {staged_files}
-
-# pre-push:
+      run: "mise exec:vue 'pnpm run type-check-lefthook > typecheck-error.log'"
 # テスト系を実行
