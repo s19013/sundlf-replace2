@@ -42,6 +42,6 @@ mise exec:laravel "[command]"
 - UTCでデータベースに保存
 - UTCのISO8601形式でフロントに返す
 
-# api
+# API
 
-新規のapiを定義したら。`mise generate:ziggy`を実行して、ファイルを再生成してください。
+新規のAPIを定義したら、`mise generate:ziggy`を実行して、Ziggyのルート定義ファイルを再生成してください。
