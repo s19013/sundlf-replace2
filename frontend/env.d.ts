@@ -22,3 +22,10 @@ declare module '@/shared/api/ziggy' {
   const Ziggy: Config
   export { Ziggy }
 }
+
+// 何に使うかわからないが、ziggy公式がこれを追加しろというので
+declare module 'vue' {
+  interface ComponentCustomProperties {
+    route: typeof routeFn
+  }
+}
