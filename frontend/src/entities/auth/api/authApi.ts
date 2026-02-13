@@ -1,30 +1,21 @@
-import { apiClient } from '@/shared/api'
+import { apiClient, ziggyRoute } from '@/shared/api'
 import type { LoginForm, User } from '../types/auth'
-import { route } from 'ziggy-js'
-import { Ziggy } from '@/shared/api/ziggy'
 
 export function getCsrfCookie() {
   // SPAを認証するには、SPAの「ログイン」ページで最初に/sanctum/csrf-cookieエンドポイントにリクエストを送信して、アプリケーションのCSRF保護を初期化する必要ある。
-  return apiClient.get(route('sanctum.csrf-cookie', undefined, undefined, Ziggy))
+  return apiClient.get(ziggyRoute('sanctum.csrf-cookie'))
 }
 
-console.log(route('spa.login', undefined, undefined, Ziggy))
-
 export async function login(credentials: LoginForm): Promise<User> {
-  const response = await apiClient.post<{ user: User }>(
-    route('spa.login', undefined, undefined, Ziggy),
-    credentials,
-  )
+  const response = await apiClient.post<{ user: User }>(ziggyRoute('spa.login'), credentials)
   return response.data.user
 }
 
 export function logout() {
-  return apiClient.post(route('spa.logout', undefined, undefined, Ziggy))
+  return apiClient.post(ziggyRoute('spa.logout'))
 }
 
 export async function getCurrentUser(): Promise<User> {
-  const response = await apiClient.get<{ user: User }>(
-    route('auth.user', undefined, undefined, Ziggy),
-  )
+  const response = await apiClient.get<{ user: User }>(ziggyRoute('auth.user'))
   return response.data.user
 }
