@@ -33,7 +33,15 @@ router.beforeEach(async (to) => {
 
   // セッションはサーバーにある、トークンが失効してる可能性がある、別タブでログアウトしてる可能性がある
   // なので毎度サーバーに確認をとる必要がある。
-  await authStore.checkAuth()
+  try {
+    await authStore.checkAuth()
+  } catch (error) {
+    console.error('Auth check failed:', error)
+    // ネットワークエラーなどで失敗した場合はログインページへリダイレクト
+    if (to.meta.requiresAuth) {
+      return { name: 'login' }
+    }
+  }
 
   // 非ログインユーザー制御
   if (to.meta.requiresAuth) {
