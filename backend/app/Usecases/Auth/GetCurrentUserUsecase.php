@@ -12,7 +12,7 @@ class GetCurrentUserUsecase
         $user = $request->user();
 
         if ($user === null) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return response()->json(['message' => __('auth.unAuthenticated')], 401);
         }
 
         return response()->json([
