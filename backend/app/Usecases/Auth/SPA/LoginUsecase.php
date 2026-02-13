@@ -23,7 +23,7 @@ class LoginUsecase
         $user = Auth::user();
 
         return response()->json([
-            'user' => $user->setVisible(User::MINIMUM_VISIBLE)->toArray(),
+            'user' => $user->only(User::MINIMUM_VISIBLE),
         ]);
     }
 }

@@ -16,9 +16,9 @@ class GetCurrentUserUsecase
             return response()->json(['message' => __('auth.unAuthenticated')], 401);
         }
 
+        /** @var User $user */
         return response()->json([
-            /** @var User $user */
-            'user' => $user->setVisible(User::MINIMUM_VISIBLE)->toArray(),
+            'user' => $user->only(User::MINIMUM_VISIBLE),
         ]);
     }
 }
