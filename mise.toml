@@ -17,8 +17,8 @@ run = """
 mise exec:laravel "php artisan ziggy:generate --types"
 
 # ziggyファイルをvueコンテナ内部に移動
-mv -f ./backend/resources/js/ziggy.js ./frontend/src/app/
-mkdir -p ./frontend/src/app/types/ && mv -f ./backend/resources/js/ziggy.d.ts ./frontend/src/app/types/
+mv -f ./backend/resources/js/ziggy.js ./frontend/src/shared/api
+mv -f ./backend/resources/js/ziggy.d.ts ./frontend/src/shared/types
 """
 
 [tools]

@@ -17,7 +17,7 @@ declare module '@jamescoyle/vue-icon' {
 }
 
 // こちらも同様
-declare module '@/app/ziggy' {
+declare module '@/shared/api/ziggy' {
   import type { Config } from 'ziggy-js'
   const Ziggy: Config
   export { Ziggy }

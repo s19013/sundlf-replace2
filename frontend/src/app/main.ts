@@ -10,7 +10,7 @@ import SvgIcon from '@jamescoyle/vue-icon'
 import PrimeVue from 'primevue/config'
 
 // env.d.tsの呼び出し方に合わせないと型エラーが出る
-import { Ziggy } from '@/app/ziggy'
+import { Ziggy } from '@/shared/api/ziggy'
 import { ZiggyVue } from 'ziggy-js'
 
 // まだどれが良いか決めかねるから一旦全部出しとく
