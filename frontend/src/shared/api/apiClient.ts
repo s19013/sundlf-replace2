@@ -4,8 +4,8 @@ import axios from 'axios'
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL
 
 if (!apiBaseUrl) {
-  console.error('apiBaseUrl が設定されていません')
-  throw new Error('apiBaseUrl が設定されていません')
+  console.error('環境変数 VITE_API_BASE_URL が設定されていません')
+  throw new Error('環境変数 VITE_API_BASE_URL が設定されていません')
 }
 
 export const apiClient = axios.create({
