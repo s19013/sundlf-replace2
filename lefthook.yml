@@ -13,7 +13,7 @@ pre-commit:
       glob: "*.php"
       run: ./.lefthook/pre-commit/phpstan.sh {staged_files}
 
-    # prettier -> eslint の順で動かす
+    #  prettier -> eslint -> typecheckの順で動かす
     prettier-fix:
       priority: 1
       stage_fixed: true
@@ -26,6 +26,13 @@ pre-commit:
       stage_fixed: true
       glob: "*.{ts,tsx,vue}"
       run: ./.lefthook/pre-commit/eslint.sh {staged_files}
+
+    typecheck:
+      priority: 3
+      stage_fixed: true
+      glob: "*.{ts,tsx,vue}"
+      exclude: ".claude/*"
+      run: ./.lefthook/pre-commit/typecheck.sh {staged_files}
 
 # pre-push:
 # テスト系を実行
