@@ -13,7 +13,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /** @var list<string> */
-    const MINIMUM_VISIBLE = [
+    public const MINIMUM_VISIBLE = [
         'id',
         'name',
     ];
