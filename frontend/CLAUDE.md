@@ -56,6 +56,11 @@ mise exec:vue "[command]"
 - day.jsを使いローカルの日時に修正
 - バックへの送信時はutcに変換して送信する
 
+# api
+
+基本的には @frontend/src/shared/api/index.ts の ziggyRoute を使ってapiを呼び出してください。
+それが難しい場合は、ziggyのrouteを使ってください。
+
 # その他
 
 - 送信ボタン類などの通信を伴うボタンは連打できないようにする
