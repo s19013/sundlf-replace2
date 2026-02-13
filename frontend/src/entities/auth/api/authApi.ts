@@ -1,17 +1,10 @@
-import axios from 'axios'
-import { apiClient } from '@/shared/api/apiClient'
+import { apiClient, webClient } from '@/shared/api'
 import type { LoginCredentials, User } from '../types/auth'
 
 export function getCsrfCookie() {
-  const backendWebUrl = import.meta.env.VITE_BACKEND_WEB_URL
-
-  if (!backendWebUrl) {
-    throw new Error('backendWebUrl が設定されていません')
-  }
-
-  return axios.get(`${backendWebUrl}/sanctum/csrf-cookie`, {
-    withCredentials: true,
-  })
+  // SPAを認証するには、SPAの「ログイン」ページで最初に/sanctum/csrf-cookieエンドポイントにリクエストを送信して、アプリケーションのCSRF保護を初期化する必要ある。
+  // しかし、/sanctum/csrf-cookie は先頭にapiをつけないのでwebClientを使う必要がある。
+  return webClient.get(`/sanctum/csrf-cookie`)
 }
 
 export async function login(credentials: LoginCredentials): Promise<User> {
