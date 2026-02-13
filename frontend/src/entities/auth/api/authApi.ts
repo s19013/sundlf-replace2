@@ -8,12 +8,12 @@ export function getCsrfCookie() {
 }
 
 export async function login(credentials: LoginForm): Promise<User> {
-  const response = await apiClient.post<{ user: User }>('/login', credentials)
+  const response = await apiClient.post<{ user: User }>('/spa/login', credentials)
   return response.data.user
 }
 
 export function logout() {
-  return apiClient.post('/logout')
+  return apiClient.post('/spa/logout')
 }
 
 export async function getCurrentUser(): Promise<User> {
