@@ -1,7 +1,7 @@
 import { apiClient, ziggyRoute } from '@/shared/api'
 import type { LoginForm, User } from '../types/auth'
 
-export function getCsrfCookie() {
+export function getCsrfCookie(): Promise<void> {
   // SPAを認証するには、SPAの「ログイン」ページで最初に/sanctum/csrf-cookieエンドポイントにリクエストを送信して、アプリケーションのCSRF保護を初期化する必要ある。
   return apiClient.get(ziggyRoute('sanctum.csrf-cookie'))
 }
@@ -11,7 +11,7 @@ export async function login(credentials: LoginForm): Promise<User> {
   return response.data.user
 }
 
-export function logout() {
+export function logout(): Promise<void> {
   return apiClient.post(ziggyRoute('spa.logout'))
 }
 
