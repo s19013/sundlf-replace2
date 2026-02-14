@@ -24,4 +24,5 @@ files+=("${f/#backend\//./}")
 done
 
 # ${files[@]} Bash 配列を 安全に展開
-mise exec:laravel "composer run phpstan-lefthook ${files[@]} > phpstan-result.json "
+# ファイル名にスペースが含まれる場合に備える
+mise exec:laravel "composer run phpstan-lefthook  $(printf '%q ' "${files[@]}") > phpstan-result.json "

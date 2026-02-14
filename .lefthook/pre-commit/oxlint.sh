@@ -16,13 +16,13 @@ if [[ $# -eq 0 ]]; then
   exit 0
 fi
 
+# /frontend/パスと渡されるので ./パス となるように編集
+# 配列 files に格納
 files=()
 for f in "$@"; do
   files+=("${f/#frontend\//./}")
 done
 
-# 配列のまま引数として渡す
-mise exec:vue "pnpm run format  $(printf '%q ' "${files[@]}")"
-
-# フォーマットで変わった分を確実にステージ
-git add -- "$@"
+# ${files[@]} Bash 配列を 安全に展開
+# ファイル名にスペースが含まれる場合に備える
+mise exec:vue "pnpm run lint:oxlint $(printf '%q ' "${files[@]}")"

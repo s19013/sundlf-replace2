@@ -12,6 +12,12 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
+    /** @var list<string> */
+    public const MINIMUM_VISIBLE = [
+        'id',
+        'name',
+    ];
+
     /**
      * The attributes that are mass assignable.
      *

@@ -10,7 +10,8 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build",
+    "type-check": "vue-tsc --build > typecheck-error.log",
+    "type-check-lefthook": "vue-tsc --build ",
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
@@ -25,7 +26,8 @@
     "pinia": "^3.0.4",
     "primevue": "^4.5.4",
     "vue": "^3.5.27",
-    "vue-router": "^5.0.1"
+    "vue-router": "^5.0.1",
+    "ziggy-js": "^2.6.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.1",

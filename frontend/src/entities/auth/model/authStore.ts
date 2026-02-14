@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import type { User, LoginCredentials } from '../types/auth'
+import type { User, LoginForm } from '../types/auth'
 import {
   getCsrfCookie,
   login as apiLogin,
@@ -12,9 +12,9 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const isLoading = ref(false)
 
-  const isAuthenticated = computed(() => user.value !== null)
+  const isAuthenticated = computed(() => !!user.value)
 
-  async function login(credentials: LoginCredentials) {
+  async function login(credentials: LoginForm) {
     isLoading.value = true
     user.value = null
     try {
@@ -38,6 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     isLoading.value = true
     try {
+      // ページ移動やリロード時にuserが破棄された場合は再度取得
       user.value = await getCurrentUser()
     } catch {
       user.value = null

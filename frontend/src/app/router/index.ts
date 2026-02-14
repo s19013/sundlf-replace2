@@ -30,7 +30,18 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()
-  await authStore.checkAuth()
+
+  // セッションはサーバーにある、トークンが失効してる可能性がある、別タブでログアウトしてる可能性がある
+  // なので毎度サーバーに確認をとる必要がある。
+  try {
+    await authStore.checkAuth()
+  } catch (error) {
+    console.error('Auth check failed:', error)
+    // ネットワークエラーなどで失敗した場合はログインページへリダイレクト
+    if (to.meta.requiresAuth) {
+      return { name: 'login' }
+    }
+  }
 
   // 非ログインユーザー制御
   if (to.meta.requiresAuth) {

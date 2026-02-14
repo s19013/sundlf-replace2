@@ -1,1 +1,2 @@
-export { apiClient as axios } from './apiClient'
+export { apiClient } from './apiClient'
+export { ziggyRoute } from './ziggyRoute'

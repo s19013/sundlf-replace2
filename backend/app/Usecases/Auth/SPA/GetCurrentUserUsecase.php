@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Usecases\Auth;
+namespace App\Usecases\Auth\SPA;
 
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -12,11 +13,12 @@ class GetCurrentUserUsecase
         $user = $request->user();
 
         if ($user === null) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return response()->json(['message' => __('auth.unAuthenticated')], 401);
         }
 
+        /** @var User $user */
         return response()->json([
-            'user' => $user,
+            'user' => $user->only(User::MINIMUM_VISIBLE),
         ]);
     }
 }

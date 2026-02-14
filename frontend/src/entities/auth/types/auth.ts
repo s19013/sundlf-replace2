@@ -1,10 +1,9 @@
 export interface User {
   id: number
   name: string
-  email: string
 }
 
-export interface LoginCredentials {
+export interface LoginForm {
   email: string
   password: string
 }
