@@ -10,6 +10,6 @@ export const ziggyRoute = <T extends RouteName>(
   name: T,
   params?: RouteParams<T>,
   absolute?: boolean,
-) => {
+): string => {
   return route(name, params, absolute, Ziggy)
 }
