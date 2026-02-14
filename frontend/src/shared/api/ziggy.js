@@ -6,7 +6,7 @@ const Ziggy = {
     'sanctum.csrf-cookie': { uri: 'sanctum/csrf-cookie', methods: ['GET', 'HEAD'] },
     'spa.login': { uri: 'api/spa/login', methods: ['POST'] },
     'spa.logout': { uri: 'api/spa/logout', methods: ['POST'] },
-    'auth.user': { uri: 'api/user', methods: ['GET', 'HEAD'] },
+    'spa.user': { uri: 'api/spa/user', methods: ['GET', 'HEAD'] },
     'storage.local': {
       uri: 'storage/{path}',
       methods: ['GET', 'HEAD'],

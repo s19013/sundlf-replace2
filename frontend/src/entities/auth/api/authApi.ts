@@ -16,6 +16,6 @@ export function logout(): Promise<void> {
 }
 
 export async function getCurrentUser(): Promise<User> {
-  const response = await apiClient.get<{ user: User }>(ziggyRoute('auth.user'))
+  const response = await apiClient.get<{ user: User }>(ziggyRoute('spa.user'))
   return response.data.user
 }

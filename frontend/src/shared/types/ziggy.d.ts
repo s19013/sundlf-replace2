@@ -4,7 +4,7 @@ declare module 'ziggy-js' {
     'sanctum.csrf-cookie': []
     'spa.login': []
     'spa.logout': []
-    'auth.user': []
+    'spa.user': []
     'storage.local': [
       {
         name: 'path'
