@@ -58,7 +58,7 @@ mise exec:vue "[command]"
 
 # api
 
-基本的には @frontend/src/shared/api/index.ts の ziggyRoute を使ってapiを呼び出してください。
+基本的には `frontend/src/shared/api/index.ts` の ziggyRoute を使ってapiを呼び出してください。
 それが難しい場合は、ziggyのrouteを使ってください。
 
 # その他
