@@ -15,20 +15,36 @@ export async function loginByCredentials(credentials: LoginCredentials): Promise
     return { isSuccess: true, message: null }
   } catch (error: unknown) {
     if (axios.isAxiosError<ApiErrorResponse>(error)) {
-      const status = error.response?.status
+      const { response } = error
 
-      if (status === 401) {
-        return { isSuccess: false, message: 'メールアドレスまたはパスワードが正しくありません。' }
+      if (!response) {
+        return {
+          isSuccess: false,
+          message: 'ログインに失敗しました。しばらくしてからお試しください。',
+        }
       }
 
-      if (status === 422) {
-        const data = error.response?.data as ValidationError | undefined
-        if (data?.errors) {
-          return { isSuccess: false, message: Object.values(data.errors).flat().join('\n') }
+      const { status, data } = response
+
+      if (status === 401) {
+        return {
+          isSuccess: false,
+          message: 'メールアドレスまたはパスワードが正しくありません。',
+        }
+      }
+
+      const validationErrors = (data as ValidationError).errors
+      if (status === 422 && validationErrors) {
+        return {
+          isSuccess: false,
+          message: Object.values(validationErrors).flat().join('\n'),
         }
       }
     }
 
-    return { isSuccess: false, message: 'ログインに失敗しました。しばらくしてからお試しください。' }
+    return {
+      isSuccess: false,
+      message: 'ログインに失敗しました。しばらくしてからお試しください。',
+    }
   }
 }
