@@ -7,6 +7,7 @@ import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useAuthStore } from '@/entities/auth/model/authStore'
+import { authLayout } from '@/shared/layout'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -40,70 +41,38 @@ async function handleLogin() {
 </script>
 
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <h1>ログイン</h1>
+  <authLayout>
+    <h1>ログイン</h1>
 
-      <Message v-if="errorMessage" severity="error" :closable="false">
-        {{ errorMessage }}
-      </Message>
+    <Message v-if="errorMessage" severity="error" :closable="false">
+      {{ errorMessage }}
+    </Message>
 
-      <form @submit.prevent="handleLogin">
-        <div class="field">
-          <label for="email">メールアドレス</label>
-          <InputText
-            id="email"
-            v-model="email"
-            type="email"
-            placeholder="example@mail.com"
-            required
-            fluid
-          />
-        </div>
-
-        <div class="field">
-          <label for="password">パスワード</label>
-          <Password id="password" v-model="password" :feedback="false" toggle-mask required fluid />
-        </div>
-
-        <Button
-          type="submit"
-          label="ログイン"
-          :loading="authStore.isLoading"
-          :disabled="authStore.isLoading"
+    <form @submit.prevent="handleLogin">
+      <div class="field">
+        <label for="email">メールアドレス</label>
+        <InputText
+          id="email"
+          v-model="email"
+          type="email"
+          placeholder="example@mail.com"
+          required
           fluid
         />
-      </form>
-    </div>
-  </div>
+      </div>
+
+      <div class="field">
+        <label for="password">パスワード</label>
+        <Password id="password" v-model="password" :feedback="false" toggle-mask required fluid />
+      </div>
+
+      <Button
+        type="submit"
+        label="ログイン"
+        :loading="authStore.isLoading"
+        :disabled="authStore.isLoading"
+        fluid
+      />
+    </form>
+  </authLayout>
 </template>
-
-<style scoped>
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-.login-card {
-  width: 100%;
-  max-width: 400px;
-  padding: 2rem;
-}
-
-.login-card h1 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-}
-
-.field {
-  margin-bottom: 1.25rem;
-}
-
-.field label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-}
-</style>
