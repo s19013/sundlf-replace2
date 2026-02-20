@@ -11,8 +11,9 @@ html {
 body {
   background-color: light-dark(#eeeeee, #000000);
 }
+
 main {
-  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
