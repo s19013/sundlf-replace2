@@ -3,14 +3,13 @@ import { useAuthStore } from '@/entities/auth/model/authStore'
 import type { ApiErrorResponse, ValidationError } from '@/shared/types'
 import type { LoginCredentials } from '@/entities/auth/types/auth'
 
-const authStore = useAuthStore()
-
 interface Result {
   isSuccess: boolean
   message: string | null
 }
 
 export async function loginByCredentials(credentials: LoginCredentials): Promise<Result> {
+  const authStore = useAuthStore()
   try {
     await authStore.login(credentials)
     return { isSuccess: true, message: null }
@@ -23,8 +22,10 @@ export async function loginByCredentials(credentials: LoginCredentials): Promise
       }
 
       if (status === 422) {
-        const data = error.response?.data as ValidationError
-        return { isSuccess: false, message: Object.values(data.errors).flat().join('\n') }
+        const data = error.response?.data as ValidationError | undefined
+        if (data?.errors) {
+          return { isSuccess: false, message: Object.values(data.errors).flat().join('\n') }
+        }
       }
     }
 
