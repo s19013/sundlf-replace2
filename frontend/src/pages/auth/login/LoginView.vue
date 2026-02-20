@@ -14,16 +14,16 @@ const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const errorMessage = ref<string | null>('')
+const errorMessage = ref<string | null>(null)
 
 async function handleLogin() {
   errorMessage.value = ''
   const result = await loginByCredentials({ email: email.value, password: password.value })
   if (result.isSuccess) {
     router.push({ name: 'home' })
+  } else {
+    errorMessage.value = result.message
   }
-
-  errorMessage.value = result.message
 }
 </script>
 
