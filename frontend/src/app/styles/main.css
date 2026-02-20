@@ -1,6 +1,7 @@
 @import './base.css';
 
 :root {
+  color-scheme: light dark;
   --c-theme-color: light-dark(#64fcb3, #2edb9c);
 }
 
