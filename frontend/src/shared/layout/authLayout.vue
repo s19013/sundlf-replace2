@@ -2,7 +2,7 @@
 
 <template>
   <div class="login-container">
-    <img :src="'/sundlf_logo.png'" alt="ロゴ" />
+    <img src="/sundlf_logo.png" alt="ロゴ" />
     <div class="login-card">
       <slot />
     </div>
