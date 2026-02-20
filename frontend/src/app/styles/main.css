@@ -1,10 +1,22 @@
 @import './base.css';
 
+:root {
+  --c-theme-color: light-dark(#64fcb3, #2edb9c);
+}
+
 html {
   overflow-y: auto;
 }
-#app {
+body {
+  background-color: light-dark(#eeeeee, #000000);
+}
+main {
+  min-height: 100vh;
   margin: 0 auto;
   padding: 2rem;
   font-weight: normal;
+}
+
+.theme-color-bg {
+  background-color: var(--c-theme-color);
 }
