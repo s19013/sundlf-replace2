@@ -6,7 +6,7 @@ import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useAuthStore } from '@/entities/auth/model/authStore'
-import { authLayout } from '@/shared/layout'
+import { AuthLayout } from '@/shared/layout'
 import { loginByCredentials } from '@/entities/auth/model/loginByCredentials'
 
 const router = useRouter()
@@ -28,7 +28,7 @@ async function handleLogin() {
 </script>
 
 <template>
-  <authLayout>
+  <AuthLayout>
     <h1>ログイン</h1>
 
     <Message v-if="errorMessage" severity="error" :closable="false">
@@ -61,5 +61,5 @@ async function handleLogin() {
         fluid
       />
     </form>
-  </authLayout>
+  </AuthLayout>
 </template>
