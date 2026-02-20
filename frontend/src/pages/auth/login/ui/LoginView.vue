@@ -1,42 +1,29 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useAuthStore } from '@/entities/auth/model/authStore'
 import { authLayout } from '@/shared/layout'
+import { loginByCredentials } from '@/entities/auth/model/loginByCredentials'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
-const errorMessage = ref('')
-
-const GENERIC_ERROR_MESSAGE = 'ログインに失敗しました。しばらくしてからお試しください。'
+const errorMessage = ref<string | null>('')
 
 async function handleLogin() {
   errorMessage.value = ''
-  try {
-    await authStore.login({ email: email.value, password: password.value })
+  const result = await loginByCredentials({ email: email.value, password: password.value })
+  if (result.isSuccess) {
     router.push({ name: 'home' })
-  } catch (error: unknown) {
-    if (axios.isAxiosError<{ errors?: Record<string, string[]> }>(error)) {
-      if (error.response?.status === 401) {
-        errorMessage.value = 'メールアドレスまたはパスワードが正しくありません。'
-      } else if (error.response?.status === 422 && error.response.data?.errors) {
-        // 今は仮だが、本組は配列でエラーメッセージが帰ってくる予定
-        errorMessage.value = Object.values(error.response.data.errors).flat().join('\n')
-      } else {
-        errorMessage.value = GENERIC_ERROR_MESSAGE
-      }
-    } else {
-      errorMessage.value = GENERIC_ERROR_MESSAGE
-    }
   }
+
+  errorMessage.value = result.message
 }
 </script>
 
