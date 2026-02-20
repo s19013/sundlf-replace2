@@ -1,1 +1,1 @@
-export { default as originalFooter } from './originalFooter.vue'
+export { default as OriginalFooter } from './originalFooter.vue'

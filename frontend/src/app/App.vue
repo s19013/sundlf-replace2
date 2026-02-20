@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { originalFooter } from '@/shared/ui'
+import { OriginalFooter } from '@/shared/ui'
 </script>
 
 <template>
   <main>
     <RouterView />
   </main>
-  <originalFooter />
+  <OriginalFooter />
 </template>
 
 <style scoped></style>
