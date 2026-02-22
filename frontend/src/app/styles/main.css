@@ -3,6 +3,8 @@
 :root {
   color-scheme: light dark;
   --c-theme-color: light-dark(#64fcb3, #2edb9c);
+  --main-padding-vertical: 2rem;
+  --main-padding-horizontal: 1rem;
 }
 
 html {
@@ -15,7 +17,7 @@ body {
 main {
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--main-padding-vertical) var(--main-padding-horizontal);
   font-weight: normal;
 }
 
