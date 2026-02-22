@@ -5,7 +5,7 @@
 @layer base {
   :root {
     color-scheme: light dark;
-    --c-theme-color: light-dark(#64fcb3, #2edb9c);
+    --c-theme-color: light-dark(#64fcb3, #29c28a);
     --main-padding-vertical: 2rem;
     --main-padding-horizontal: 1rem;
     --usual-color: light-dark(#000000, #eeeeee);
