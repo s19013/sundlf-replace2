@@ -1,4 +1,3 @@
-@import './base.css';
 @import 'tailwindcss';
 @import 'tailwindcss-primeui';
 
@@ -9,6 +8,7 @@
     --c-theme-color: light-dark(#64fcb3, #2edb9c);
     --main-padding-vertical: 2rem;
     --main-padding-horizontal: 1rem;
+    --usual-color: light-dark(#000000, #eeeeee);
   }
   *,
   *::before,
@@ -37,13 +37,11 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-color: light-dark(#eeeeee, #111111);
   }
 
   html {
     overflow-y: auto;
-  }
-  body {
-    background-color: light-dark(#eeeeee, #000000);
   }
 
   main {
@@ -68,8 +66,8 @@
   }
 
   .a-black {
-    color: light-dark(#000000, #eeeeee);
+    color: var(--usual-color);
     text-decoration-line: underline;
-    text-decoration-color: light-dark(#000000, #eeeeee);
+    text-decoration-color: var(--usual-color);
   }
 }
