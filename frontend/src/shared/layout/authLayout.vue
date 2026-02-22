@@ -18,8 +18,8 @@ img {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
   flex-direction: column;
+  min-height: calc(100dvh - var(--main-padding-vertical)); /* main の padding 上下分を差し引く */
 }
 
 .login-card {
