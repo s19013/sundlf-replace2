@@ -33,11 +33,13 @@ export async function loginByCredentials(credentials: LoginCredentials): Promise
         }
       }
 
-      const validationErrors = (data as ValidationError).errors
-      if (status === 422 && validationErrors) {
-        return {
-          isSuccess: false,
-          message: Object.values(validationErrors).flat().join('\n'),
+      if (status === 422) {
+        const validationErrors = (data as ValidationError).errors
+        if (validationErrors) {
+          return {
+            isSuccess: false,
+            message: Object.values(validationErrors).flat().join('\n'),
+          }
         }
       }
     }
