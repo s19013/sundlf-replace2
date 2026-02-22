@@ -4,12 +4,13 @@
   <div class="login-container">
     <img class="logo" src="/sundlf_logo.png" alt="ロゴ" />
     <div class="login-card">
+      <h1><slot name="label" /></h1>
       <slot />
     </div>
   </div>
 </template>
 
-<style>
+<style scoped>
 .logo {
   width: 25rem;
 }
@@ -31,16 +32,6 @@
 .login-card h1 {
   text-align: center;
   margin-bottom: 1.5rem;
-}
-
-.field {
-  margin-bottom: 1.25rem;
-}
-
-.field label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
 }
 
 @media (max-width: 480px) {
