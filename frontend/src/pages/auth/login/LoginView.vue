@@ -26,7 +26,7 @@ async function handleLogin() {
 
 <template>
   <AuthLayout>
-    <h1>ログイン</h1>
+    <template v-slot:label> ログイン </template>
 
     <Message v-if="errorMessage" severity="error" :closable="false">
       {{ errorMessage }}
@@ -60,3 +60,15 @@ async function handleLogin() {
     </form>
   </AuthLayout>
 </template>
+
+<style scoped>
+.field {
+  margin-bottom: 1.25rem;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+</style>
