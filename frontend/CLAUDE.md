@@ -81,6 +81,29 @@ mise exec:vue "[command]"
 
 基本的にはスマホとpcだけで良いですが、タブレットでスマホレイアウトだと見づらい場合にはタブレット用のレイアウトを追加してください。
 
+# primeVueのコンポーネントの呼び出し
+
+基本的には`from 'primevue'`からまとめて呼び出す形にして、1行にまとめてください。
+
+### ok
+
+```ts
+import { InputText, Password, Button, Message } from 'primevue'
+```
+
+### ng
+
+```ts
+import InputText from 'primevue/inputtext'
+import Password from 'primevue/password'
+import Button from 'primevue/button'
+import Message from 'primevue/message'
+```
+
+### 例外
+
+長くなる場合には分けて良い。
+
 # その他
 
 - 送信ボタン類などの通信を伴うボタンは連打できないようにする
