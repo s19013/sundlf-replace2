@@ -31,3 +31,15 @@ main {
 .theme-color-bg {
   background-color: var(--c-theme-color);
 }
+
+.a-blue {
+  color: light-dark(var(--color-blue-500), var(--color-sky-600));
+  text-decoration-line: underline;
+  text-decoration-color: light-dark(var(--color-blue-500), var(--color-sky-600));
+}
+
+.a-black {
+  color: light-dark(#000000, #eeeeee);
+  text-decoration-line: underline;
+  text-decoration-color: light-dark(#000000, #eeeeee);
+}
