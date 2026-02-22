@@ -1,4 +1,7 @@
 @import './base.css';
+@import 'tailwindcss';
+@import 'tailwindcss-primeui';
+@custom-variant dark (&:where(.my-app-dark, .my-app-dark *));
 
 :root {
   color-scheme: light dark;
