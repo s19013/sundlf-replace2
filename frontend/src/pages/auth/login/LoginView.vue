@@ -1,10 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import InputText from 'primevue/inputtext'
-import Password from 'primevue/password'
-import Button from 'primevue/button'
-import Message from 'primevue/message'
+import { InputText, Password, Button, Message } from 'primevue'
 import { useAuthStore } from '@/entities/auth/model/authStore'
 import { AuthLayout } from '@/shared/layout'
 import { loginByCredentials } from '@/entities/auth/model/loginByCredentials'
