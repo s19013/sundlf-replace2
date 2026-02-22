@@ -20,7 +20,9 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  min-height: calc(100dvh - var(--main-padding-vertical)); /* main の padding 上下分を差し引く */
+  min-height: calc(
+    100dvh - var(--main-padding-vertical) * 2
+  ); /* main の padding 上下分を差し引く */
 }
 
 .login-card {
