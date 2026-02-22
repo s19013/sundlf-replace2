@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import type { User, LoginForm } from '../types/auth'
+import type { User, LoginCredentials } from '../types/auth'
 import {
   getCsrfCookie,
   login as apiLogin,
@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value)
 
-  async function login(credentials: LoginForm) {
+  async function login(credentials: LoginCredentials) {
     isLoading.value = true
     user.value = null
     try {
