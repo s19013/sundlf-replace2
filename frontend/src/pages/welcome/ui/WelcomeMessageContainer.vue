@@ -1,17 +1,15 @@
 <script setup lang="ts">
-defineProps({
-  icon: {
-    type: String,
-    default: null,
+withDefaults(
+  defineProps<{
+    icon?: string | null
+    title?: string
+    message?: string | null
+  }>(),
+  {
+    icon: null,
+    message: null,
   },
-  title: {
-    type: String,
-  },
-  message: {
-    type: String,
-    default: null,
-  },
-})
+)
 </script>
 
 <template>
