@@ -7,7 +7,7 @@ import { authRoutes } from './auth'
 export class GuestUserGuard extends Guard {
   protected setRedirectName(): RouteRecordName {
     /** todo:後で変更予定 */
-    return 'auth.login'
+    return 'about'
   }
 
   // 非ログイン者だけアクセスできる画面
