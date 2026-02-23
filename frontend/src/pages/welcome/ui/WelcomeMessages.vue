@@ -38,7 +38,7 @@ import WelcomMessageContainer from './WelcomeMessageContainer.vue'
   </div>
 </template>
 
-<style>
+<style scoped>
 .wrapper {
   display: grid;
   grid-template-columns: 1fr 1fr;
