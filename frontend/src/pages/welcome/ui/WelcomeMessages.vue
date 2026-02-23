@@ -1,27 +1,27 @@
 <script setup lang="ts">
 import { mdiNote, mdiBookmark, mdiTag, mdiCurrencyUsdOff, mdiGoogleChrome } from '@mdi/js'
-import WelcomMessageContainer from './WelcomeMessageContainer.vue'
+import WelcomeMessageContainer from './WelcomeMessageContainer.vue'
 </script>
 
 <template>
   <div class="wrapper">
-    <WelcomMessageContainer
+    <WelcomeMessageContainer
       :icon="mdiNote"
       title="メモ"
       message="メモをmd形式でかいて保存できます"
     />
-    <WelcomMessageContainer
+    <WelcomeMessageContainer
       :icon="mdiBookmark"
       title="ブックマーク"
       message="ブックマークを保存できます"
     />
-    <WelcomMessageContainer
+    <WelcomeMessageContainer
       :icon="mdiTag"
       title="タグをつけて管理"
       message="タグをつけて整理したり検索などで探すことができます"
     />
-    <WelcomMessageContainer :icon="mdiCurrencyUsdOff" title="無料で使える" />
-    <WelcomMessageContainer :icon="mdiGoogleChrome" title="アドオン">
+    <WelcomeMessageContainer :icon="mdiCurrencyUsdOff" title="無料で使える" />
+    <WelcomeMessageContainer :icon="mdiGoogleChrome" title="アドオン">
       <template v-slot:message>
         <p>chromeアドオンを使えばブックマーク保存がもっと楽に!</p>
         <p>
@@ -34,7 +34,7 @@ import WelcomMessageContainer from './WelcomeMessageContainer.vue'
           </a>
         </p>
       </template>
-    </WelcomMessageContainer>
+    </WelcomeMessageContainer>
   </div>
 </template>
 
