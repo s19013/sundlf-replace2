@@ -17,7 +17,7 @@ async function handleLogin() {
   errorMessage.value = null
   const result = await loginByCredentials({ email: email.value, password: password.value })
   if (result.isSuccess) {
-    router.push({ name: 'home' })
+    router.push({ name: 'about' })
   } else {
     errorMessage.value = result.message
   }
