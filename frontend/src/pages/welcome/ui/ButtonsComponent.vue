@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/entities/auth/model/authStore'
-import MdiButton from '@/shared/ui/MdiButton.vue'
+import { MdiButton } from '@/shared/ui'
 import { mdiLogin } from '@mdi/js'
 
 const { isAuthenticated } = useAuthStore()
