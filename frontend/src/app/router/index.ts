@@ -13,6 +13,8 @@ const routes: RouteRecordRaw[] = [
     name: 'welcome',
     component: () => import('@/pages/welcome/WelcomeView.vue'),
   },
+  ...authGuard.accessibleList,
+  ...guestGuard.accessibleList,
 ]
 
 const router = createRouter({
