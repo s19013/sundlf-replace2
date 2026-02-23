@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { mdiNote, mdiBookmark, mdiTag, mdiCurrencyUsdOff, mdiGoogleChrome } from '@mdi/js'
-import WelcomMessageContainer from './WelcomMessageContainer.vue'
+import WelcomMessageContainer from './WelcomeMessageContainer.vue'
 </script>
 
 <template>

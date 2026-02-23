@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ButtonsComponent from './ui/ButtonsComponent.vue'
-import WelcomMessages from './ui/WelcomMessages.vue'
+import WelcomMessages from './ui/WelcomeMessages.vue'
 </script>
 
 <template>
@@ -17,5 +17,10 @@ import WelcomMessages from './ui/WelcomMessages.vue'
 <style scoped>
 .logo {
   width: 25rem;
+}
+@media (max-width: 480px) {
+  .logo {
+    width: 100%;
+  }
 }
 </style>

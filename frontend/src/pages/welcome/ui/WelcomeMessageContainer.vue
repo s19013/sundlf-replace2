@@ -26,7 +26,7 @@ defineProps({
         </h2>
       </div>
     </div>
-    <div class="mt-2 ml-10 text-s">
+    <div class="mt-2 ml-10 text-sm">
       <p>{{ message }}</p>
       <slot name="message"></slot>
     </div>
