@@ -13,12 +13,23 @@ import type {
  * index.tsにaccessibleListとrouteGuardを登録
  */
 export abstract class Guard {
-  protected redirectName: RouteRecordName = ''
-  public accessibleList: RouteRecordRaw[] = []
+  private _redirectName: RouteRecordName | undefined
+  private _accessibleList: RouteRecordRaw[] | undefined
 
-  constructor() {
-    this.redirectName = this.setRedirectName()
-    this.accessibleList = this.setAccessibleList()
+  /** アクセス可能ルート（遅延初期化） */
+  public get accessibleList(): RouteRecordRaw[] {
+    if (this._accessibleList === undefined) {
+      this._accessibleList = this.setAccessibleList()
+    }
+    return this._accessibleList
+  }
+
+  /** リダイレクト先名（遅延初期化） */
+  protected get redirectName(): RouteRecordName {
+    if (this._redirectName === undefined) {
+      this._redirectName = this.setRedirectName()
+    }
+    return this._redirectName
   }
 
   /**  アクセス可能ルートを定義 */
@@ -32,7 +43,7 @@ export abstract class Guard {
 
   // http://router.vuejs.org/guide/advanced/navigation-guards.html#Optional-third-argument-next
   /** vue router に渡すガード */
-  public routeGuard: NavigationGuard = async (to: RouteLocationNormalized) => {
+  public routeGuard: NavigationGuard = (to: RouteLocationNormalized) => {
     // 拒否条件に引っかかったら指定した場所にリダイレクト
     // 通さない
     if (this.shouldRedirect(to)) {
