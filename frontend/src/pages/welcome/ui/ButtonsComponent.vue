@@ -2,9 +2,7 @@
 import { useAuthStore } from '@/entities/auth/model/authStore'
 import MdiButton from '@/shared/ui/MdiButton.vue'
 import { mdiLogin } from '@mdi/js'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
 const { isAuthenticated } = useAuthStore()
 </script>
 
@@ -15,7 +13,7 @@ const { isAuthenticated } = useAuthStore()
 
   <template v-if="!isAuthenticated">
     <div class="buttons">
-      <router-link :to="router.resolve({ name: 'auth.login' })">
+      <router-link :to="{ name: 'auth.login' }">
         <MdiButton :icon="mdiLogin" label="ログイン" />
       </router-link>
     </div>
