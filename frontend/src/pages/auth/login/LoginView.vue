@@ -28,7 +28,7 @@ async function handleLogin() {
   <AuthLayout>
     <template v-slot:label> ログイン </template>
 
-    <Message v-if="errorMessage" severity="error" :closable="false">
+    <Message class="mb-2" v-if="errorMessage" severity="error" :closable="false">
       {{ errorMessage }}
     </Message>
 

@@ -16,6 +16,10 @@ const errorMessage = ref<string | null>(null)
 
 async function handleRegister() {
   errorMessage.value = null
+  if (password.value !== passwordConfirmation.value) {
+    errorMessage.value = 'パスワードが一致しません'
+    return
+  }
   // todo:登録api呼び出し
 
   // if (result.isSuccess) {
@@ -30,7 +34,7 @@ async function handleRegister() {
   <AuthLayout>
     <template v-slot:label> 新規登録 </template>
 
-    <Message v-if="errorMessage" severity="error" :closable="false">
+    <Message class="mb-2" v-if="errorMessage" severity="error" :closable="false">
       {{ errorMessage }}
     </Message>
 
