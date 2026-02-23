@@ -24,11 +24,11 @@ export class AuthGuard extends Guard {
   public shouldRedirect(to: RouteLocationNormalized): boolean {
     const { isAuthenticated } = useAuthStore()
 
-    // ログインユーザーかつ、ログインユーザー専用ページなら通す
-    if (to.meta.requiresAuth && isAuthenticated) {
-      return false
+    // ログイン必須ページに未ログインでアクセスしようとしているならリダイレクト
+    if (to.meta.requiresAuth && !isAuthenticated) {
+      return true
     }
 
-    return true
+    return false
   }
 }

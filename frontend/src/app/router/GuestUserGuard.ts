@@ -19,11 +19,11 @@ export class GuestGuard extends Guard {
   public shouldRedirect(to: RouteLocationNormalized): boolean {
     const { isAuthenticated } = useAuthStore()
 
-    // 非ログインユーザーかつ、非ログインユーザー専用ページなら通す
-    if (to.meta.guestOnly && !isAuthenticated) {
-      return false
+    // ゲスト専用ページにログイン済みでアクセスしようとしているならリダイレクト
+    if (to.meta.guestOnly && isAuthenticated) {
+      return true
     }
 
-    return true
+    return false
   }
 }
