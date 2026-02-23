@@ -3,12 +3,11 @@ import { Button } from 'primevue'
 
 withDefaults(
   defineProps<{
-    icon?: string | null
+    icon: string
     label?: string | null
     gap?: number
   }>(),
   {
-    icon: null,
     label: null,
     gap: 1,
   },
