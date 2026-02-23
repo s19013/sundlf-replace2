@@ -11,7 +11,7 @@ const { isAuthenticated } = useAuthStore()
     <div class="buttons"></div>
   </template>
 
-  <template v-if="!isAuthenticated">
+  <template v-else>
     <div class="buttons">
       <router-link :to="{ name: 'auth.login' }">
         <MdiButton :icon="mdiLogin" label="ログイン" />
