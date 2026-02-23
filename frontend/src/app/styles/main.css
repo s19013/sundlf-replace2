@@ -55,17 +55,20 @@
     font-weight: normal;
   }
 
-  .theme-color-bg {
+  /* カスタムユーティリティクラスは @layer base ではなく @utility を使用しないといけないらしい。
+    tailwind cssの補助とかも付くらしい。
+   */
+  @utility theme-color-bg {
     background-color: var(--c-theme-color);
   }
 
-  .a-blue {
+  @utility a-blue {
     color: light-dark(var(--color-blue-500), var(--color-sky-600));
     text-decoration-line: underline;
     text-decoration-color: light-dark(var(--color-blue-500), var(--color-sky-600));
   }
 
-  .a-black {
+  @utility a-black {
     color: var(--usual-color);
     text-decoration-line: underline;
     text-decoration-color: var(--usual-color);
