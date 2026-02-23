@@ -1,12 +1,10 @@
 <script setup lang="ts"></script>
 
 <template>
-  <div>
-    <img class="logo" src="/sundlf_logo.png" alt="ロゴ" />
-    <div class="login-card">
-      <h1><slot name="label" /></h1>
-      <slot />
-    </div>
+  <img class="logo" src="/sundlf_logo.png" alt="ロゴ" />
+  <div class="login-card">
+    <h1><slot name="label" /></h1>
+    <slot />
   </div>
 </template>
 
