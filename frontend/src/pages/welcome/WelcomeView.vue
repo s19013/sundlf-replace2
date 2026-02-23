@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ButtonsComponent from './ui/ButtonsComponent.vue'
-import WelcomMessages from './ui/WelcomeMessages.vue'
+import WelcomeMessages from './ui/WelcomeMessages.vue'
 </script>
 
 <template>
@@ -9,7 +9,7 @@ import WelcomMessages from './ui/WelcomeMessages.vue'
     <h3 class="p-3">
       メモ､ブックマークにタグを付けて保存して整理､検索などで探しやすくするツールアプリです
     </h3>
-    <WelcomMessages />
+    <WelcomeMessages />
     <ButtonsComponent />
   </div>
 </template>
