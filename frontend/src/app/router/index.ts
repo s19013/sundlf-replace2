@@ -15,6 +15,11 @@ const routes: RouteRecordRaw[] = [
   },
   ...authUserGuard.accessibleList,
   ...guestUserGuard.accessibleList,
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    redirect: { name: 'welcome' },
+  },
 ]
 
 const router = createRouter({
