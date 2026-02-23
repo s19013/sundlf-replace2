@@ -16,7 +16,8 @@ withDefaults(
 </script>
 
 <template>
-  <Button>
+  <!-- 親から渡された :loading :disable  などを引き継ぐ-->
+  <Button v-bind="$attrs">
     <div class="flex" :style="{ gap: `${gap}rem` }">
       <SvgIcon type="mdi" :path="icon" />
       <span> {{ label }} </span>
