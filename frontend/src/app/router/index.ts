@@ -1,11 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/entities/auth/model/authStore'
-import { AuthGuard } from './AuthUserGuard'
-import { GuestGuard } from './GuestUserGuard'
+import { AuthUserGuard } from './AuthUserGuard'
+import { GuestUserGuard } from './GuestUserGuard'
 import type { RouteRecordRaw } from 'vue-router'
 
-const authGuard = new AuthGuard()
-const guestGuard = new GuestGuard()
+const authUserGuard = new AuthUserGuard()
+const guestUserGuard = new GuestUserGuard()
 
 const routes: RouteRecordRaw[] = [
   {
@@ -13,8 +13,8 @@ const routes: RouteRecordRaw[] = [
     name: 'welcome',
     component: () => import('@/pages/welcome/WelcomeView.vue'),
   },
-  ...authGuard.accessibleList,
-  ...guestGuard.accessibleList,
+  ...authUserGuard.accessibleList,
+  ...guestUserGuard.accessibleList,
 ]
 
 const router = createRouter({
@@ -38,7 +38,7 @@ router.beforeEach(async (to) => {
   }
 })
 
-router.beforeEach(authGuard.routeGuard)
-router.beforeEach(guestGuard.routeGuard)
+router.beforeEach(authUserGuard.routeGuard)
+router.beforeEach(guestUserGuard.routeGuard)
 
 export default router

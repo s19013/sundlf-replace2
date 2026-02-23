@@ -3,7 +3,7 @@ import { Guard } from './Guard'
 import type { RouteRecordRaw, RouteRecordName, RouteLocationNormalized } from 'vue-router'
 import { useAuthStore } from '@/entities/auth/model/authStore'
 
-export class AuthGuard extends Guard {
+export class AuthUserGuard extends Guard {
   protected setRedirectName(): RouteRecordName {
     return 'auth.login'
   }

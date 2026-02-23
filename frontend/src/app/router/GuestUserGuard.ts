@@ -4,7 +4,7 @@ import type { RouteRecordRaw, RouteRecordName, RouteLocationNormalized } from 'v
 import { useAuthStore } from '@/entities/auth/model/authStore'
 import { authRoutes } from './auth'
 
-export class GuestGuard extends Guard {
+export class GuestUserGuard extends Guard {
   protected setRedirectName(): RouteRecordName {
     /** todo:後で変更予定 */
     return 'auth.login'
