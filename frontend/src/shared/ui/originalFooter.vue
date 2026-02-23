@@ -31,6 +31,7 @@ footer {
   gap: 1rem;
   a {
     color: black;
+    text-decoration-line: underline;
   }
   @media (max-width: 450px) {
     flex-flow: column;

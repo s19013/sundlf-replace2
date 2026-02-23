@@ -1,31 +1,30 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/pages/home/ui/HomeView.vue'
 import { useAuthStore } from '@/entities/auth/model/authStore'
+import { AuthUserGuard } from './AuthUserGuard'
+import { GuestUserGuard } from './GuestUserGuard'
+import type { RouteRecordRaw } from 'vue-router'
+
+const authUserGuard = new AuthUserGuard()
+const guestUserGuard = new GuestUserGuard()
+
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    name: 'welcome',
+    component: () => import('@/pages/welcome/WelcomeView.vue'),
+  },
+  ...authUserGuard.accessibleList,
+  ...guestUserGuard.accessibleList,
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    redirect: { name: 'welcome' },
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/pages/auth/login/LoginView.vue'),
-    },
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('@/pages/about/ui/AboutView.vue'),
-      meta: { requiresAuth: true },
-    },
-  ],
+  routes,
 })
 
 router.beforeEach(async (to) => {
@@ -39,23 +38,12 @@ router.beforeEach(async (to) => {
     console.error('Auth check failed:', error)
     // ネットワークエラーなどで失敗した場合はログインページへリダイレクト
     if (to.meta.requiresAuth) {
-      return { name: 'login' }
-    }
-  }
-
-  // 非ログインユーザー制御
-  if (to.meta.requiresAuth) {
-    if (!authStore.isAuthenticated) {
-      return { name: 'login' }
-    }
-  }
-
-  // ログインユーザー制御
-  if (to.name === 'login') {
-    if (authStore.isAuthenticated) {
-      return { name: 'home' }
+      return { name: 'auth.login' }
     }
   }
 })
+
+router.beforeEach(authUserGuard.routeGuard)
+router.beforeEach(guestUserGuard.routeGuard)
 
 export default router
