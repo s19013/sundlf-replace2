@@ -1,27 +1,25 @@
 <script setup lang="ts">
 import { Button } from 'primevue'
 
-defineProps({
-  icon: {
-    type: String,
-    default: null,
+withDefaults(
+  defineProps<{
+    icon?: string | null
+    label?: string | null
+    gap?: number
+  }>(),
+  {
+    icon: null,
+    label: null,
+    gap: 1,
   },
-  label: {
-    type: String,
-    default: null,
-  },
-  gap: {
-    type: Number,
-    default: 1,
-  },
-})
+)
 </script>
 
 <template>
   <Button>
-    <div :class="`flex gap-${gap}`">
+    <div class="flex" :style="{ gap: `${gap}rem` }">
       <SvgIcon type="mdi" :path="icon" />
-      <p>{{ label }}</p>
+      <span> {{ label }} </span>
     </div>
   </Button>
 </template>
