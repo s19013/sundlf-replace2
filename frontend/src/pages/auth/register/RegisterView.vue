@@ -28,7 +28,7 @@ async function handleRegister() {
 
 <template>
   <AuthLayout>
-    <template v-slot:label> ログイン </template>
+    <template v-slot:label> 新規登録 </template>
 
     <Message v-if="errorMessage" severity="error" :closable="false">
       {{ errorMessage }}
