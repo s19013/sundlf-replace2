@@ -6,6 +6,7 @@ const { isAuthenticated } = useAuthStore()
 
 <template>
   <div class="authMenu">
+    <router-link class="a-blue" :to="{ name: 'welcome' }"> TOP </router-link>
     <template v-if="isAuthenticated"> </template>
 
     <template v-else>
