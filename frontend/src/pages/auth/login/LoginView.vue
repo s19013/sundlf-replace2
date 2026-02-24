@@ -7,17 +7,23 @@ import { AuthLayout } from '@/shared/layout'
 import { loginByCredentials } from '@/entities/auth/model/loginByCredentials'
 import { MdiButton } from '@/shared/ui'
 import { mdiLogin } from '@mdi/js'
+import { CheckBox } from '@/shared/ui'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
+const remember = ref(false)
 const errorMessage = ref<string | null>(null)
 
 async function handleLogin() {
   errorMessage.value = null
-  const result = await loginByCredentials({ email: email.value, password: password.value })
+  const result = await loginByCredentials({
+    email: email.value,
+    password: password.value,
+    remember: remember.value,
+  })
   if (result.isSuccess) {
     router.push({ name: 'about' })
   } else {
@@ -59,6 +65,8 @@ async function handleLogin() {
         />
       </div>
 
+      <CheckBox label="ログイン状態を保持する" id="remember" v-model="remember" />
+
       <MdiButton
         :icon="mdiLogin"
         label="ログイン"
@@ -80,5 +88,11 @@ async function handleLogin() {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
+}
+
+.checkbox {
+  margin-bottom: 1.25rem;
+  display: flex;
+  gap: 1rem;
 }
 </style>

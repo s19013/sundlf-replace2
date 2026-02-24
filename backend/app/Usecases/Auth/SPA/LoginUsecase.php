@@ -11,7 +11,7 @@ class LoginUsecase
 {
     public function __invoke(LoginRequest $request): JsonResponse
     {
-        if (! Auth::attempt($request->only('email', 'password'))) {
+        if (! Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
             return response()->json([
                 'message' => __('auth.failed'),
             ], 401);
