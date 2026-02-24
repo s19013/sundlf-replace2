@@ -5,9 +5,8 @@ import { InputText, Password, Message } from 'primevue'
 import { useAuthStore } from '@/entities/auth/model/authStore'
 import { AuthLayout } from '@/shared/layout'
 import { loginByCredentials } from '@/entities/auth/model/loginByCredentials'
-import { MdiButton } from '@/shared/ui'
+import { MdiButton, CheckBox } from '@/shared/ui'
 import { mdiLogin } from '@mdi/js'
-import { CheckBox } from '@/shared/ui'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -88,11 +87,5 @@ async function handleLogin() {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-}
-
-.checkbox {
-  margin-bottom: 1.25rem;
-  display: flex;
-  gap: 1rem;
 }
 </style>
