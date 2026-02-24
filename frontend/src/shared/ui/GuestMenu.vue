@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/entities/auth/model/authStore'
 
-const { isAuthenticated } = useAuthStore()
+const authStore = useAuthStore()
+const isAuthenticated = authStore.isAuthenticated
 </script>
 
 <template>
