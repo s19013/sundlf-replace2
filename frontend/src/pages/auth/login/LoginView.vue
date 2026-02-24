@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { InputText, Password, Button, Message } from 'primevue'
+import { InputText, Password, Message } from 'primevue'
 import { useAuthStore } from '@/entities/auth/model/authStore'
 import { AuthLayout } from '@/shared/layout'
 import { loginByCredentials } from '@/entities/auth/model/loginByCredentials'
+import { MdiButton } from '@/shared/ui'
+import { mdiLogin } from '@mdi/js'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -50,9 +52,10 @@ async function handleLogin() {
         <Password id="password" v-model="password" :feedback="false" toggle-mask required fluid />
       </div>
 
-      <Button
-        type="submit"
+      <MdiButton
+        :icon="mdiLogin"
         label="ログイン"
+        type="submit"
         :loading="authStore.isLoading"
         :disabled="authStore.isLoading"
         fluid
