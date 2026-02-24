@@ -16,7 +16,7 @@ const { isAuthenticated } = useAuthStore()
   </div>
 </template>
 
-<style>
+<style scoped>
 .authMenu {
   width: 100%;
   display: flex;
