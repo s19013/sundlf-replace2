@@ -2,6 +2,14 @@
 import { Guard } from './Guard'
 import type { RouteRecordRaw, RouteRecordName, RouteLocationNormalized } from 'vue-router'
 import { useAuthStore } from '@/entities/auth/model/authStore'
+import 'vue-router'
+
+// metaタグに型を追加
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean
+  }
+}
 
 export class AuthUserGuard extends Guard {
   protected setRedirectName(): RouteRecordName {
