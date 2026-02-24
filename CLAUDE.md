@@ -50,6 +50,14 @@ Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life
 - Default files: `product.md`, `tech.md`, `structure.md`
 - Custom files are supported (managed via `/kiro:steering-custom`)
 
+## バックエンドのルール
+
+`@backend/CLAUDE.md` に書いてある
+
+## フロントエンドのルール
+
+`@frontend/CLAUDE.md` に書いてある
+
 ## 言語設定
 
 - 常に日本語で会話する
