@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Checkbox } from 'primevue'
+// 勝手に一番上のdivにもattributeが付くのを防止
+defineOptions({ inheritAttrs: false })
 
 withDefaults(
   defineProps<{
