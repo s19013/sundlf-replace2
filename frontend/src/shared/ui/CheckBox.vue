@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { computed, useId } from 'vue'
 import { Checkbox } from 'primevue'
 // 勝手に一番上のdivにもattributeが付くのを防止
 defineOptions({ inheritAttrs: false })
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     label: string
     id?: string
@@ -14,12 +15,15 @@ withDefaults(
     fluid: true,
   },
 )
+
+const generatedId = useId()
+const inputId = computed(() => props.id ?? generatedId)
 </script>
 
 <template>
   <div :class="{ fluid: fluid }">
-    <Checkbox size="large" :inputId="id" v-bind="$attrs" binary />
-    <label :for="id">{{ label }}</label>
+    <Checkbox size="large" :inputId="inputId" v-bind="$attrs" binary />
+    <label :for="inputId">{{ label }}</label>
   </div>
 </template>
 
