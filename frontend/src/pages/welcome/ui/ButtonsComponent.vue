@@ -2,8 +2,10 @@
 import { useAuthStore } from '@/entities/auth/model/authStore'
 import { MdiButton } from '@/shared/ui'
 import { mdiLogin, mdiAccountPlus } from '@mdi/js'
+import { useRouter } from 'vue-router'
 
 const { isAuthenticated } = useAuthStore()
+const router = useRouter()
 </script>
 
 <template>
@@ -11,16 +13,13 @@ const { isAuthenticated } = useAuthStore()
     <template v-if="isAuthenticated"> </template>
 
     <template v-else>
-      <router-link :to="{ name: 'auth.register' }">
-        <MdiButton
-          style="background-color: #eeeeee"
-          :icon="mdiAccountPlus"
-          label="初めての方はこちら"
-        />
-      </router-link>
-      <router-link :to="{ name: 'auth.login' }">
-        <MdiButton :icon="mdiLogin" label="ログイン" />
-      </router-link>
+      <MdiButton
+        style="background-color: #eeeeee"
+        :icon="mdiAccountPlus"
+        label="初めての方はこちら"
+        @click="router.push({ name: 'auth.register' })"
+      />
+      <MdiButton :icon="mdiLogin" label="ログイン" @click="router.push({ name: 'auth.login' })" />
     </template>
   </div>
 </template>
