@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import GuestLayout from '@/shared/layout/GuestLayout.vue'
+import { GuestLayout } from '@/shared/layout'
 import ButtonsComponent from './ui/ButtonsComponent.vue'
 import WelcomeMessages from './ui/WelcomeMessages.vue'
 </script>
