@@ -10,8 +10,8 @@ import WelcomeMessages from './ui/WelcomeMessages.vue'
       メモ､ブックマークにタグを付けて保存して整理､検索などで探しやすくするツールアプリです
     </h3>
     <WelcomeMessages />
-    <ButtonsComponent />
   </div>
+  <ButtonsComponent />
 </template>
 
 <style scoped>
