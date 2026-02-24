@@ -54,23 +54,24 @@
     padding: var(--main-padding-vertical) var(--main-padding-horizontal);
     font-weight: normal;
   }
+}
 
-  /* カスタムユーティリティクラスは @layer base ではなく @utility を使用しないといけないらしい。
-    tailwind cssの補助とかも付くらしい。
-   */
-  @utility theme-color-bg {
-    background-color: var(--c-theme-color);
-  }
+/* カスタムユーティリティクラスは @layer base ではなく @utility を使用しないといけないらしい。
+   tailwind cssの補助とかも付くらしい。
+   @utility はトップレベルにしか書けないため @layer base の外に置く。
+*/
+@utility theme-color-bg {
+  background-color: var(--c-theme-color);
+}
 
-  @utility a-blue {
-    color: light-dark(var(--color-blue-500), var(--color-sky-600));
-    text-decoration-line: underline;
-    text-decoration-color: light-dark(var(--color-blue-500), var(--color-sky-600));
-  }
+@utility a-blue {
+  color: light-dark(var(--color-blue-500), var(--color-sky-600));
+  text-decoration-line: underline;
+  text-decoration-color: light-dark(var(--color-blue-500), var(--color-sky-600));
+}
 
-  @utility a-black {
-    color: var(--usual-color);
-    text-decoration-line: underline;
-    text-decoration-color: var(--usual-color);
-  }
+@utility a-black {
+  color: var(--usual-color);
+  text-decoration-line: underline;
+  text-decoration-color: var(--usual-color);
 }
