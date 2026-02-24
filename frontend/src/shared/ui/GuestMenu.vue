@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/entities/auth/model/authStore'
 
-const authStore = useAuthStore()
-const isAuthenticated = authStore.isAuthenticated
+const { isAuthenticated } = storeToRefs(useAuthStore())
 </script>
 
 <template>

@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/entities/auth/model/authStore'
 import { MdiButton } from '@/shared/ui'
 import { mdiLogin, mdiAccountPlus } from '@mdi/js'
 import { useRouter } from 'vue-router'
 
-const { isAuthenticated } = useAuthStore()
+const { isAuthenticated } = storeToRefs(useAuthStore())
 const router = useRouter()
 </script>
 
