@@ -49,7 +49,14 @@ async function handleLogin() {
 
       <div class="field">
         <label for="password">パスワード</label>
-        <Password id="password" v-model="password" :feedback="false" toggle-mask required fluid />
+        <Password
+          v-model="password"
+          :feedback="false"
+          toggle-mask
+          required
+          fluid
+          :inputProps="{ id: 'password', minlength: 8 }"
+        />
       </div>
 
       <MdiButton
