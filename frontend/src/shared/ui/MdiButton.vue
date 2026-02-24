@@ -19,9 +19,9 @@ withDefaults(
 <template>
   <!-- 親から渡された :loading :disable  などを引き継ぐ-->
   <Button v-bind="$attrs">
-    <div class="flex" :style="{ gap: `${gap}rem` }">
+    <div class="flex" :style="{ gap: `${gap}rem`, color: `${color}` }">
       <SvgIcon type="mdi" :path="icon" />
-      <span :style="{ color: `${color}` }"> {{ label }} </span>
+      <span> {{ label }} </span>
     </div>
   </Button>
 </template>
