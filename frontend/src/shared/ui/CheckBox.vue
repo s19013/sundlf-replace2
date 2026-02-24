@@ -6,7 +6,7 @@ defineOptions({ inheritAttrs: false })
 withDefaults(
   defineProps<{
     label: string
-    id?: string | undefined
+    id?: string
     fluid?: boolean | null
   }>(),
   {
