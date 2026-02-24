@@ -61,24 +61,26 @@ async function handleRegister() {
       <div class="field">
         <label for="password">パスワード</label>
         <Password
+          input-id="password"
           v-model="password"
           :feedback="false"
           toggle-mask
           required
           fluid
-          :inputProps="{ id: 'password', minlength: 8 }"
+          :inputProps="{ minlength: 8 }"
         />
       </div>
 
       <div class="field">
         <label for="password_confirmation">パスワード(再確認)</label>
         <Password
+          input-id="password_confirmation"
           v-model="passwordConfirmation"
           :feedback="false"
           toggle-mask
           required
           fluid
-          :inputProps="{ id: 'password_confirmation', minlength: 8 }"
+          :inputProps="{ minlength: 8 }"
         />
       </div>
 
