@@ -6,10 +6,12 @@ withDefaults(
     icon: string
     label?: string | null
     gap?: number
+    color?: string | null
   }>(),
   {
     label: null,
     gap: 1,
+    color: 'black',
   },
 )
 </script>
@@ -19,7 +21,7 @@ withDefaults(
   <Button v-bind="$attrs">
     <div class="flex" :style="{ gap: `${gap}rem` }">
       <SvgIcon type="mdi" :path="icon" />
-      <span> {{ label }} </span>
+      <span :style="{ color: `${color}` }"> {{ label }} </span>
     </div>
   </Button>
 </template>
