@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/entities/auth/model/authStore'
-import { AuthUserGuard } from './AuthUserGuard'
-import { GuestUserGuard } from './GuestUserGuard'
+import { AuthUserGuard } from './Guard/AuthUserGuard'
+import { GuestUserGuard } from './Guard/GuestUserGuard'
 import type { RouteRecordRaw } from 'vue-router'
 
 const authUserGuard = new AuthUserGuard()
