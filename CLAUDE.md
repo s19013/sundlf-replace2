@@ -52,11 +52,11 @@ Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life
 
 ## バックエンドのルール
 
-`@backend/CLAUDE.md` に書いてある
+@backend/CLAUDE.md に書いてある
 
 ## フロントエンドのルール
 
-`@frontend/CLAUDE.md` に書いてある
+@frontend/CLAUDE.md に書いてある
 
 ## 言語設定
 
