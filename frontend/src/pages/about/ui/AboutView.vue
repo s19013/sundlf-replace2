@@ -11,7 +11,7 @@ const handleLogout = async () => {
   try {
     await logout()
   } finally {
-    router.push({ name: 'login' })
+    router.push({ name: 'auth.login' })
   }
 }
 </script>
