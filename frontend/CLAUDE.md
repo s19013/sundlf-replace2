@@ -110,6 +110,13 @@ import Message from 'primevue/message'
 
 長くなる場合には分けて良い。
 
+# mdi
+
+primevueでmdiを使う場合にはSvgIconコンポーネントを使う必要がある。
+SvgIconコンポーネントは`main.ts`で読み込んでいるためどこでも呼び出せる
+
+`<SvgIcon type="mdi" path="アイコンのパス" />`
+
 # その他
 
 - 送信ボタン類などの通信を伴うボタンは連打できないようにする
