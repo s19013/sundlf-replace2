@@ -15,7 +15,8 @@
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src/"
+    "format": "prettier --write --experimental-cli src/",
+    "generate-schema": "openapi-typescript ./src/shared/types/api.json -o ./src/shared/types/schema.d.ts"
   },
   "dependencies": {
     "@jamescoyle/vue-icon": "^0.1.2",
