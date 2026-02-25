@@ -3,8 +3,8 @@
 namespace App\Usecases\Auth\SPA;
 
 use App\Http\Requests\Auth\LoginRequest;
-use App\Http\Resources\MinimumUserResource;
 use App\Models\User;
+use App\Resources\MinimumUserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
