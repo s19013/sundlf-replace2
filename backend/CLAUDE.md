@@ -50,4 +50,7 @@ mise exec:laravel "[command]"
 
 # API
 
+フロントエンド側で実装を進めやすいように以下の行動をしてください。
+
 新規のAPIを定義したら、`mise generate:ziggy`を実行して、Ziggyのルート定義ファイルを再生成してください。
+`mise generate:openapi`を実行して、リクエストレスポンス情報を`schema.d.ts`に出力してください。
