@@ -11,7 +11,7 @@ docker compose exec vue bash -ic
 """
 
 [tasks."generate:ziggy"]
-description = "vueコンテナのdocker execのalias"
+description = "laravelのルーティング情報をvueに出力"
 run = """
 # laravelコンテナ内部でziggyファイルを生成
 mise exec:laravel "php artisan ziggy:generate --types"
@@ -19,6 +19,23 @@ mise exec:laravel "php artisan ziggy:generate --types"
 # ziggyファイルをvueコンテナ内部に移動
 mv -f ./backend/resources/js/ziggy.js ./frontend/src/shared/api
 mv -f ./backend/resources/js/ziggy.d.ts ./frontend/src/shared/types
+"""
+
+[tasks."generate:openapi"]
+description = "laravelのリクエスト、レスポンス情報をvueに出力"
+run = """
+# laravelコンテナ内部でファイルを生成
+mise exec:laravel "php artisan scramble:export"
+
+# vueコンテナへ移動
+mv -f ./backend/api.json ./frontend/src/shared/types
+
+# openapi-typescript実行
+mise exec:vue "pnpm run generate-schema"
+
+# schema.d.tsが生成されれば、api.jsonはいらないので消す
+rm ./frontend/src/shared/types/api.json
+
 """
 
 [tasks."reset-database"]
