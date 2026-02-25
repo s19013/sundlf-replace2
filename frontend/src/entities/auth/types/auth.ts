@@ -1,10 +1,7 @@
-export interface User {
-  id: number
-  name: string
-}
+import type { components } from '@/shared/types/schema'
 
-export interface LoginCredentials {
-  email: string
-  password: string
+export type User = components['schemas']['MinimumUserResource']
+
+export type LoginCredentials = components['schemas']['LoginRequest'] & {
   remember: boolean
 }
