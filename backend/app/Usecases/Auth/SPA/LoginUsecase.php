@@ -3,6 +3,7 @@
 namespace App\Usecases\Auth\SPA;
 
 use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Resources\MinimumUserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,7 @@ class LoginUsecase
         $user = Auth::user();
 
         return response()->json([
-            'user' => $user->only(User::MINIMUM_VISIBLE),
+            'user' => new MinimumUserResource($user),
         ]);
     }
 }
