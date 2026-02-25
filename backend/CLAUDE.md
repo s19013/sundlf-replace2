@@ -29,6 +29,12 @@ mise exec:laravel "composer run pint"
 - php
 - laravel
 
+# ライブラリ
+
+- tightenco/ziggy
+- dedoc/scramble
+- laravel/sanctum
+
 # 開発コマンド
 
 ```bash

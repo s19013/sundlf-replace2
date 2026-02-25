@@ -32,15 +32,21 @@ mise exec:vue "pnpm run test:unit"
 
 # 主要技術
 
-- vue3
 - typescript
-- pinia
-- vite
-- vitest
-- eslint
-- prettier
+- vue3
+
+# ライブラリ
+
+- @jamescoyle/vue-icon
+- @mdi/js
+- @primeuix/themes
 - axios
+- dayjs
+- pinia
 - primevue
+- tailwindcss-primeui
+- vue-router
+- ziggy-js
 
 # 開発コマンド
 
