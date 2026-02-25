@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 // import { useRouter } from 'vue-router'
-import { InputText, Password, Button, Message } from 'primevue'
+import { InputText, Password, Message } from 'primevue'
 import { useAuthStore } from '@/entities/auth/model/authStore'
 import { AuthLayout } from '@/shared/layout'
+import { MdiButton } from '@/shared/ui'
+import { mdiAccountPlus } from '@mdi/js'
 
 // const router = useRouter()
 const authStore = useAuthStore()
@@ -58,24 +60,35 @@ async function handleRegister() {
 
       <div class="field">
         <label for="password">パスワード</label>
-        <Password id="password" v-model="password" :feedback="false" toggle-mask required fluid />
+        <Password
+          input-id="password"
+          v-model="password"
+          :feedback="false"
+          toggle-mask
+          required
+          fluid
+          :inputProps="{ minlength: 8 }"
+        />
       </div>
 
       <div class="field">
         <label for="password_confirmation">パスワード(再確認)</label>
         <Password
-          id="password_confirmation"
+          input-id="password_confirmation"
           v-model="passwordConfirmation"
           :feedback="false"
           toggle-mask
           required
           fluid
+          :inputProps="{ minlength: 8 }"
         />
       </div>
 
-      <Button
-        type="submit"
+      <MdiButton
+        style="background-color: #eeeeee"
+        :icon="mdiAccountPlus"
         label="登録"
+        type="submit"
         :loading="authStore.isLoading"
         :disabled="authStore.isLoading"
         fluid

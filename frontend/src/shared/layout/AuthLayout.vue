@@ -1,11 +1,15 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import GuestLayout from './GuestLayout.vue'
+</script>
 
 <template>
-  <img class="logo" src="/sundlf_logo.png" alt="ロゴ" />
-  <div class="login-card">
-    <h1><slot name="label" /></h1>
-    <slot />
-  </div>
+  <GuestLayout>
+    <img class="logo" src="/sundlf_logo.png" alt="ロゴ" />
+    <div class="login-card">
+      <h1><slot name="label" /></h1>
+      <slot />
+    </div>
+  </GuestLayout>
 </template>
 
 <style scoped>

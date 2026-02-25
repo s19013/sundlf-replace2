@@ -44,6 +44,40 @@
     overflow-y: auto;
   }
 
+  /* tailwindcssを導入したらh系タグの大きさがリセットされたので再定義 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: bold;
+  }
+
+  h1 {
+    font-size: 2em;
+  }
+
+  h2 {
+    font-size: 1.5em;
+  }
+
+  h3 {
+    font-size: 1.17em;
+  }
+
+  h4 {
+    font-size: 1em;
+  }
+
+  h5 {
+    font-size: 0.83em;
+  }
+
+  h6 {
+    font-size: 0.67em;
+  }
+
   main {
     min-height: 100dvh;
     display: flex;
@@ -54,23 +88,24 @@
     padding: var(--main-padding-vertical) var(--main-padding-horizontal);
     font-weight: normal;
   }
+}
 
-  /* カスタムユーティリティクラスは @layer base ではなく @utility を使用しないといけないらしい。
-    tailwind cssの補助とかも付くらしい。
-   */
-  @utility theme-color-bg {
-    background-color: var(--c-theme-color);
-  }
+/* カスタムユーティリティクラスは @layer base ではなく @utility を使用しないといけないらしい。
+   tailwind cssの補助とかも付くらしい。
+   @utility はトップレベルにしか書けないため @layer base の外に置く。
+*/
+@utility theme-color-bg {
+  background-color: var(--c-theme-color);
+}
 
-  @utility a-blue {
-    color: light-dark(var(--color-blue-500), var(--color-sky-600));
-    text-decoration-line: underline;
-    text-decoration-color: light-dark(var(--color-blue-500), var(--color-sky-600));
-  }
+@utility a-blue {
+  color: light-dark(var(--color-blue-500), var(--color-sky-600));
+  text-decoration-line: underline;
+  text-decoration-color: light-dark(var(--color-blue-500), var(--color-sky-600));
+}
 
-  @utility a-black {
-    color: var(--usual-color);
-    text-decoration-line: underline;
-    text-decoration-color: var(--usual-color);
-  }
+@utility a-black {
+  color: var(--usual-color);
+  text-decoration-line: underline;
+  text-decoration-color: var(--usual-color);
 }
