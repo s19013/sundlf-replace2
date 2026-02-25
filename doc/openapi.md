@@ -1,15 +1,15 @@
+# OpenAPI 型生成ドキュメント
+
 このプロジェクトでは
 
 - dedoc/scramble
-- openapi-typescript
+  を使い、Laravel のリクエスト・レスポンスを TypeScript の型として出力している
 
 を使い、laravelのリクエストレスポンスをtsの型として出力している
 
 # コマンド
 
 `mise generate:openapi`
-
-# 流れ
 
 laravelコンテナで,dedoc/scrambleを使いリクエストレスポンス情報をopenapiのjsonとして出力
 ↓
