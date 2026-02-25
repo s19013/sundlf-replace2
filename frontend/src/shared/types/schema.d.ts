@@ -99,6 +99,7 @@ export interface components {
       /** Format: email */
       email: string
       password: string
+      remember?: boolean
     }
     /** MinimumUserResource */
     MinimumUserResource: {
