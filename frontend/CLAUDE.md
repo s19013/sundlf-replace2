@@ -32,15 +32,21 @@ mise exec:vue "pnpm run test:unit"
 
 # 主要技術
 
-- vue3
 - typescript
-- pinia
-- vite
-- vitest
-- eslint
-- prettier
+- vue3
+
+# ライブラリ
+
+- @jamescoyle/vue-icon
+- @mdi/js
+- @primeuix/themes
 - axios
+- dayjs
+- pinia
 - primevue
+- tailwindcss-primeui
+- vue-router
+- ziggy-js
 
 # 開発コマンド
 
@@ -103,6 +109,21 @@ import Message from 'primevue/message'
 ### 例外
 
 長くなる場合には分けて良い。
+
+# mdi
+
+primevueでmdiを使う場合にはSvgIconコンポーネントを使う必要がある。
+SvgIconコンポーネントは`main.ts`で読み込んでいるためどこでも呼び出せる
+
+```vue
+<script>
+import { mdiHome } from '@mdi/js'
+</script>
+
+<template>
+  <SvgIcon type="mdi" :path="mdiHome" />
+</template>
+```
 
 # その他
 

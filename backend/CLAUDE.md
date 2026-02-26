@@ -29,6 +29,12 @@ mise exec:laravel "composer run pint"
 - php
 - laravel
 
+# ライブラリ
+
+- tightenco/ziggy
+- dedoc/scramble
+- laravel/sanctum
+
 # 開発コマンド
 
 ```bash
@@ -44,4 +50,7 @@ mise exec:laravel "[command]"
 
 # API
 
-新規のAPIを定義したら、`mise generate:ziggy`を実行して、Ziggyのルート定義ファイルを再生成してください。
+新規のAPIを定義したら、以下の順番でコマンドを実行してください。
+
+1. `mise generate:ziggy`を実行して、Ziggyのルート定義ファイルを再生成してください。
+2. `mise generate:openapi`を実行して、リクエストレスポンス情報を`schema.d.ts`に出力してください。
