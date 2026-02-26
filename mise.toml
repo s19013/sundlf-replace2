@@ -42,6 +42,7 @@ rm ./frontend/src/shared/types/api.json
 description = "laravelのmodelなどのproperty情報を出力"
 run = """
 mise exec:laravel "composer run  ide-helper"
+mise exec:laravel "composer run  ide-helper-model"
 """
 
 [tasks."generate:init"]
