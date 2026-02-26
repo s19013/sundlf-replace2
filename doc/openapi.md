@@ -5,8 +5,6 @@
 - dedoc/scramble
   を使い、Laravel のリクエスト・レスポンスを TypeScript の型として出力している
 
-を使い、laravelのリクエストレスポンスをtsの型として出力している
-
 # コマンド
 
 `mise generate:openapi`
