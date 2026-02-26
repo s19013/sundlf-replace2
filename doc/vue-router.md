@@ -1,6 +1,6 @@
 # 新規追加したmetaタグの型定義
 
-frontend/src/app/router/types.d.ts` にmetaタグの型を定義しています。
+`frontend/src/app/router/types.d.ts` にmetaタグの型を定義しています。
 
 # ナビゲーションガード
 
