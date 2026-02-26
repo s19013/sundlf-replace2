@@ -1,37 +1,83 @@
 pre-commit:
   parallel: true
   commands:
+    # laravel
     # pint -> phpstan の順で動かす
     pint-fix:
       priority: 1
       stage_fixed: true
       glob: "*.php"
+      exclude: "^_ide_helper.*"
       run: ./.lefthook/pre-commit/pint-fix.sh {staged_files}
 
     phpstan:
       priority: 2
       glob: "*.php"
+      exclude: "^_ide_helper.*"
       run: ./.lefthook/pre-commit/phpstan.sh {staged_files}
 
+    # vue
     #  prettier -> eslint -> typecheckの順で動かす
     prettier-fix:
       priority: 1
       stage_fixed: true
       glob: "*.{ts,tsx,json,css,vue}"
-      exclude: ".claude/*"
+      exclude:
+        - ".claude/*"
+        - frontend/src/shared/api/ziggy.js
+        - frontend/src/shared/types/ziggy.d.ts
+        - frontend/src/shared/types/schema.d.ts
       run: ./.lefthook/pre-commit/prettier.sh {staged_files}
 
     eslint-fix:
       priority: 2
       stage_fixed: true
       glob: "*.{ts,tsx,vue}"
+      exclude:
+        - ".claude/*"
+        - frontend/src/shared/api/ziggy.js
+        - frontend/src/shared/types/ziggy.d.ts
+        - frontend/src/shared/types/schema.d.ts
       run: ./.lefthook/pre-commit/eslint.sh {staged_files}
 
     oxlint-fix:
       priority: 3
       stage_fixed: true
       glob: "*.{ts,tsx,vue}"
+      exclude:
+        - ".claude/*"
+        - frontend/src/shared/api/ziggy.js
+        - frontend/src/shared/types/ziggy.d.ts
+        - frontend/src/shared/types/schema.d.ts
       run: ./.lefthook/pre-commit/oxlint.sh {staged_files}
+
+    # 自動生成類
+    ziggy:
+      priority: 1
+      stage_fixed: true
+      glob: "backend/routes/api.php"
+      exclude: "^_ide_helper.*"
+      run: mise generate:ziggy
+
+    openapi:
+      priority: 1
+      stage_fixed: true
+      glob: "*.php"
+      exclude: "^_ide_helper.*"
+      run: mise generate:openapi
+
+    ide-helper:
+      priority: 1
+      stage_fixed: true
+      glob: "backend/composer.lock"
+      run: mise exec:laravel "composer run  ide-helper"
+
+    ide-helper-model:
+      priority: 1
+      stage_fixed: true
+      glob: "*.php"
+      exclude: "^_ide_helper.*"
+      run: mise exec:laravel "composer run  ide-helper-model"
 
 pre-push:
   parallel: true
@@ -40,6 +86,10 @@ pre-push:
       priority: 1
       stage_fixed: true
       glob: "*.{ts,tsx,vue}"
-      exclude: ".claude/*"
+      exclude:
+        - ".claude/*"
+        - frontend/src/shared/api/ziggy.js
+        - frontend/src/shared/types/ziggy.d.ts
+        - frontend/src/shared/types/schema.d.ts
       run: "mise exec:vue 'pnpm run type-check-lefthook > typecheck-error.log'"
 # テスト系を実行
