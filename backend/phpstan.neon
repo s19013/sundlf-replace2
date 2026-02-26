@@ -12,3 +12,7 @@ parameters:
         - database
         - routes
         - tests
+    excludePaths:
+    # これはライブラリから自動生成されるファイルなので下手にいじりたくない。なので対象外
+        - _ide_helper.php
+        - _ide_helper_models.php
