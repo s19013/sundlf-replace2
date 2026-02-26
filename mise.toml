@@ -38,6 +38,13 @@ rm ./frontend/src/shared/types/api.json
 
 """
 
+[tasks."generate:ide-helper"]
+description = "laravelのmodelなどのproperty情報を出力"
+run = """
+mise exec:laravel "composer run  ide-helper"
+"""
+
+
 [tasks."reset-database"]
 description = "データベースをリセット"
 run = """

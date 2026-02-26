@@ -88,6 +88,10 @@
         ],
         "pint": [
             "./vendor/bin/pint"
+        ],
+        "ide-helper": [
+            "php artisan ide-helper:generate",
+            "php artisan ide-helper:model -R -n"
         ]
     },
     "extra": {
