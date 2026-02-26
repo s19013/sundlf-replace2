@@ -51,6 +51,34 @@ pre-commit:
         - frontend/src/shared/types/schema.d.ts
       run: ./.lefthook/pre-commit/oxlint.sh {staged_files}
 
+    # 自動生成類
+    ziggy:
+      priority: 1
+      stage_fixed: true
+      glob: "backend/routes/api.php"
+      exclude: "^_ide_helper.*"
+      run: mise generate:ziggy
+
+    openapi:
+      priority: 1
+      stage_fixed: true
+      glob: "*.php"
+      exclude: "^_ide_helper.*"
+      run: mise generate:openapi
+
+    ide-helper:
+      priority: 1
+      stage_fixed: true
+      glob: "backend/composer.lock"
+      run: mise exec:laravel "composer run  ide-helper"
+
+    ide-helper-model:
+      priority: 1
+      stage_fixed: true
+      glob: "*.php"
+      exclude: "^_ide_helper.*"
+      run: mise exec:laravel "composer run  ide-helper-model"
+
 pre-push:
   parallel: true
   commands:
