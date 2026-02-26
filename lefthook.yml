@@ -1,18 +1,22 @@
 pre-commit:
   parallel: true
   commands:
+    # laravel
     # pint -> phpstan の順で動かす
     pint-fix:
       priority: 1
       stage_fixed: true
       glob: "*.php"
+      exclude: "^_ide_helper.*"
       run: ./.lefthook/pre-commit/pint-fix.sh {staged_files}
 
     phpstan:
       priority: 2
       glob: "*.php"
+      exclude: "^_ide_helper.*"
       run: ./.lefthook/pre-commit/phpstan.sh {staged_files}
 
+    # vue
     #  prettier -> eslint -> typecheckの順で動かす
     prettier-fix:
       priority: 1
