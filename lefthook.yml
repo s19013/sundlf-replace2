@@ -22,19 +22,33 @@ pre-commit:
       priority: 1
       stage_fixed: true
       glob: "*.{ts,tsx,json,css,vue}"
-      exclude: ".claude/*"
+      exclude:
+        - ".claude/*"
+        - frontend/src/shared/api/ziggy.js
+        - frontend/src/shared/types/ziggy.d.ts
+        - frontend/src/shared/types/schema.d.ts
       run: ./.lefthook/pre-commit/prettier.sh {staged_files}
 
     eslint-fix:
       priority: 2
       stage_fixed: true
       glob: "*.{ts,tsx,vue}"
+      exclude:
+        - ".claude/*"
+        - frontend/src/shared/api/ziggy.js
+        - frontend/src/shared/types/ziggy.d.ts
+        - frontend/src/shared/types/schema.d.ts
       run: ./.lefthook/pre-commit/eslint.sh {staged_files}
 
     oxlint-fix:
       priority: 3
       stage_fixed: true
       glob: "*.{ts,tsx,vue}"
+      exclude:
+        - ".claude/*"
+        - frontend/src/shared/api/ziggy.js
+        - frontend/src/shared/types/ziggy.d.ts
+        - frontend/src/shared/types/schema.d.ts
       run: ./.lefthook/pre-commit/oxlint.sh {staged_files}
 
 pre-push:
@@ -44,6 +58,10 @@ pre-push:
       priority: 1
       stage_fixed: true
       glob: "*.{ts,tsx,vue}"
-      exclude: ".claude/*"
+      exclude:
+        - ".claude/*"
+        - frontend/src/shared/api/ziggy.js
+        - frontend/src/shared/types/ziggy.d.ts
+        - frontend/src/shared/types/schema.d.ts
       run: "mise exec:vue 'pnpm run type-check-lefthook > typecheck-error.log'"
 # テスト系を実行
