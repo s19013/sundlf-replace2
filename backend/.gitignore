@@ -24,3 +24,6 @@ Homestead.yaml
 Thumbs.db
 .pnpm-store
 phpstan-result.json
+
+_ide_helper.php
+_ide_helper_models.php
