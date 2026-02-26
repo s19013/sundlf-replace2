@@ -115,7 +115,15 @@ import Message from 'primevue/message'
 primevueでmdiを使う場合にはSvgIconコンポーネントを使う必要がある。
 SvgIconコンポーネントは`main.ts`で読み込んでいるためどこでも呼び出せる
 
-`<SvgIcon type="mdi" path="アイコンのパス" />`
+```vue
+<script>
+import { mdiHome } from '@mdi/js'
+</script>
+
+<template>
+  <SvgIcon type="mdi" :path="mdiHome" />
+</template>
+```
 
 # その他
 
