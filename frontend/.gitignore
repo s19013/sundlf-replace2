@@ -43,8 +43,3 @@ playwright-report/
 .pnpm-store/
 
 .env
-
-#
-./src/shared/api/ziggy.js
-./src/shared/types/ziggy.d.ts
-./src/shared/types/schema.d.ts
