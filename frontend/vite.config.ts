@@ -17,5 +17,15 @@ export default defineConfig({
     // --hostと同義
     host: true,
     port: 5173,
+    watch: {
+      // Dockerボリュームマウント環境でinotifyイベントが伝播しない問題を回避
+      usePolling: true,
+      interval: 300,
+    },
+    hmr: {
+      // HMR WebSocket接続先を明示
+      host: 'localhost',
+      port: 5173,
+    },
   },
 })
