@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-// import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { InputText, Password, Message } from 'primevue'
 import { useAuthStore } from '@/entities/auth/model/authStore'
+import { registerByCredentials } from '@/entities/auth/model/registerByCredentials'
 import { AuthLayout } from '@/shared/layout'
 import { MdiButton } from '@/shared/ui'
 import { mdiAccountPlus } from '@mdi/js'
 
-// const router = useRouter()
+const router = useRouter()
 const authStore = useAuthStore()
 
 const name = ref('')
@@ -22,13 +23,19 @@ async function handleRegister() {
     errorMessage.value = 'パスワードが一致しません'
     return
   }
-  // todo:登録api呼び出し
 
-  // if (result.isSuccess) {
-  //   router.push({ name: 'home' })
-  // } else {
-  //   errorMessage.value = result.message
-  // }
+  const result = await registerByCredentials({
+    name: name.value,
+    email: email.value,
+    password: password.value,
+    password_confirmation: passwordConfirmation.value,
+  })
+
+  if (result.isSuccess) {
+    router.push({ name: 'about' })
+  } else {
+    errorMessage.value = result.message
+  }
 }
 </script>
 

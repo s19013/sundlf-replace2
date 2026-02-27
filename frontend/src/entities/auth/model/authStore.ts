@@ -1,8 +1,9 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import type { User, LoginCredentials } from '../types/auth'
+import type { User, LoginCredentials, RegisterCredentials } from '../types/auth'
 import {
   getCsrfCookie,
+  register as apiRegister,
   login as apiLogin,
   logout as apiLogout,
   getCurrentUser,
@@ -13,6 +14,16 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoading = ref(false)
 
   const isAuthenticated = computed(() => !!user.value)
+
+  async function register(credentials: RegisterCredentials) {
+    isLoading.value = true
+    try {
+      await getCsrfCookie()
+      user.value = await apiRegister(credentials)
+    } finally {
+      isLoading.value = false
+    }
+  }
 
   async function login(credentials: LoginCredentials) {
     isLoading.value = true
@@ -47,5 +58,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, isAuthenticated, isLoading, login, logout, checkAuth }
+  return { user, isAuthenticated, isLoading, register, login, logout, checkAuth }
 })
