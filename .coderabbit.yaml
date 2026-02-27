@@ -114,7 +114,6 @@ reviews:
     - "!**/*.min.js.css"
     - "!**/*.tfstate"
     - "!**/*.tfstate.backup"
-  exclude:
     - "!.kiro/steering/**"
     - "!.kiro/specs/**"
   auto_review:
