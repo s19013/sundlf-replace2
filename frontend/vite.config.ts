@@ -24,7 +24,8 @@ export default defineConfig({
     },
     hmr: {
       // HMR WebSocket接続先を明示
-      host: 'localhost',
+      // host: 'localhost',
+      host: '0.0.0.0',
       port: 5173,
     },
   },
