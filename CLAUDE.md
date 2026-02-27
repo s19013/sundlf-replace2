@@ -61,10 +61,13 @@ Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life
 ## 基本的な実装順序
 
 - バックエンドを実装
-- 以下のコマンドを実行してフロントで必要な情報を出力する
+- ※1 以下のコマンドを実行してフロントで必要な情報を出力する
   - `mise generate:ziggy`
   - `mise generate:openapi`
 - フロントエンドを実装
+
+※1 ルートや API レスポンススキーマを変更した際に実行。
+※1 生成ファイルは `frontend/src/lib/api/generated/` に出力されます
 
 ## 言語設定
 
