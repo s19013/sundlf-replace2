@@ -58,6 +58,14 @@ Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life
 
 @frontend/CLAUDE.md に書いてある
 
+## 基本的な実装順序
+
+- バックエンドを実装
+- 以下のコマンドを実行してフロントで必要な情報を出力する
+  - `mise generate:ziggy`
+  - `mise generate:openapi`
+- フロントエンドを実装
+
 ## 言語設定
 
 - 常に日本語で会話する
