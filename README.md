@@ -1,5 +1,10 @@
 # sundlf-replace2
 
+# 現在
+https://github.com/s19013/sundlf-replace2/tree/doc/doc
+
+の方でドキュメントの整理を行っています
+
 
 # 参考資料
 ## coderabbit
