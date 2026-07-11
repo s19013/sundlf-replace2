@@ -75,3 +75,9 @@ Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life
 - コメントも日本語で記述する
 - エラーメッセージの説明も日本語で行う
 - ドキュメントも日本語で生成する
+
+## ルール
+
+変更する前に、何を変更するか簡潔に説明してください
+既存の設計を大きく変える場合は、先に理由を説明してください
+コマンドを実行する前に目的を説明する
