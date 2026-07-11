@@ -81,3 +81,5 @@ Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life
 変更する前に、何を変更するか簡潔に説明してください
 既存の設計を大きく変える場合は、先に理由を説明してください
 コマンドを実行する前に目的を説明する
+
+`.tmp`ディレクトリは人間が考えをまとめるためのメモなどの書きなぐりを保存する場所、見ても良いが特段利益はないため、見なくて良い。
