@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>sundlf-replace2 オンボーディング資料</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1f2328;
+    --muted: #57606a;
+    --border: #d0d7de;
+    --accent: #0969da;
+    --code-bg: #f6f8fa;
+    --warn-bg: #fff8c5;
+    --warn-border: #d4a72c;
+    --ok-bg: #dafbe1;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Segoe UI", sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 24px 96px;
+    line-height: 1.75;
+  }
+  h1 {
+    font-size: 1.9rem;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+  }
+  h2 {
+    font-size: 1.4rem;
+    margin-top: 3rem;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { font-size: 1.1rem; margin-top: 1.8rem; }
+  .lead {
+    font-size: 1.05rem;
+    color: var(--muted);
+    background: var(--code-bg);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 4px;
+  }
+  .meta {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: -8px;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--code-bg); }
+  code {
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+  }
+  pre {
+    background: var(--code-bg);
+    padding: 14px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; }
+  .mermaid {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+    margin: 1rem 0;
+  }
+  .note {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 1rem 0;
+  }
+  .ok {
+    background: var(--ok-bg);
+    border: 1px solid #1a7f37;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 1rem 0;
+  }
+  .toc {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 24px;
+  }
+  .toc ol { margin: 0; padding-left: 1.2em; }
+  .toc a { color: var(--accent); text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  ul, ol { padding-left: 1.4em; }
+  footer {
+    margin-top: 4rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>sundlf-replace2 オンボーディング資料</h1>
+<p class="meta">最終更新: 2026-07-11 / 対象ブランチ: <code>doc2</code>(<code>main</code>から分岐)</p>
+
+<p class="lead">
+  数ヶ月ぶりにこのリポジトリに戻ってきた人が、最短で「今どうなっているか」を掴むための資料です。
+  <code>.kiro/steering/</code> は今後守るべきルール集ですが、こちらは<strong>現在のスナップショット</strong>です。
+</p>
+
+<div class="toc">
+  <strong>目次</strong>
+  <ol>
+    <li><a href="#overview">このアプリは何か</a></li>
+    <li><a href="#architecture">全体アーキテクチャ</a></li>
+    <li><a href="#stack">技術スタック</a></li>
+    <li><a href="#structure">ディレクトリ構成とコードの流れ</a></li>
+    <li><a href="#api-flow">新規API追加フロー</a></li>
+    <li><a href="#features">実装済み機能</a></li>
+    <li><a href="#kiro">Kiroスペック駆動開発の状況</a></li>
+    <li><a href="#setup">開発環境の起動手順</a></li>
+    <li><a href="#quality">品質チェック / Git hooks</a></li>
+    <li><a href="#git-status">現在のGit状況と再開時の注意</a></li>
+    <li><a href="#generated">触ってはいけない自動生成ファイル</a></li>
+    <li><a href="#next">次にやると良さそうなこと</a></li>
+  </ol>
+</div>
+
+<h2 id="overview">1. このアプリは何か</h2>
+<p>
+  Laravel(バックエンド)と Vue 3(フロントエンド)を組み合わせた、認証機能を持つ SPA(シングルページアプリケーション)の開発基盤です。
+  現状は認証(登録・ログイン・ログアウト・ユーザー取得)のみが実装済みで、その上に業務機能を積み上げていく前段階の状態です。
+</p>
+<ul>
+  <li><strong>コア機能</strong>: Laravel Sanctum による SPA 認証(CSRF Cookie ベース)</li>
+  <li><strong>API</strong>: dedoc/scramble による OpenAPI 仕様自動生成 + Ziggy によるルート共有</li>
+  <li><strong>UI</strong>: Vue 3 + Pinia によるリアクティブな状態管理</li>
+</ul>
+
+<h2 id="architecture">2. 全体アーキテクチャ</h2>
+<pre class="mermaid">
+flowchart LR
+    subgraph Browser["ブラウザ"]
+        SPA["Vue3 SPA<br/>(Vite dev server :5173)"]
+    end
+    subgraph Server["Laravelコンテナ :8000"]
+        API["Laravel API<br/>Controller → Usecase → Model"]
+        Sanctum["Sanctum<br/>CSRF Cookie / セッション認証"]
+    end
+    DB[("MariaDB 12<br/>:3306")]
+
+    SPA -- "1. GET /sanctum/csrf-cookie" --> Sanctum
+    SPA -- "2. POST /api/spa/login 等<br/>(axios + ziggyRoute)" --> API
+    API --> Sanctum
+    API --> DB
+</pre>
+<p>
+  認証はセッションベースの SPA 認証(Sanctum)です。フロントは通信前に必ず <code>/sanctum/csrf-cookie</code> を叩いてから
+  API を呼び出す構成になっています。
+</p>
+
+<h2 id="stack">3. 技術スタック</h2>
+<table>
+  <tr><th>領域</th><th>技術</th><th>バージョン</th><th>用途</th></tr>
+  <tr><td rowspan="6">Backend</td><td>PHP</td><td>^8.2</td><td>言語</td></tr>
+  <tr><td>Laravel</td><td>^12.0</td><td>フレームワーク</td></tr>
+  <tr><td>laravel/sanctum</td><td>^4.0</td><td>SPA認証</td></tr>
+  <tr><td>dedoc/scramble</td><td>^0.13.14</td><td>OpenAPI仕様自動生成</td></tr>
+  <tr><td>tightenco/ziggy</td><td>^2.6</td><td>Laravelルートをフロントへ共有</td></tr>
+  <tr><td>larastan / pint</td><td>^3.9 / ^1.24</td><td>静的解析・フォーマッタ</td></tr>
+  <tr><td rowspan="8">Frontend</td><td>Vue</td><td>^3.5.27</td><td>UIフレームワーク(Composition API)</td></tr>
+  <tr><td>TypeScript</td><td>~5.9.3</td><td>型付け</td></tr>
+  <tr><td>Vite</td><td>^7.3.1</td><td>ビルドツール</td></tr>
+  <tr><td>Pinia</td><td>^3.0.4</td><td>状態管理</td></tr>
+  <tr><td>vue-router</td><td>^5.0.1</td><td>ルーティング</td></tr>
+  <tr><td>PrimeVue</td><td>^4.5.4</td><td>UIコンポーネント</td></tr>
+  <tr><td>tailwindcss-primeui</td><td>^0.6.1</td><td>スタイリング</td></tr>
+  <tr><td>vitest / playwright</td><td>^4.0.18 / ^1.58.1</td><td>ユニット/E2Eテスト</td></tr>
+  <tr><td>DB</td><td>MariaDB</td><td>12</td><td>PostgreSQLへの移行は検討したが見送り(<code>doc/技術選定.md</code>)</td></tr>
+</table>
+
+<h2 id="structure">4. ディレクトリ構成とコードの流れ</h2>
+
+<h3>Backend: Controller → Usecase → Model</h3>
+<pre class="mermaid">
+flowchart LR
+    R["routes/api.php"] --> C["Http/Controllers/Auth/<br/>SPAAuthController"]
+    C -- "薄い: Usecaseに委譲するだけ" --> U["Usecases/Auth/SPA/<br/>XxxUsecase (__invoke)"]
+    U --> M["Models/User"]
+    Req["Http/Requests/Auth/<br/>LoginRequest, RegisterRequest"] -.バリデーション.-> C
+    Res["Http/Resources/<br/>MinimumUserResource"] -.整形.-> U
+</pre>
+<p>現状の実装ファイル(認証まわりが唯一の実装済みドメイン):</p>
+<pre><code>backend/app/
+├── Http/
+│   ├── Controllers/Auth/SPAAuthController.php
+│   ├── Requests/Auth/{LoginRequest,RegisterRequest}.php
+│   └── Resources/MinimumUserResource.php
+├── Usecases/Auth/SPA/
+│   ├── LoginUsecase.php
+│   ├── LogoutUsecase.php
+│   ├── RegisterUsecase.php
+│   └── GetCurrentUserUsecase.php
+└── Models/User.php</code></pre>
+
+<h3>Frontend: Feature-Sliced Design (FSD)</h3>
+<pre class="mermaid">
+flowchart TB
+    App["app/<br/>main.ts, router, グローバル設定"] --> Pages["pages/[domain]/<br/>ルートに対応するView"]
+    Pages --> Entities["entities/[domain]/<br/>types・model(Pinia)・api"]
+    Pages --> Shared["shared/<br/>apiClient, ziggyRoute, ui, layout"]
+    Entities --> Shared
+</pre>
+<pre><code>frontend/src/
+├── app/
+│   ├── main.ts, App.vue
+│   └── router/{index.ts, Guard/AuthUserGuard.ts, Guard/GuestUserGuard.ts, routes/auth.ts}
+├── entities/
+│   ├── auth/{api/authApi.ts, model/authStore.ts, model/loginByCredentials.ts,
+│   │         model/registerByCredentials.ts, types/auth.ts}
+│   └── counter/model/counter.ts   ← サンプル実装
+├── pages/
+│   ├── welcome/, about/
+│   └── auth/{login/LoginView.vue, register/RegisterView.vue}
+└── shared/
+    ├── api/{apiClient.ts, ziggyRoute.ts, index.ts}   ← ziggy.js は自動生成
+    ├── types/{schema.d.ts, ziggy.d.ts}                ← 自動生成
+    ├── ui/, layout/{AuthLayout.vue, GuestLayout.vue}
+</code></pre>
+<p>
+  ルーティングガード(<code>AuthUserGuard</code> / <code>GuestUserGuard</code>)がナビゲーションのたびにサーバーへ認証確認を行う構成です。
+</p>
+
+<h2 id="api-flow">5. 新規API追加フロー</h2>
+<p><code>.kiro/steering/structure.md</code> に定義されている、新しいAPIを追加する際の標準手順です。</p>
+<pre class="mermaid">
+sequenceDiagram
+    participant Dev as 開発者
+    participant BE as backend/routes・Controller・Usecase
+    participant Gen as mise generate:*
+    participant FE as frontend/entities
+
+    Dev->>BE: 1. routes/api.php にルート追加
+    Dev->>BE: 2. Controller / Usecase 実装
+    Dev->>Gen: 3. mise generate:ziggy
+    Note right of Gen: backend→frontendへ<br/>ziggy.js/ziggy.d.tsを配置
+    Dev->>Gen: 4. mise generate:openapi
+    Note right of Gen: scramble:export→<br/>openapi-typescriptでschema.d.ts生成
+    Dev->>FE: 5. entities/[domain]/api にAPI関数追加
+</pre>
+<div class="note">
+  <strong>順序が重要</strong>: ルートやレスポンス定義を変更したら、フロント実装前に必ず
+  <code>mise generate:ziggy</code> → <code>mise generate:openapi</code> の順で実行してください
+  (lefthookのpre-commitでもある程度自動実行されますが、開発中は手動実行が必要です)。
+</div>
+
+<h2 id="features">6. 実装済み機能</h2>
+<p>現時点で実装済みなのは認証まわりのみです。</p>
+<table>
+  <tr><th>メソッド</th><th>パス</th><th>用途</th><th>認証</th><th>備考</th></tr>
+  <tr><td>POST</td><td><code>/api/spa/register</code></td><td>ユーザー登録</td><td>不要</td><td>Kiro spec "register" で開発(下記参照)</td></tr>
+  <tr><td>POST</td><td><code>/api/spa/login</code></td><td>ログイン</td><td>不要</td><td><code>throttle:10,1</code>(10回/分)</td></tr>
+  <tr><td>POST</td><td><code>/api/spa/logout</code></td><td>ログアウト</td><td>必要(sanctum)</td><td>-</td></tr>
+  <tr><td>GET</td><td><code>/api/spa/user</code></td><td>現在のユーザー取得</td><td>必要(sanctum)</td><td>-</td></tr>
+  <tr><td>GET</td><td><code>/api/test/auth</code></td><td>認証確認用テストエンドポイント</td><td>必要(sanctum)</td><td>動作確認用</td></tr>
+</table>
+<p>DBテーブルは Laravel 標準の <code>users</code> / <code>password_reset_tokens</code> / <code>sessions</code> / <code>cache</code> / <code>jobs</code>系 と、Sanctum用の <code>personal_access_tokens</code> のみです。業務データ用テーブルはまだありません。</p>
+
+<h2 id="kiro">7. Kiroスペック駆動開発の状況</h2>
+<p>
+  このプロジェクトは <code>.kiro/</code> によるスペック駆動開発(要件→設計→タスク→実装)を採用しています。
+  現在 <code>.kiro/specs/</code> に存在するのは <code>register</code> スペックのみです。
+</p>
+<table>
+  <tr><th>Spec名</th><th>フェーズ</th><th>要件</th><th>設計</th><th>タスク</th><th>実装</th></tr>
+  <tr><td><code>register</code></td><td><code>tasks-generated</code></td><td>承認済み</td><td>承認済み</td><td>承認済み</td><td>15/15 完了</td></tr>
+</table>
+<div class="ok">
+  <strong>register スペックは要件定義から実装まで完了しています。</strong>
+  次に新しい機能を作る場合は、このスペックを型として <code>/kiro:spec-init "説明"</code> から始めるのがこのプロジェクトの流儀です。
+</div>
+<p>
+  <code>.kiro/steering/</code> には <code>product.md</code>(プロダクト概要)・<code>tech.md</code>(技術スタック)・<code>structure.md</code>(構成パターン)の3ファイルがあり、いずれもカスタム追加なしのデフォルト構成です。困ったらまずこの3ファイルを読むと全体像が分かります。
+</p>
+
+<h2 id="setup">8. 開発環境の起動手順</h2>
+<pre><code># コンテナ起動(Laravel + MariaDB + Vue dev server)
+docker compose up -d</code></pre>
+<table>
+  <tr><th>サービス</th><th>ポート</th><th>起動コマンド</th></tr>
+  <tr><td>laravel</td><td>8000</td><td><code>composer run dev</code>(コンテナのCMDで自動実行)</td></tr>
+  <tr><td>mariadb</td><td>3306</td><td>-</td></tr>
+  <tr><td>vue</td><td>5173</td><td><code>pnpm run dev</code>(コンテナのCMDで自動実行)</td></tr>
+</table>
+<h3>コマンドチートシート</h3>
+<pre><code># コンテナ内でコマンド実行
+mise exec:laravel "php artisan migrate"
+mise exec:laravel "composer run test"
+mise exec:laravel "composer run phpstan"
+mise exec:laravel "composer run pint"
+
+mise exec:vue "pnpm run type-check"
+mise exec:vue "pnpm run lint"
+mise exec:vue "pnpm run test:unit"
+
+# 自動生成(ルート/レスポンスを変更した後に実行)
+mise generate:ziggy       # Laravelルート → frontend/src/shared/api/ziggy.js
+mise generate:openapi     # OpenAPI → frontend/src/shared/types/schema.d.ts
+mise generate:ide-helper  # Laravel IDE Helper(モデルのproperty情報)
+mise generate:init        # 上記3つをまとめて実行
+
+# DBリセット(migrate:fresh + seed)
+mise reset-database</code></pre>
+
+<h2 id="quality">9. 品質チェック / Git hooks</h2>
+<p><code>lefthook.yml</code> により、以下がGitフックで自動実行されます。</p>
+<table>
+  <tr><th>フック</th><th>内容</th></tr>
+  <tr><td><code>pre-commit</code></td><td>
+    Backend: pint(自動整形) → phpstan(静的解析)<br/>
+    Frontend: prettier → eslint → oxlint(いずれも自動修正)<br/>
+    自動生成: ルート/PHP変更時に ziggy・openapi・ide-helper を自動再生成してコミットに含める
+  </td></tr>
+  <tr><td><code>pre-push</code></td><td>TypeScript の型チェック(<code>vue-tsc</code>)</td></tr>
+</table>
+
+<h2 id="git-status">10. 現在のGit状況と再開時の注意</h2>
+<ul>
+  <li>現在のブランチ: <code>doc2</code>(<code>main</code> から分岐、ドキュメント整理系の作業ブランチ)</li>
+  <li><code>CLAUDE.md</code> に未コミットの変更あり(「ルール追加」コミットの延長作業中の可能性)。作業再開前に <code>git status</code> / <code>git diff</code> で内容を確認してください</li>
+  <li><code>main</code> の最新コミットは PR #86(register機能)のマージ。直近は register 機能の実装と、lefthook・IDE Helper・OpenAPI生成・PrimeVue/MDI導入といった開発基盤整備が中心でした</li>
+  <li><code>README.md</code> には「ドキュメント整理は <code>doc/doc</code> ブランチで進行中」と記載あり。<code>doc/定義/フロント/コンポーネント</code>, <code>doc/定義/画面</code> は中身のない受け皿ディレクトリとして存在(今後ここにドキュメントが追加される想定と思われます)</li>
+</ul>
+
+<h2 id="generated">11. 触ってはいけない自動生成ファイル</h2>
+<table>
+  <tr><th>ファイル</th><th>生成コマンド</th></tr>
+  <tr><td><code>frontend/src/shared/api/ziggy.js</code></td><td><code>mise generate:ziggy</code></td></tr>
+  <tr><td><code>frontend/src/shared/types/ziggy.d.ts</code></td><td><code>mise generate:ziggy</code></td></tr>
+  <tr><td><code>frontend/src/shared/types/schema.d.ts</code></td><td><code>mise generate:openapi</code></td></tr>
+  <tr><td><code>backend/_ide_helper*.php</code></td><td><code>mise generate:ide-helper</code></td></tr>
+</table>
+<p>これらは lefthook の pre-commit で除外(<code>exclude</code>)対象にもなっており、手動編集は想定されていません。</p>
+
+<h2 id="next">12. 次にやると良さそうなこと</h2>
+<ul>
+  <li><code>git status</code> で <code>CLAUDE.md</code> の未コミット変更を確認し、続きを進めるか一旦コミットするか判断する</li>
+  <li><code>docker compose up -d</code> でローカル環境を立ち上げ、<code>/api/spa/register</code> 〜 <code>/api/spa/login</code> が動くか一度触って感覚を取り戻す</li>
+  <li>新しい機能を作る場合は <code>/kiro:spec-init "機能の説明"</code> から着手し、<code>register</code> スペックと同じ要件→設計→タスクの流れに乗せる</li>
+  <li>進捗確認は <code>/kiro:spec-status [feature-name]</code> でいつでも可能</li>
+</ul>
+
+<footer>
+  この資料は 2026-07-11 時点のリポジトリ状態(ブランチ <code>doc2</code>)を基に生成されました。内容が古くなったら随時更新してください。
+</footer>
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, theme: "default", securityLevel: "loose" });
+  const blocks = document.querySelectorAll("pre.mermaid");
+  let i = 0;
+  for (const block of blocks) {
+    const code = block.textContent;
+    const { svg } = await mermaid.render("mmd-diagram-" + (i++), code);
+    block.innerHTML = svg;
+  }
+</script>
+</body>
+</html>
