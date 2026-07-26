@@ -8,7 +8,7 @@ memos.fetch
 
 # エンドポイント
 
-get `/api/memos/{id}`
+get `/api/memos/{id}/{?fetched_at}`
 
 # 認証
 
@@ -18,9 +18,10 @@ get `/api/memos/{id}`
 
 最新の詳細な型はscramble生成のOpenAPI/schema.d.ts参照
 
-| 名前 | 型     | 必須 | 説明   |
-| ---- | ------ | ---- | ------ |
-| id   | string | yes  | メモID |
+| 名前       | 型       | 必須 | 説明                         |
+| ---------- | -------- | ---- | ---------------------------- |
+| id         | string   | yes  | メモID                       |
+| fetched_at | datetime | no   | ユーザーが最後に取得した日時 |
 
 # レスポンス
 
@@ -40,6 +41,7 @@ id:['required']
 
 - メモの作成者idと送信者のid確認
 - 取得作業
+- `fetched_at`があれば取得したメモの`updated_at`を比較(楽観的排他制御)
 - レスポンス返却
 
 # エラー
@@ -63,6 +65,16 @@ id:['required']
 ```json
 {
   "messages": ["このメモは取得できません。"]
+}
+```
+
+## fetched_at < updated_at だった
+
+ステータスコード:409
+
+```json
+{
+  "messages": ["他の画面で記事が更新されています。反映しますか?"]
 }
 ```
 
