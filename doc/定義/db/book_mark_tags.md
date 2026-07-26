@@ -1,11 +1,11 @@
 # カラム
 
-| カラム名     | ラベル         | 型                  | nullable | デフォルト値 | インデックス | 備考                                                                                                 |
-| ------------ | -------------- | ------------------- | -------- | ------------ | ------------ | ---------------------------------------------------------------------------------------------------- |
-| book_mark_id | ブックマークID | bigint(20) UNSIGNED | false    |              | true         | 外部キー（`book_marks.id`）、`book_mark_tags_book_mark_id_index`                                     |
-| tag_id       | タグID         | bigint(20) UNSIGNED | true     | NULL         | true         | 外部キー（`tags.id`）、`article_tags_tag_id_index`。タグが一つも紐付いていないことを表すためnullable |
-| created_at   | 作成日時       | timestamp           | true     | NULL         | false        |                                                                                                      |
-| updated_at   | 更新日時       | timestamp           | true     | NULL         | false        |                                                                                                      |
+| カラム名     | ラベル         | 型                  | nullable | デフォルト値 | インデックス | 備考                                                                                                  |
+| ------------ | -------------- | ------------------- | -------- | ------------ | ------------ | ----------------------------------------------------------------------------------------------------- |
+| book_mark_id | ブックマークID | bigint(20) UNSIGNED | false    |              | true         | 外部キー（`book_marks.id`）、`book_mark_tags_book_mark_id_index`                                      |
+| tag_id       | タグID         | bigint(20) UNSIGNED | true     | NULL         | true         | 外部キー（`tags.id`）、`bookmark_tags_tag_id_index`。タグが一つも紐付いていないことを表すためnullable |
+| created_at   | 作成日時       | timestamp           | true     | NULL         | false        |                                                                                                       |
+| updated_at   | 更新日時       | timestamp           | true     | NULL         | false        |                                                                                                       |
 
 ブックマークとタグを紐づける中間テーブル（`タグ/概要.md`参照）。主キーの定義はなし。
 
