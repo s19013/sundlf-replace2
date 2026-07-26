@@ -1,10 +1,10 @@
 # api名
 
-memos.fetch
+memos.salvage
 
 # 概要
 
-このAPIはメモを取得します。
+このAPIは論理削除されたメモを復元します。
 
 # エンドポイント
 

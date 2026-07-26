@@ -36,7 +36,9 @@ post `/api/memos`
 
 # バリデーション
 
-id:['required']
+title:['nullable', 'string']
+body:['nullable', 'string']
+tags:['nullable', 'array']
 
 # 処理の流れ
 
