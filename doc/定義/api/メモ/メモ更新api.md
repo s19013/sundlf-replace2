@@ -49,6 +49,7 @@ id:['required']
 
 # 処理の流れ
 
+- メモ取得
 - メモの作成者idと送信者のid確認
 - メモの`updated_at`と`fetched_at`を比較(楽観的排他制御)
 - 更新作業
