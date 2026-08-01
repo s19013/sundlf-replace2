@@ -53,6 +53,7 @@ id:['required']
 - メモの作成者idとログイン者のid確認
 - メモの`updated_at`と`fetched_at`を比較(楽観的排他制御)
 - 更新作業
+- 新しく付与されたタグはincrease,外されたタグはdecrease
 - レスポンス返却
 
 # エラー
