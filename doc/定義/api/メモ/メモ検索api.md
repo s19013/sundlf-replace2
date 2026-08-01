@@ -21,9 +21,9 @@ get /api/memos/search
 | 名前                   | 型     | 必須 | デフォルト | 説明                               |
 | ---------------------- | ------ | ---- | ---------- | ---------------------------------- |
 | keyword                | string | no   | null       |                                    |
-| item_number            | int    | yes  | 10         | 表示数                             |
-| sort                   | string | yes  | updated_at | 何でソートするか                   |
-| target                 | string | yes  | title      | 何を対象に検索するか               |
+| item_number            | int    | no   | 10         | 表示数                             |
+| sort                   | string | no   | updated_at | 何でソートするか                   |
+| target                 | string | no   | title      | 何を対象に検索するか               |
 | is_tag_not_attached    | bool   | no   | null       | タグ無しのデータを検索するか       |
 | exact_match_tags       | array  | no   | null       | 紐付けする完全一致タグのid         |
 | partial_match_tags     | array  | no   | null       | 紐付けする部分一致タグのid         |
@@ -56,7 +56,7 @@ get /api/memos/search
 
 # エラー
 
-## no hit
+## 検索結果なし
 
 ステータスコード:404
 

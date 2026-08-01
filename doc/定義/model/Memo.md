@@ -1,6 +1,6 @@
 # テーブル 属性
 
-[article.md](../db/articles.md)
+[articles.md](../db/articles.md)
 
 # 追加属性
 
@@ -8,13 +8,13 @@
 
 期限間近かどうか
 
-残り1週間で消える場合true
+deleted_at->copy()->addDays(削除までの期間 - 通知を出す日数)->isPast();
 
 ## isInTrash
 
 論理削除済みか
 
-deleted_at is not nul = true
+deleted_at IS NOT NULLの場合true
 
 # 関数
 
@@ -38,7 +38,7 @@ count を +1
 
 - string:fetched_at
 
-メモの`updated_at` == `fetched_at` の 場合 true
+メモの`updated_at` < `fetched_at` の 場合 true
 
 データベースにあるデータが、自分が取得した後に更新されてないか確認する。
 

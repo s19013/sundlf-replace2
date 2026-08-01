@@ -8,7 +8,7 @@ tags.create
 
 # エンドポイント
 
-post `/api/tags/`
+post `/api/tags`
 
 # 認証
 

@@ -7,7 +7,7 @@
 | created_at | 作成日時 | timestamp           | true     | NULL         | false        |                                                                                                      |
 | updated_at | 更新日時 | timestamp           | true     | NULL         | false        |                                                                                                      |
 
-メモとタグを紐づける中間テーブル（`タグ/概要.md`参照）。主キーの定義はなし。
+メモとタグを紐づける中間テーブル（[`タグ/概要.md`](../機能/タグ/概要.md)参照）。主キーの定義はなし。
 
 # リレーション
 

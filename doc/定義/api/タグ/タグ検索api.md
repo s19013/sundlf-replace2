@@ -22,7 +22,7 @@ get `/api/tags`
 | ----------- | ------ | ---- | ---------- | ---------------- |
 | keywords    | string | no   | null       |                  |
 | item_number | int    | yes  | 10         | 表示数           |
-| sort        | string | yes  | updated_at | 何でソートするか |
+| sort        | string | no   | updated_at | 何でソートするか |
 
 # レスポンス
 
@@ -45,7 +45,7 @@ get `/api/tags`
 
 # エラー
 
-## no hit
+## 検索結果なし
 
 ステータスコード:404
 
