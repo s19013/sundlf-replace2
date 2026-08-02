@@ -96,6 +96,22 @@ class ImportLegacyDataCommand extends Command
             $this->line(sprintf('%s: %d 件', $table, $legacy->table($table)->count()));
         }
 
+        $this->info('=== dry-run: has_tags 判定 / tag_id NULL行のスキップ ===');
+        $articleTagsNull = $legacy->table('article_tags')->whereNull('tag_id')->count();
+        $bookMarkTagsNull = $legacy->table('book_mark_tags')->whereNull('tag_id')->count();
+        $this->line(sprintf('article_tags: tag_id NULLの%d件をスキップします', $articleTagsNull));
+        $this->line(sprintf('book_mark_tags: tag_id NULLの%d件をスキップします', $bookMarkTagsNull));
+        $this->line(sprintf(
+            'has_tags=true になる articles: %d件 / %d件',
+            count($this->collectTaggedIds($legacy, 'article_tags', 'article_id')),
+            $legacy->table('articles')->count(),
+        ));
+        $this->line(sprintf(
+            'has_tags=true になる book_marks: %d件 / %d件',
+            count($this->collectTaggedIds($legacy, 'book_mark_tags', 'book_mark_id')),
+            $legacy->table('book_marks')->count(),
+        ));
+
         $this->info('=== dry-run: tags の重複(user_id + name)検出 ===');
         $duplicates = $this->detectDuplicateTags($legacy);
         if ($duplicates->isEmpty()) {
@@ -135,6 +151,26 @@ class ImportLegacyDataCommand extends Command
         Schema::enableForeignKeyConstraints();
     }
 
+    /**
+     * 中間テーブル(article_tags/book_mark_tags)から、tag_idが設定されている行を持つ
+     * 親レコード(article_id/book_mark_id)のID集合を取得する。has_tags判定のため
+     * importArticles/importBookMarks実行前に集計しておくことで、行ごとにexists()相当の
+     * クエリを都度発行せずO(1)判定できるようにする。
+     *
+     * @param  'article_tags'|'book_mark_tags'  $table
+     * @param  'article_id'|'book_mark_id'  $foreignKeyColumn
+     * @return array<int|string, true>
+     */
+    private function collectTaggedIds(ConnectionInterface $legacy, string $table, string $foreignKeyColumn): array
+    {
+        $ids = $legacy->table($table)
+            ->whereNotNull('tag_id')
+            ->distinct()
+            ->pluck($foreignKeyColumn);
+
+        return array_fill_keys($ids->all(), true);
+    }
+
     private function importUsers(ConnectionInterface $legacy, int $chunk): void
     {
         $this->info('users を移行しています...');
@@ -170,11 +206,13 @@ class ImportLegacyDataCommand extends Command
         $this->info('articles を移行しています...');
         $bar = $this->output->createProgressBar($legacy->table('articles')->count());
 
+        $articleIdsWithTags = $this->collectTaggedIds($legacy, 'article_tags', 'article_id');
+
         $legacy->table('articles')
             ->select('id', 'user_id', 'count', 'title', 'body', 'deleted_at', 'created_at', 'updated_at')
             ->orderBy('id')
-            ->chunkById($chunk, function (Collection $rows) use ($bar): void {
-                DB::table('articles')->insert($rows->map(function (stdClass $row): array {
+            ->chunkById($chunk, function (Collection $rows) use ($bar, $articleIdsWithTags): void {
+                DB::table('articles')->insert($rows->map(function (stdClass $row) use ($articleIdsWithTags): array {
                     return [
                         'id' => $row->id,
                         'user_id' => $row->user_id,
@@ -182,6 +220,7 @@ class ImportLegacyDataCommand extends Command
                         'star' => 0, // 旧データに存在しない新規カラムのため固定値
                         'title' => $row->title,
                         'body' => $row->body,
+                        'has_tags' => isset($articleIdsWithTags[$row->id]),
                         'deleted_at' => $row->deleted_at,
                         'created_at' => $row->created_at,
                         'updated_at' => $row->updated_at,
@@ -199,11 +238,13 @@ class ImportLegacyDataCommand extends Command
         $this->info('book_marks を移行しています...');
         $bar = $this->output->createProgressBar($legacy->table('book_marks')->count());
 
+        $bookMarkIdsWithTags = $this->collectTaggedIds($legacy, 'book_mark_tags', 'book_mark_id');
+
         $legacy->table('book_marks')
             ->select('id', 'user_id', 'count', 'title', 'url', 'deleted_at', 'created_at', 'updated_at')
             ->orderBy('id')
-            ->chunkById($chunk, function (Collection $rows) use ($bar): void {
-                DB::table('book_marks')->insert($rows->map(function (stdClass $row): array {
+            ->chunkById($chunk, function (Collection $rows) use ($bar, $bookMarkIdsWithTags): void {
+                DB::table('book_marks')->insert($rows->map(function (stdClass $row) use ($bookMarkIdsWithTags): array {
                     return [
                         'id' => $row->id,
                         'user_id' => $row->user_id,
@@ -211,6 +252,7 @@ class ImportLegacyDataCommand extends Command
                         'star' => 0, // 旧データに存在しない新規カラムのため固定値
                         'title' => $row->title,
                         'url' => $row->url,
+                        'has_tags' => isset($bookMarkIdsWithTags[$row->id]),
                         'deleted_at' => $row->deleted_at,
                         'created_at' => $row->created_at,
                         'updated_at' => $row->updated_at,
@@ -356,12 +398,15 @@ class ImportLegacyDataCommand extends Command
     private function importArticleTags(ConnectionInterface $legacy, int $chunk): void
     {
         $this->info('article_tags を移行しています...');
-        $bar = $this->output->createProgressBar($legacy->table('article_tags')->count());
+        $bar = $this->output->createProgressBar($legacy->table('article_tags')->whereNotNull('tag_id')->count());
 
+        // tag_idがNULLの行(旧システムでの「タグなし」表現)はarticles.has_tagsへ意味を
+        // 統合したため移行しない(新スキーマではtag_idがNOT NULLのため投入もできない)。
         // article_id/tag_idの複合ユニークキーのみで単一の主キーがないためchunkByIdが使えず、
         // orderByによるオフセット方式で読み込む(legacyは読み取り専用でこの間に行が変化しないため安全)
         $legacy->table('article_tags')
             ->select('article_id', 'tag_id', 'created_at', 'updated_at')
+            ->whereNotNull('tag_id')
             ->orderBy('article_id')
             ->orderBy('tag_id')
             ->chunk($chunk, function (Collection $rows) use ($bar): void {
@@ -383,10 +428,12 @@ class ImportLegacyDataCommand extends Command
     private function importBookMarkTags(ConnectionInterface $legacy, int $chunk): void
     {
         $this->info('book_mark_tags を移行しています...');
-        $bar = $this->output->createProgressBar($legacy->table('book_mark_tags')->count());
+        $bar = $this->output->createProgressBar($legacy->table('book_mark_tags')->whereNotNull('tag_id')->count());
 
+        // tag_idがNULLの行はimportArticleTagsと同様の理由で移行しない
         $legacy->table('book_mark_tags')
             ->select('book_mark_id', 'tag_id', 'created_at', 'updated_at')
+            ->whereNotNull('tag_id')
             ->orderBy('book_mark_id')
             ->orderBy('tag_id')
             ->chunk($chunk, function (Collection $rows) use ($bar): void {

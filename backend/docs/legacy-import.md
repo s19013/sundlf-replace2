@@ -7,11 +7,11 @@
 | 旧システム | 新システム | 備考 |
 | --- | --- | --- |
 | `users` | `users` | password(bcryptハッシュ)はそのままコピー、再ハッシュしない |
-| `articles` | `articles` | `star`カラムは旧データに存在しないため`0`固定で投入 |
+| `articles` | `articles` | `star`カラムは旧データに存在しないため`0`固定で投入。`has_tags`は旧`article_tags`にtag_id非NULLの行が存在するかで判定(後述) |
 | `tags` | `tags` | `user_id`+`name`の重複がある場合、条件に応じてスキップまたは名前をリネームして投入(後述) |
-| `book_marks` | `book_marks` | `star`カラムは旧データに存在しないため`0`固定で投入 |
-| `article_tags` | `article_tags` | そのままコピー(`tag_id`のNULLも保持) |
-| `book_mark_tags` | `book_mark_tags` | そのままコピー(`tag_id`のNULLも保持) |
+| `book_marks` | `book_marks` | `star`カラムは旧データに存在しないため`0`固定で投入。`has_tags`は旧`book_mark_tags`にtag_id非NULLの行が存在するかで判定(後述) |
+| `article_tags` | `article_tags` | `tag_id`がNULLの行は移行しない(`articles.has_tags`へ意味を統合。後述) |
+| `book_mark_tags` | `book_mark_tags` | `tag_id`がNULLの行は移行しない(`book_marks.has_tags`へ意味を統合。後述) |
 
 旧システムの`password_resets`, `personal_access_tokens`, `failed_jobs`は新システムで再生成される情報のため移行対象外。
 
@@ -60,6 +60,15 @@ mise exec:laravel "php artisan legacy:import --fresh"
 - ローカル開発用のテストユーザーが必要な場合は、`legacy:import`実行**後**に`php artisan db:seed`を実行する。既存データ投入後は自動採番が最大idの次から始まるため衝突しない。
 - 旧データのuser idには欠番(3, 13等)があるが、articles/tags/book_marksからの参照は全て解決可能(孤立FK参照はない)ことを確認済み。欠番のまま投入してよい。
 
+## has_tagsの算出とtag_id NULL行の扱い
+
+旧システムでは、メモ・ブックマークにタグが1つも紐付いていない状態を、`article_tags`/`book_mark_tags`に`tag_id = NULL`の行を1件作ることで表現していた。新システムではこの意味を`articles.has_tags`/`book_marks.has_tags`(boolean)に一本化し、中間テーブルの`tag_id`はNOT NULL制約に変更したため、以下のように移行する。
+
+- `article_tags`/`book_mark_tags`の`tag_id`がNULLの行は、新システムの中間テーブルへ一切コピーしない(スキップする)。
+- `articles`/`book_marks`を投入する前に、旧`article_tags`/`book_mark_tags`から`tag_id`が非NULLの行を持つ`article_id`/`book_mark_id`の集合を集計し、該当すれば`has_tags = true`、しなければ`false`として投入する。
+
+`--dry-run`実行時に、スキップされる`tag_id`NULL行数と、`has_tags = true`になる件数(articles/book_marksそれぞれ)が表示される。
+
 ## tagsの重複データについて
 
 新スキーマの`tags`テーブルには`unique(['user_id', 'name'])`制約があるが、旧データには同一`user_id`+`name`の組が3組存在する。
@@ -89,6 +98,7 @@ mise exec:laravel "php artisan legacy:import --fresh"
 ## 検証手順
 
 1. `mise exec:laravel "composer run pint"` / `mise exec:laravel "composer run phpstan"` でコード品質を確認。
-2. `--dry-run`でlegacy側の件数(users 24, articles 2,324, tags 751, book_marks 5,899, article_tags 4,017, book_mark_tags 17,532)と、tag重複3組(4件)の判定結果(スキップ/リネーム)を確認。
-3. `migrate:fresh`後に`legacy:import`を実行し`SUCCESS`で終了することを確認。
+2. `--dry-run`でlegacy側の件数(users 24, articles 2,324, tags 751, book_marks 5,899, article_tags 4,017, book_mark_tags 17,532)、tag重複3組(4件)の判定結果(スキップ/リネーム)、`tag_id`NULL行のスキップ件数、`has_tags = true`になる件数を確認。
+3. マイグレーション変更(`has_tags`追加、`tag_id` NOT NULL化)を反映するため`migrate:fresh`を実行してから`legacy:import`を実行し、`SUCCESS`で終了することを確認。
 4. `php artisan tinker`等で件数を確認する。`tags`は現状のデータではスキップ4件により`747`件になる見込み(スキップ・リネームの内訳は`--dry-run`の出力と一致するはず)。他のテーブルはlegacy側の件数とそのまま一致することを確認。
+5. `DB::table('articles')->where('has_tags', true)->count()` / `DB::table('book_marks')->where('has_tags', true)->count()`が`--dry-run`で表示された件数と一致すること、`article_tags`/`book_mark_tags`に`tag_id IS NULL`の行が存在しないことを確認。
