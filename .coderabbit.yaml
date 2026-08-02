@@ -116,5 +116,6 @@ reviews:
     - "!**/*.tfstate.backup"
     - "!.kiro/steering/**"
     - "!.kiro/specs/**"
+    - "!doc/**/*.html"
   auto_review:
     drafts: true
