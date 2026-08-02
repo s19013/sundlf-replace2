@@ -28,6 +28,7 @@ patch `/api/memos/{id}`
 {
   "title": "タイトル名",
   "body": "本文",
+  "stars": "付与した星の数",
   "tags": ["紐付けられたタグたち"],
   "fetched_at": "最後に取得した日時"
 }
