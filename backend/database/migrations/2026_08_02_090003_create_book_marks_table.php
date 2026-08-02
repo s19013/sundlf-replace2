@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('star')->default(0);
             $table->string('title');
             $table->longText('url');
+            $table->boolean('has_tags')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });
