@@ -27,3 +27,6 @@ phpstan-result.json
 
 _ide_helper.php
 _ide_helper_models.php
+
+# 旧システム(my-wiki)のSQLダンプ。実メールアドレス・パスワードハッシュを含むため追跡しない
+/database/my-wiki.sql
