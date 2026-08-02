@@ -97,7 +97,7 @@ class ImportLegacyDataCommand extends Command
         }
 
         $this->info('=== dry-run: tags の重複(user_id + name)検出 ===');
-        $duplicates = $this->detectDuplicateTagNames($legacy);
+        $duplicates = $this->detectDuplicateTags($legacy);
         if ($duplicates->isEmpty()) {
             $this->line('重複なし');
 
@@ -105,6 +105,17 @@ class ImportLegacyDataCommand extends Command
         }
 
         foreach ($duplicates as $duplicate) {
+            if ($duplicate['action'] === 'skip') {
+                $this->warn(sprintf(
+                    'user_id=%s name="%s" : id=%s は論理削除済みかつ未参照のため投入をスキップします',
+                    $duplicate['user_id'],
+                    $duplicate['name'],
+                    $duplicate['id'],
+                ));
+
+                continue;
+            }
+
             $this->warn(sprintf(
                 'user_id=%s name="%s" : id=%s は "%s" にリネームされます',
                 $duplicate['user_id'],
@@ -213,16 +224,20 @@ class ImportLegacyDataCommand extends Command
     }
 
     /**
-     * 新スキーマの unique(['user_id', 'name']) に抵触する重複(同一 user_id + name の組)を検出し、
-     * 2件目以降の名前をリネームする対応表を組み立てる。
+     * 新スキーマの unique(['user_id', 'name']) に抵触する重複(同一 user_id + name の組)を検出する。
      * id は article_tags/book_mark_tags から参照されているため変更しない。
      *
-     * @return Collection<int, array{id: int|string, user_id: int|string, name: string, renamed_name: string}>
+     * 2件目以降について、論理削除済み(deleted_atが非NULL)かつ legacy側の article_tags/book_mark_tags
+     * のどちらからも参照されていない場合は投入自体をスキップ(action: skip)する。
+     * それ以外(有効なタグ同士の重複、または実際に参照が残っている場合)は、データを失わないよう
+     * 名前だけリネームして両方投入する(action: rename)。
+     *
+     * @return Collection<int, array{id: int|string, user_id: int|string, name: string, action: 'skip'|'rename', renamed_name: string|null}>
      */
-    private function detectDuplicateTagNames(ConnectionInterface $legacy): Collection
+    private function detectDuplicateTags(ConnectionInterface $legacy): Collection
     {
         $rows = $legacy->table('tags')
-            ->select('id', 'name', 'user_id')
+            ->select('id', 'name', 'user_id', 'deleted_at')
             ->orderBy('id')
             ->get();
 
@@ -234,10 +249,23 @@ class ImportLegacyDataCommand extends Command
             $key = $row->user_id.':'.$row->name;
 
             if (isset($seen[$key])) {
+                if ($row->deleted_at !== null && ! $this->isTagReferenced($legacy, $row->id)) {
+                    $duplicates->push([
+                        'id' => $row->id,
+                        'user_id' => $row->user_id,
+                        'name' => $row->name,
+                        'action' => 'skip',
+                        'renamed_name' => null,
+                    ]);
+
+                    continue;
+                }
+
                 $duplicates->push([
                     'id' => $row->id,
                     'user_id' => $row->user_id,
                     'name' => $row->name,
+                    'action' => 'rename',
                     'renamed_name' => sprintf('%s(旧タグID:%s)', $row->name, $row->id),
                 ]);
 
@@ -250,13 +278,35 @@ class ImportLegacyDataCommand extends Command
         return $duplicates;
     }
 
+    private function isTagReferenced(ConnectionInterface $legacy, int|string $tagId): bool
+    {
+        return $legacy->table('article_tags')->where('tag_id', $tagId)->exists()
+            || $legacy->table('book_mark_tags')->where('tag_id', $tagId)->exists();
+    }
+
     private function importTags(ConnectionInterface $legacy, int $chunk): void
     {
         $this->info('tags を移行しています...');
 
-        $duplicates = $this->detectDuplicateTagNames($legacy)->keyBy('id');
+        $duplicates = $this->detectDuplicateTags($legacy)->keyBy('id');
 
         foreach ($duplicates as $id => $duplicate) {
+            if ($duplicate['action'] === 'skip') {
+                $this->warn(sprintf(
+                    '重複タグを検出し投入をスキップしました(論理削除済み・未参照): user_id=%s, id=%s, "%s"',
+                    $duplicate['user_id'],
+                    $id,
+                    $duplicate['name'],
+                ));
+                Log::warning('legacy:import タグをスキップ', [
+                    'id' => $id,
+                    'user_id' => $duplicate['user_id'],
+                    'name' => $duplicate['name'],
+                ]);
+
+                continue;
+            }
+
             $this->warn(sprintf(
                 '重複タグ名を検出しリネームしました: user_id=%s, id=%s, "%s" -> "%s"',
                 $duplicate['user_id'],
@@ -275,7 +325,8 @@ class ImportLegacyDataCommand extends Command
         $rows = $legacy->table('tags')
             ->select('id', 'name', 'user_id', 'count', 'deleted_at', 'created_at', 'updated_at')
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->reject(fn (stdClass $row): bool => ($duplicates->get($row->id)['action'] ?? null) === 'skip');
 
         $bar = $this->output->createProgressBar($rows->count());
 

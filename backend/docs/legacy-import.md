@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | `users` | `users` | password(bcryptハッシュ)はそのままコピー、再ハッシュしない |
 | `articles` | `articles` | `star`カラムは旧データに存在しないため`0`固定で投入 |
-| `tags` | `tags` | `user_id`+`name`の重複がある場合、名前をリネームして投入(後述) |
+| `tags` | `tags` | `user_id`+`name`の重複がある場合、条件に応じてスキップまたは名前をリネームして投入(後述) |
 | `book_marks` | `book_marks` | `star`カラムは旧データに存在しないため`0`固定で投入 |
 | `article_tags` | `article_tags` | そのままコピー(`tag_id`のNULLも保持) |
 | `book_mark_tags` | `book_mark_tags` | そのままコピー(`tag_id`のNULLも保持) |
@@ -47,7 +47,7 @@ mise exec:laravel "php artisan legacy:import --fresh"
 
 | オプション | 説明 |
 | --- | --- |
-| `--dry-run` | 書き込みを行わず、legacy側の各テーブル件数と、tagsの重複検出結果(どのidがどう名前変更されるか)のみ表示する |
+| `--dry-run` | 書き込みを行わず、legacy側の各テーブル件数と、tagsの重複検出結果(スキップ対象・リネーム対象)のみ表示する |
 | `--fresh` | 投入前に対象6テーブルを子→親の順(外部キー制約を一時無効化して)で全削除する。確認プロンプトあり |
 | `--chunk=500` | legacy側読み込み・書き込みのchunkサイズ(デフォルト500) |
 
@@ -70,9 +70,12 @@ mise exec:laravel "php artisan legacy:import --fresh"
 | 420 / 421 | 10 | 1 | 両方とも論理削除済み |
 | 709 / 715 | まとめ 要約 | 24 | id709は論理削除済み、id715は有効 |
 
-`article_tags`/`book_mark_tags`から`tag_id`として直接参照されているため、idはそのままに、2件目以降(idが大きい方ではなく、走査順で後に検出された方)の名前を`"{元の名前}(旧タグID:{id})"`にリネームして両方投入する。件数は変わらない(751件のまま)。
+2件目以降(走査順で後に検出された方=548, 420, 421, 709)について、以下のルールで判定する。
 
-`--dry-run`で実行すると、リネーム対象と変更後の名前を事前に確認できる。
+- **論理削除済み(`deleted_at`が非NULL)かつ`article_tags`/`book_mark_tags`のどちらからも参照されていない場合**: 投入自体をスキップする。実データ確認済みで、上記4件(548, 420, 421, 709)はいずれもこの条件に該当し、どこからも参照されていない孤立レコードだった。スキップした分だけtags件数は減る(751件 → 747件)。
+- **上記に該当しない場合(有効なタグ同士の重複、または実際に参照が残っている場合)**: `article_tags`/`book_mark_tags`から`tag_id`として直接参照されている可能性があるため安全側に倒し、idはそのまま、名前だけ`"{元の名前}(旧タグID:{id})"`にリネームして両方投入する。
+
+`--dry-run`で実行すると、スキップ対象・リネーム対象それぞれを事前に確認できる。
 
 ## 移行後の後片付け(任意)
 
@@ -86,6 +89,6 @@ mise exec:laravel "php artisan legacy:import --fresh"
 ## 検証手順
 
 1. `mise exec:laravel "composer run pint"` / `mise exec:laravel "composer run phpstan"` でコード品質を確認。
-2. `--dry-run`で件数(users 24, articles 2,324, tags 751, book_marks 5,899, article_tags 4,017, book_mark_tags 17,532)とtag重複3組の検出結果を確認。
+2. `--dry-run`でlegacy側の件数(users 24, articles 2,324, tags 751, book_marks 5,899, article_tags 4,017, book_mark_tags 17,532)と、tag重複3組(4件)の判定結果(スキップ/リネーム)を確認。
 3. `migrate:fresh`後に`legacy:import`を実行し`SUCCESS`で終了することを確認。
-4. `php artisan tinker`等で`DB::table('articles')->count()`などが期待件数と一致すること、リネームされた3件のタグ名が正しいことを確認。
+4. `php artisan tinker`等で件数を確認する。`tags`は現状のデータではスキップ4件により`747`件になる見込み(スキップ・リネームの内訳は`--dry-run`の出力と一致するはず)。他のテーブルはlegacy側の件数とそのまま一致することを確認。
