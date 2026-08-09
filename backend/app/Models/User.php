@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -42,7 +43,41 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'logined_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * 最終ログイン日時を現在時刻(UTC)で更新する。
+     */
+    public function updateLoginAt(): void
+    {
+        $this->logined_at = now('UTC');
+        $this->save();
+    }
+
+    /**
+     * @return HasMany<Memo, $this>
+     */
+    public function articles(): HasMany
+    {
+        return $this->hasMany(Memo::class);
+    }
+
+    /**
+     * @return HasMany<Tag, $this>
+     */
+    public function tags(): HasMany
+    {
+        return $this->hasMany(Tag::class);
+    }
+
+    /**
+     * @return HasMany<BookMark, $this>
+     */
+    public function bookMarks(): HasMany
+    {
+        return $this->hasMany(BookMark::class);
     }
 }
