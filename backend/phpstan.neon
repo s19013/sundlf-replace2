@@ -2,9 +2,9 @@ includes:
     - ./vendor/larastan/larastan/extension.neon
     - ./vendor/nesbot/carbon/extension.neon
 parameters:
-# とりあえず最初は9で必要に応じて下げる
+# とりあえず最初は8で必要に応じて下げる
 # とはいえignore優先
-    level: 9
+    level: 8
     paths:
         - app
         - bootstrap
