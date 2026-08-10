@@ -96,11 +96,20 @@ class ImportLegacyDataCommand extends Command
             $this->line(sprintf('%s: %d 件', $table, $legacy->table($table)->count()));
         }
 
-        $this->info('=== dry-run: has_tags 判定 / tag_id NULL行のスキップ ===');
+        $this->info('=== dry-run: tags の論理削除行のスキップ ===');
+        $deletedTagsCount = $legacy->table('tags')->whereNotNull('deleted_at')->count();
+        $this->line(sprintf('tags: 論理削除済みの%d件を移植しません', $deletedTagsCount));
+
+        $this->info('=== dry-run: has_tags 判定 / tag_id NULL行・論理削除済みタグ参照行のスキップ ===');
+        $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
         $articleTagsNull = $legacy->table('article_tags')->whereNull('tag_id')->count();
         $bookMarkTagsNull = $legacy->table('book_mark_tags')->whereNull('tag_id')->count();
+        $articleTagsDeletedTag = $legacy->table('article_tags')->whereNotNull('tag_id')->whereIn('tag_id', $deletedTagIds)->count();
+        $bookMarkTagsDeletedTag = $legacy->table('book_mark_tags')->whereNotNull('tag_id')->whereIn('tag_id', $deletedTagIds)->count();
         $this->line(sprintf('article_tags: tag_id NULLの%d件をスキップします', $articleTagsNull));
+        $this->line(sprintf('article_tags: 論理削除済みタグを参照する%d件をスキップします', $articleTagsDeletedTag));
         $this->line(sprintf('book_mark_tags: tag_id NULLの%d件をスキップします', $bookMarkTagsNull));
+        $this->line(sprintf('book_mark_tags: 論理削除済みタグを参照する%d件をスキップします', $bookMarkTagsDeletedTag));
         $this->line(sprintf(
             'has_tags=true になる articles: %d件 / %d件',
             count($this->collectTaggedIds($legacy, 'article_tags', 'article_id')),
@@ -121,17 +130,6 @@ class ImportLegacyDataCommand extends Command
         }
 
         foreach ($duplicates as $duplicate) {
-            if ($duplicate['action'] === 'skip') {
-                $this->warn(sprintf(
-                    'user_id=%s name="%s" : id=%s は論理削除済みかつ未参照のため投入をスキップします',
-                    $duplicate['user_id'],
-                    $duplicate['name'],
-                    $duplicate['id'],
-                ));
-
-                continue;
-            }
-
             $this->warn(sprintf(
                 'user_id=%s name="%s" : id=%s は "%s" にリネームされます',
                 $duplicate['user_id'],
@@ -157,16 +155,35 @@ class ImportLegacyDataCommand extends Command
      * importArticles/importBookMarks実行前に集計しておくことで、行ごとにexists()相当の
      * クエリを都度発行せずO(1)判定できるようにする。
      *
+     * 論理削除済みタグ(移行対象外)への参照は実際にはarticle_tags/book_mark_tagsへ
+     * 移行されないため、has_tags判定からも除外する。
+     *
      * @param  'article_tags'|'book_mark_tags'  $table
      * @param  'article_id'|'book_mark_id'  $foreignKeyColumn
      * @return array<int|string, true>
      */
     private function collectTaggedIds(ConnectionInterface $legacy, string $table, string $foreignKeyColumn): array
     {
+        $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
+
         $ids = $legacy->table($table)
             ->whereNotNull('tag_id')
+            ->whereNotIn('tag_id', $deletedTagIds)
             ->distinct()
             ->pluck($foreignKeyColumn);
+
+        return array_fill_keys($ids->all(), true);
+    }
+
+    /**
+     * 論理削除済み(deleted_atが非NULL)のtagのID集合を取得する。移植対象外のタグへの
+     * article_tags/book_mark_tags参照を除外するために使用する。
+     *
+     * @return array<int|string, true>
+     */
+    private function collectDeletedTagIds(ConnectionInterface $legacy): array
+    {
+        $ids = $legacy->table('tags')->whereNotNull('deleted_at')->pluck('id');
 
         return array_fill_keys($ids->all(), true);
     }
@@ -269,17 +286,16 @@ class ImportLegacyDataCommand extends Command
      * 新スキーマの unique(['user_id', 'name']) に抵触する重複(同一 user_id + name の組)を検出する。
      * id は article_tags/book_mark_tags から参照されているため変更しない。
      *
-     * 2件目以降について、論理削除済み(deleted_atが非NULL)かつ legacy側の article_tags/book_mark_tags
-     * のどちらからも参照されていない場合は投入自体をスキップ(action: skip)する。
-     * それ以外(有効なタグ同士の重複、または実際に参照が残っている場合)は、データを失わないよう
-     * 名前だけリネームして両方投入する(action: rename)。
+     * 論理削除済み(deleted_atが非NULL)の行は移植対象外のため、ここでは有効な行のみを対象に判定する。
+     * 2件目以降が見つかった場合は、データを失わないよう名前だけリネームして両方投入する。
      *
-     * @return Collection<int, array{id: int|string, user_id: int|string, name: string, action: 'skip'|'rename', renamed_name: string|null}>
+     * @return Collection<int, array{id: int|string, user_id: int|string, name: string, renamed_name: string}>
      */
     private function detectDuplicateTags(ConnectionInterface $legacy): Collection
     {
         $rows = $legacy->table('tags')
-            ->select('id', 'name', 'user_id', 'deleted_at')
+            ->select('id', 'name', 'user_id')
+            ->whereNull('deleted_at')
             ->orderBy('id')
             ->get();
 
@@ -291,23 +307,10 @@ class ImportLegacyDataCommand extends Command
             $key = $row->user_id.':'.$row->name;
 
             if (isset($seen[$key])) {
-                if ($row->deleted_at !== null && ! $this->isTagReferenced($legacy, $row->id)) {
-                    $duplicates->push([
-                        'id' => $row->id,
-                        'user_id' => $row->user_id,
-                        'name' => $row->name,
-                        'action' => 'skip',
-                        'renamed_name' => null,
-                    ]);
-
-                    continue;
-                }
-
                 $duplicates->push([
                     'id' => $row->id,
                     'user_id' => $row->user_id,
                     'name' => $row->name,
-                    'action' => 'rename',
                     'renamed_name' => sprintf('%s(旧タグID:%s)', $row->name, $row->id),
                 ]);
 
@@ -320,12 +323,6 @@ class ImportLegacyDataCommand extends Command
         return $duplicates;
     }
 
-    private function isTagReferenced(ConnectionInterface $legacy, int|string $tagId): bool
-    {
-        return $legacy->table('article_tags')->where('tag_id', $tagId)->exists()
-            || $legacy->table('book_mark_tags')->where('tag_id', $tagId)->exists();
-    }
-
     private function importTags(ConnectionInterface $legacy, int $chunk): void
     {
         $this->info('tags を移行しています...');
@@ -333,22 +330,6 @@ class ImportLegacyDataCommand extends Command
         $duplicates = $this->detectDuplicateTags($legacy)->keyBy('id');
 
         foreach ($duplicates as $id => $duplicate) {
-            if ($duplicate['action'] === 'skip') {
-                $this->warn(sprintf(
-                    '重複タグを検出し投入をスキップしました(論理削除済み・未参照): user_id=%s, id=%s, "%s"',
-                    $duplicate['user_id'],
-                    $id,
-                    $duplicate['name'],
-                ));
-                Log::warning('legacy:import タグをスキップ', [
-                    'id' => $id,
-                    'user_id' => $duplicate['user_id'],
-                    'name' => $duplicate['name'],
-                ]);
-
-                continue;
-            }
-
             $this->warn(sprintf(
                 '重複タグ名を検出しリネームしました: user_id=%s, id=%s, "%s" -> "%s"',
                 $duplicate['user_id'],
@@ -364,11 +345,12 @@ class ImportLegacyDataCommand extends Command
             ]);
         }
 
+        // 論理削除済み(deleted_atが非NULL)の行は移植しない
         $rows = $legacy->table('tags')
-            ->select('id', 'name', 'user_id', 'count', 'deleted_at', 'created_at', 'updated_at')
+            ->select('id', 'name', 'user_id', 'count', 'created_at', 'updated_at')
+            ->whereNull('deleted_at')
             ->orderBy('id')
-            ->get()
-            ->reject(fn (stdClass $row): bool => ($duplicates->get($row->id)['action'] ?? null) === 'skip');
+            ->get();
 
         $bar = $this->output->createProgressBar($rows->count());
 
@@ -380,7 +362,6 @@ class ImportLegacyDataCommand extends Command
                 'name' => $duplicate['renamed_name'] ?? $row->name,
                 'user_id' => $row->user_id,
                 'count' => $row->count,
-                'deleted_at' => $row->deleted_at,
                 'created_at' => $row->created_at,
                 'updated_at' => $row->updated_at,
             ];
@@ -398,15 +379,22 @@ class ImportLegacyDataCommand extends Command
     private function importArticleTags(ConnectionInterface $legacy, int $chunk): void
     {
         $this->info('article_tags を移行しています...');
-        $bar = $this->output->createProgressBar($legacy->table('article_tags')->whereNotNull('tag_id')->count());
+
+        $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
+
+        $bar = $this->output->createProgressBar(
+            $legacy->table('article_tags')->whereNotNull('tag_id')->whereNotIn('tag_id', $deletedTagIds)->count()
+        );
 
         // tag_idがNULLの行(旧システムでの「タグなし」表現)はarticles.has_tagsへ意味を
         // 統合したため移行しない(新スキーマではtag_idがNOT NULLのため投入もできない)。
+        // 論理削除済みタグ(移行対象外)を参照する行も同様に移行しない。
         // article_id/tag_idの複合ユニークキーのみで単一の主キーがないためchunkByIdが使えず、
         // orderByによるオフセット方式で読み込む(legacyは読み取り専用でこの間に行が変化しないため安全)
         $legacy->table('article_tags')
             ->select('article_id', 'tag_id', 'created_at', 'updated_at')
             ->whereNotNull('tag_id')
+            ->whereNotIn('tag_id', $deletedTagIds)
             ->orderBy('article_id')
             ->orderBy('tag_id')
             ->chunk($chunk, function (Collection $rows) use ($bar): void {
@@ -428,12 +416,18 @@ class ImportLegacyDataCommand extends Command
     private function importBookMarkTags(ConnectionInterface $legacy, int $chunk): void
     {
         $this->info('book_mark_tags を移行しています...');
-        $bar = $this->output->createProgressBar($legacy->table('book_mark_tags')->whereNotNull('tag_id')->count());
 
-        // tag_idがNULLの行はimportArticleTagsと同様の理由で移行しない
+        $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
+
+        $bar = $this->output->createProgressBar(
+            $legacy->table('book_mark_tags')->whereNotNull('tag_id')->whereNotIn('tag_id', $deletedTagIds)->count()
+        );
+
+        // tag_idがNULLの行、および論理削除済みタグを参照する行はimportArticleTagsと同様の理由で移行しない
         $legacy->table('book_mark_tags')
             ->select('book_mark_id', 'tag_id', 'created_at', 'updated_at')
             ->whereNotNull('tag_id')
+            ->whereNotIn('tag_id', $deletedTagIds)
             ->orderBy('book_mark_id')
             ->orderBy('tag_id')
             ->chunk($chunk, function (Collection $rows) use ($bar): void {

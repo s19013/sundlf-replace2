@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->unsignedBigInteger('count')->default(0);
-            $table->softDeletes();
             $table->timestamps();
 
             $table->unique(['user_id', 'name']);

@@ -38,7 +38,7 @@ count を +1
 
 - string:fetched_at
 
-メモの`updated_at` < `fetched_at` の 場合 true
+`updated_at` > `fetched_at` の 場合 true
 
 データベースにあるデータが、自分が取得した後に更新されてないか確認する。
 
