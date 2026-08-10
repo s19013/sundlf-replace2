@@ -2,11 +2,8 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\Trashable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $id
@@ -25,10 +22,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tag> $tags
  * @property-read int|null $tags_count
  */
-class Memo extends Model
+class Memo extends Entry
 {
     /** @use HasFactory<\Database\Factories\MemoFactory> */
-    use HasFactory, SoftDeletes, Trashable;
+    use HasFactory;
 
     /**
      * 旧システムでは`article`という名前だった名残でテーブル名がクラス名の規約と一致しない。
