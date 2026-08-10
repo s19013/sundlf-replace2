@@ -43,7 +43,7 @@ trait Trashable
 
             return $this->deleted_at->copy()
                 ->addDays(self::DAYS_UNTIL_PERMANENT_DELETE - self::DEADLINE_WARNING_DAYS)
-                ->isPast();
+                ->isNowOrPast();
         });
     }
 
