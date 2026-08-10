@@ -345,7 +345,9 @@ class ImportLegacyDataCommand extends Command
             ]);
         }
 
-        // 論理削除済み(deleted_atが非NULL)の行は移植しない
+        // **論理削除済み(`deleted_at`が非NULL)の場合**: `tags` へ移行しない。
+        // **論理削除済みタグを参照する`article_tags`/`book_mark_tags`行の場合**: 中間テーブルへ移行しない。
+        // **有効なタグ同士で重複する場合**: 後続行の名前を `"{元の名前}(旧タグID:{id})"` にリネームして移行する。
         $rows = $legacy->table('tags')
             ->select('id', 'name', 'user_id', 'count', 'created_at', 'updated_at')
             ->whereNull('deleted_at')
