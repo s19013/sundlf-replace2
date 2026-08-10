@@ -5,7 +5,7 @@ description: laravelのモデルにpropertyを自動生成
 
 # @propertyの自動生成
 
-モデルクラス本体に書く`@property`(属性の型情報)は手書きせず、`ide-helper:model`コマンドの出力を元に記入する。
+モデルクラス本体に書く`@property`(属性の型情報)は手書きせず、`ide-helper:models`コマンドの出力を元に記入する。
 
 ## 手順
 
