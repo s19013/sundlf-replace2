@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasOwner;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,7 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 class Tag extends Model
 {
     /** @use HasFactory<\Database\Factories\TagFactory> */
-    use HasFactory;
+    use HasFactory, HasOwner;
 
     /**
      * The attributes that are mass assignable.
@@ -38,10 +39,5 @@ class Tag extends Model
         return [
             'count' => 'integer',
         ];
-    }
-
-    public function isOwner(string $userId): bool
-    {
-        return (string) $this->user_id === $userId;
     }
 }
