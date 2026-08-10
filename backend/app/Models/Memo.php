@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -118,7 +119,14 @@ class Memo extends Model
      */
     public function hasBeenUpdatedSinceRetrieval(string $fetchedAt): bool
     {
-        return $this->updated_at?->gt(Carbon::parse($fetchedAt)) ?? false;
+        try {
+            $fetchedAtTime = Carbon::parse($fetchedAt);
+        } catch (InvalidFormatException) {
+            // 比較できない場合は更新済みとみなし、上書きを防ぐ。
+            return true;
+        }
+
+        return $this->updated_at?->gt($fetchedAtTime) ?? false;
     }
 
     /**
