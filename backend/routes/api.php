@@ -25,4 +25,5 @@ Route::middleware('auth:sanctum')->prefix('tags')->name('tags.')->group(function
     Route::patch('/{id}', [TagController::class, 'update'])->name('update');
     Route::delete('/{id}', [TagController::class, 'destroy'])->name('delete');
     Route::get('/all', [TagController::class, 'all'])->name('all');
+    Route::get('/', [TagController::class, 'search'])->name('search');
 });
