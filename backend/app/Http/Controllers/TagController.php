@@ -7,11 +7,18 @@ use App\Http\Requests\Tag\DeleteTagRequest;
 use App\Http\Requests\Tag\UpdateTagRequest;
 use App\Usecases\Tag\CreateTagUsecase;
 use App\Usecases\Tag\DeleteTagUsecase;
+use App\Usecases\Tag\GetAllTagsUsecase;
 use App\Usecases\Tag\UpdateTagUsecase;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TagController extends Controller
 {
+    public function all(Request $request, GetAllTagsUsecase $usecase): JsonResponse
+    {
+        return $usecase($request);
+    }
+
     public function store(CreateTagRequest $request, CreateTagUsecase $usecase): JsonResponse
     {
         return $usecase($request);
