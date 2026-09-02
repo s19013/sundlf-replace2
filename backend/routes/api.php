@@ -22,4 +22,5 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::middleware('auth:sanctum')->prefix('tags')->name('tags.')->group(function () {
     Route::post('/', [TagController::class, 'store'])->name('create');
+    Route::patch('/{id}', [TagController::class, 'update'])->name('update');
 });
