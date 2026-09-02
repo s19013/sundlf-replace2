@@ -2,6 +2,7 @@
 
 namespace App\Usecases\Tag;
 
+use App\Exceptions\UnauthenticatedException;
 use App\Http\Requests\Tag\CreateTagRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -13,7 +14,7 @@ class CreateTagUsecase
         $user = $request->user();
 
         if ($user === null) {
-            return response()->json(['message' => __('auth.unAuthenticated')], 401);
+            throw new UnauthenticatedException;
         }
 
         /** @var User $user */

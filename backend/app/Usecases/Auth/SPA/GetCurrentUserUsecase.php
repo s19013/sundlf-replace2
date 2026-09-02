@@ -2,6 +2,7 @@
 
 namespace App\Usecases\Auth\SPA;
 
+use App\Exceptions\UnauthenticatedException;
 use App\Http\Resources\MinimumUserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +15,7 @@ class GetCurrentUserUsecase
         $user = $request->user();
 
         if ($user === null) {
-            return response()->json(['message' => __('auth.unAuthenticated')], 401);
+            throw new UnauthenticatedException;
         }
 
         /** @var User $user */

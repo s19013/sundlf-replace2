@@ -2,6 +2,7 @@
 
 namespace App\Usecases\Tag;
 
+use App\Exceptions\UnauthenticatedException;
 use App\Http\Requests\Tag\DeleteTagRequest;
 use App\Models\Tag;
 use App\Models\User;
@@ -14,7 +15,7 @@ class DeleteTagUsecase
         $user = $request->user();
 
         if ($user === null) {
-            return response()->json(['message' => __('auth.unAuthenticated')], 401);
+            throw new UnauthenticatedException;
         }
 
         /** @var User $user */

@@ -2,6 +2,7 @@
 
 namespace App\Usecases\Tag;
 
+use App\Exceptions\UnauthenticatedException;
 use App\Http\Requests\Tag\SearchTagRequest;
 use App\Http\Resources\TagResource;
 use App\Models\User;
@@ -15,7 +16,7 @@ class SearchTagsUsecase
         $user = $request->user();
 
         if ($user === null) {
-            return response()->json(['message' => __('auth.unAuthenticated')], 401);
+            throw new UnauthenticatedException;
         }
 
         /** @var User $user */
