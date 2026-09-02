@@ -2,9 +2,8 @@
 
 namespace App\Usecases\Tag;
 
-use App\Exceptions\UnauthenticatedException;
+use App\Facades\Authenticated;
 use App\Http\Resources\TagResource;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -12,13 +11,8 @@ class GetAllTagsUsecase
 {
     public function __invoke(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = Authenticated::user();
 
-        if ($user === null) {
-            throw new UnauthenticatedException;
-        }
-
-        /** @var User $user */
         $tags = $user->tags()->get();
 
         if ($tags->isEmpty()) {

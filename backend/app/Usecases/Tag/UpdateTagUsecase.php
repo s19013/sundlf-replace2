@@ -2,23 +2,17 @@
 
 namespace App\Usecases\Tag;
 
-use App\Exceptions\UnauthenticatedException;
+use App\Facades\Authenticated;
 use App\Http\Requests\Tag\UpdateTagRequest;
 use App\Models\Tag;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
 class UpdateTagUsecase
 {
     public function __invoke(UpdateTagRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $user = Authenticated::user();
 
-        if ($user === null) {
-            throw new UnauthenticatedException;
-        }
-
-        /** @var User $user */
         $id = (int) $request->validated('id');
         $newName = $request->string('name')->toString();
 

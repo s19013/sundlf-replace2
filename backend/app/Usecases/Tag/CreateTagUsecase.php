@@ -2,22 +2,16 @@
 
 namespace App\Usecases\Tag;
 
-use App\Exceptions\UnauthenticatedException;
+use App\Facades\Authenticated;
 use App\Http\Requests\Tag\CreateTagRequest;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
 class CreateTagUsecase
 {
     public function __invoke(CreateTagRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $user = Authenticated::user();
 
-        if ($user === null) {
-            throw new UnauthenticatedException;
-        }
-
-        /** @var User $user */
         $name = $request->string('name')->toString();
 
         if ($user->tags()->where('name', $name)->exists()) {

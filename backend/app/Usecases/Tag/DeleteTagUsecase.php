@@ -2,23 +2,17 @@
 
 namespace App\Usecases\Tag;
 
-use App\Exceptions\UnauthenticatedException;
+use App\Facades\Authenticated;
 use App\Http\Requests\Tag\DeleteTagRequest;
 use App\Models\Tag;
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
 class DeleteTagUsecase
 {
     public function __invoke(DeleteTagRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $user = Authenticated::user();
 
-        if ($user === null) {
-            throw new UnauthenticatedException;
-        }
-
-        /** @var User $user */
         $id = (int) $request->validated('id');
         $tag = Tag::find($id);
 

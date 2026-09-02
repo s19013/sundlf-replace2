@@ -2,10 +2,9 @@
 
 namespace App\Usecases\Tag;
 
-use App\Exceptions\UnauthenticatedException;
+use App\Facades\Authenticated;
 use App\Http\Requests\Tag\SearchTagRequest;
 use App\Http\Resources\TagResource;
-use App\Models\User;
 use App\Tools\SearchToolKit;
 use Illuminate\Http\JsonResponse;
 
@@ -13,13 +12,8 @@ class SearchTagsUsecase
 {
     public function __invoke(SearchTagRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $user = Authenticated::user();
 
-        if ($user === null) {
-            throw new UnauthenticatedException;
-        }
-
-        /** @var User $user */
         $query = $user->tags();
 
         if ($request->filled('keywords')) {
