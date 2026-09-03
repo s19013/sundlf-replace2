@@ -2,9 +2,7 @@
 
 namespace App\Exceptions;
 
-use Exception;
-
-class NotFoundException extends Exception
+class NotFoundException extends OriginalException
 {
     public function __construct(?string $message = null)
     {
