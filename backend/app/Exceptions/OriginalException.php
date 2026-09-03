@@ -25,7 +25,7 @@ class OriginalException extends Exception
     public function render(): JsonResponse
     {
         return response()->json([
-            'message' => $this->getMessage(),
+            'messages' => [$this->getMessage()],
         ], $this->statusCode);
     }
 }
