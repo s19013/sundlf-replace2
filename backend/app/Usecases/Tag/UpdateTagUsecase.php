@@ -2,9 +2,13 @@
 
 namespace App\Usecases\Tag;
 
+use App\Exceptions\DuplicationException;
+use App\Exceptions\ForbiddenException;
+use App\Exceptions\NotFoundException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Tag\UpdateTagRequest;
 use App\Models\Tag;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
 class UpdateTagUsecase
@@ -16,36 +20,43 @@ class UpdateTagUsecase
         $id = (int) $request->validated('id');
         $newName = $request->string('name')->toString();
 
+        $this->checkDuplication($user, $newName, $id);
+
+        $tag = $this->fetchTag($id);
+
+        if (! $tag->isOwner((string) $user->id)) {
+            throw new ForbiddenException('このタグは更新できません。');
+        }
+
+        $oldName = $tag->name;
+
+        $tag->update(['name' => $newName]);
+
+        return response()->json([
+            'messages' => ["{$oldName}を{$newName}に更新しました。"],
+        ]);
+    }
+
+    private function checkDuplication(User $user, string $newName, int $id): void
+    {
         $duplicated = $user->tags()
             ->where('name', $newName)
             ->where('id', '!=', $id)
             ->exists();
 
         if ($duplicated) {
-            return response()->json([
-                'messages' => ["{$newName}はすでに登録されています。"],
-            ], 409);
+            throw new DuplicationException($newName);
         }
+    }
 
+    private function fetchTag(int $id): Tag
+    {
         $tag = Tag::find($id);
 
         if ($tag === null) {
-            return response()->json([
-                'messages' => ['更新に失敗しました。'],
-            ], 404);
+            throw new NotFoundException('更新に失敗しました。');
         }
 
-        if (! $tag->isOwner((string) $user->id)) {
-            return response()->json([
-                'messages' => ['このタグは更新できません。'],
-            ], 403);
-        }
-
-        $oldName = $tag->name;
-        $tag->update(['name' => $newName]);
-
-        return response()->json([
-            'messages' => ["{$oldName}を{$newName}に更新しました。"],
-        ]);
+        return $tag;
     }
 }
