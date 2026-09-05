@@ -21,7 +21,7 @@ get `/api/tags`
 | 名前        | 型     | 必須 | デフォルト | 説明             |
 | ----------- | ------ | ---- | ---------- | ---------------- |
 | keywords    | string | no   | null       |                  |
-| item_number | int    | yes  | 10         | 表示数           |
+| item_number | int    | no   | 10         | 表示数           |
 | sort        | string | no   | updated_at | 何でソートするか |
 
 # レスポンス
