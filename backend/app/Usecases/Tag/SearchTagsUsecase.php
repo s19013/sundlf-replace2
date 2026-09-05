@@ -2,6 +2,7 @@
 
 namespace App\Usecases\Tag;
 
+use App\Exceptions\NotFoundException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Tag\SearchTagRequest;
 use App\Http\Resources\TagResource;
@@ -34,9 +35,7 @@ class SearchTagsUsecase
         $tags = $query->orderBy($sort, 'desc')->limit($itemNumber)->get();
 
         if ($tags->isEmpty()) {
-            return response()->json([
-                'messages' => ['見つかりませんでした。'],
-            ], 404);
+            throw new NotFoundException;
         }
 
         return response()->json([
