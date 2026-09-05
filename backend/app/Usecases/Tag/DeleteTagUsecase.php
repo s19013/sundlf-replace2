@@ -5,22 +5,19 @@ namespace App\Usecases\Tag;
 use App\Facades\Authenticated;
 use App\Http\Requests\Tag\DeleteTagRequest;
 use App\Models\Tag;
+use App\Usecases\Concerns\FindsModelOrFail;
 use Illuminate\Http\JsonResponse;
 
 class DeleteTagUsecase
 {
+    use FindsModelOrFail;
+
     public function __invoke(DeleteTagRequest $request): JsonResponse
     {
         $user = Authenticated::user();
 
         $id = (int) $request->validated('id');
-        $tag = Tag::find($id);
-
-        if ($tag === null) {
-            return response()->json([
-                'messages' => ['削除に失敗しました。'],
-            ], 404);
-        }
+        $tag = $this->findOrFail(Tag::class, $id, '削除に失敗しました。');
 
         if (! $tag->isOwner((string) $user->id)) {
             return response()->json([
