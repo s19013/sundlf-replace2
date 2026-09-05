@@ -60,7 +60,7 @@ class AllTagsApiTest extends TestCase
         $response = $this->actingAs($user)->spaGet('/api/tags/all');
 
         $response->assertStatus(404);
-        $response->assertJson(['messages' => ['見つかりませんでした。']]);
+        $response->assertJson(['messages' => ['タグが登録されていません。']]);
     }
 
     public function test_未認証の場合401が返ること(): void
