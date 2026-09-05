@@ -4,15 +4,17 @@ namespace App\Usecases\Tag;
 
 use App\Exceptions\DuplicationException;
 use App\Exceptions\ForbiddenException;
-use App\Exceptions\NotFoundException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Tag\UpdateTagRequest;
 use App\Models\Tag;
 use App\Models\User;
+use App\Usecases\Concerns\FindsModelOrFail;
 use Illuminate\Http\JsonResponse;
 
 class UpdateTagUsecase
 {
+    use FindsModelOrFail;
+
     public function __invoke(UpdateTagRequest $request): JsonResponse
     {
         $user = Authenticated::user();
@@ -22,7 +24,7 @@ class UpdateTagUsecase
 
         $this->checkDuplication($user, $newName, $id);
 
-        $tag = $this->fetchTag($id);
+        $tag = $this->findOrFail(Tag::class, $id, '更新に失敗しました。');
 
         if (! $tag->isOwner((string) $user->id)) {
             throw new ForbiddenException('このタグは更新できません。');
@@ -47,16 +49,5 @@ class UpdateTagUsecase
         if ($duplicated) {
             throw new DuplicationException($newName);
         }
-    }
-
-    private function fetchTag(int $id): Tag
-    {
-        $tag = Tag::find($id);
-
-        if ($tag === null) {
-            throw new NotFoundException('更新に失敗しました。');
-        }
-
-        return $tag;
     }
 }
