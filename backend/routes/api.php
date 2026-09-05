@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\SPAAuthController;
+use App\Http\Controllers\TagController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('/spa')->name('spa.')->group(function () {
@@ -17,4 +18,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/test/auth', function () {
         return response()->json(['message' => 'api auth test']);
     });
+});
+
+Route::middleware('auth:sanctum')->prefix('tags')->name('tags.')->group(function () {
+    Route::post('/', [TagController::class, 'store'])->name('create');
+    Route::patch('/{id}', [TagController::class, 'update'])->name('update');
+    Route::delete('/{id}', [TagController::class, 'destroy'])->name('delete');
+    Route::get('/all', [TagController::class, 'all'])->name('all');
+    Route::get('/', [TagController::class, 'search'])->name('search');
 });

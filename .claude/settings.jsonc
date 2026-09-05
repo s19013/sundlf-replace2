@@ -1,0 +1,122 @@
+// claude code は jsoncを読み込んでくれない。
+// そのため、settings.jsoncは人間用 で コミット対象
+// jsonの方は、claude 用でコミット非対象で運用する
+// 基本的には、こちらを編集したうえで、コメントなじjsonを作成する。
+{
+    "language": "japanese",
+    "permissions": {
+        "ask": [
+            // ========================================
+            // ファイル・ディレクトリ削除
+            // ========================================
+            "Bash(rm *)",
+            "Bash(rmdir *)",
+            "Bash(unlink *)",
+            "Bash(shred *)",
+            // findによる削除
+            "Bash(find * -delete*)",
+            "Bash(find * -exec rm *)",
+            // ファイル内容の破壊
+            "Bash(truncate *)",
+            // ========================================
+            // ディスク・ファイルシステム
+            // ========================================
+            "Bash(dd *)",
+            "Bash(mkfs *)",
+            "Bash(mkfs.* *)",
+            "Bash(fdisk *)",
+            "Bash(cfdisk *)",
+            "Bash(sfdisk *)",
+            "Bash(parted *)",
+            "Bash(wipefs *)",
+            // ========================================
+            // OS・権限
+            // ========================================
+            "Bash(sudo *)",
+            "Bash(su *)",
+            "Bash(shutdown *)",
+            "Bash(reboot *)",
+            "Bash(poweroff *)",
+            "Bash(halt *)",
+            // 所有者・権限の大規模変更防止
+            "Bash(chown -R *)",
+            "Bash(chmod -R *)",
+            "Bash(chgrp -R *)",
+            // ========================================
+            // Git
+            // ========================================
+            "Bash(git reset --hard*)",
+            "Bash(git clean *)",
+            "Bash(git checkout -- *)",
+            "Bash(git restore *)",
+            "Bash(git branch -D *)",
+            "Bash(git push --force*)",
+            "Bash(git push -f *)",
+            "Bash(git reflog expire *)",
+            "Bash(git gc *)",
+            // ========================================
+            // Docker
+            // ========================================
+            "Bash(docker rm *)",
+            "Bash(docker rmi *)",
+            "Bash(docker system prune*)",
+            "Bash(docker container prune*)",
+            "Bash(docker image prune*)",
+            "Bash(docker volume prune*)",
+            "Bash(docker network prune*)",
+            "Bash(docker builder prune*)",
+            "Bash(docker volume rm *)",
+            "Bash(docker network rm *)",
+            // volumeを消す可能性
+            "Bash(docker compose down *-v*)",
+            "Bash(docker-compose down *-v*)",
+            // ========================================
+            // MySQL / MariaDB
+            // ========================================
+            "Bash(mysqladmin drop *)",
+            "Bash(mysql * DROP *)",
+            "Bash(mysql * TRUNCATE *)",
+            "Bash(mysql * DELETE *)",
+            "Bash(mariadb * DROP *)",
+            "Bash(mariadb * TRUNCATE *)",
+            "Bash(mariadb * DELETE *)",
+            // ========================================
+            // PostgreSQL
+            // ========================================
+            "Bash(dropdb *)",
+            "Bash(psql * DROP *)",
+            "Bash(psql * TRUNCATE *)",
+            "Bash(psql * DELETE *)",
+            // ========================================
+            // Laravel
+            // ========================================
+            "Bash(php artisan migrate:fresh*)",
+            "Bash(php artisan migrate:reset*)",
+            "Bash(php artisan migrate:rollback*)",
+            "Bash(php artisan db:wipe*)",
+            // ========================================
+            // Kubernetes
+            // ========================================
+            "Bash(kubectl delete *)",
+            "Bash(kubectl drain *)",
+            // ========================================
+            // Terraform
+            // ========================================
+            "Bash(terraform destroy*)",
+            // ========================================
+            // systemd / サービス
+            // ========================================
+            "Bash(systemctl disable *)",
+            "Bash(systemctl mask *)",
+            // ========================================
+            // 機密ファイル
+            // ========================================
+            "Read(./.env)",
+            "Read(./.env.*)",
+            "Read(./secrets/**)",
+            "Read(**/*.pem)",
+            "Read(**/*.key)"
+        ],
+        "deny": []
+    }
+}

@@ -40,7 +40,7 @@ get `/api/tags/all`
 
 ```json
 {
-  "messages": ["見つかりませんでした。"]
+  "messages": ["タグが登録されていません。"]
 }
 ```
 
