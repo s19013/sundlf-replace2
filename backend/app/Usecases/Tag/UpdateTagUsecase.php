@@ -3,16 +3,17 @@
 namespace App\Usecases\Tag;
 
 use App\Exceptions\DuplicationException;
-use App\Exceptions\ForbiddenException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Tag\UpdateTagRequest;
 use App\Models\Tag;
 use App\Models\User;
+use App\Usecases\Concerns\AssertOwner;
 use App\Usecases\Concerns\FindsModelOrFail;
 use Illuminate\Http\JsonResponse;
 
 class UpdateTagUsecase
 {
+    use AssertOwner;
     use FindsModelOrFail;
 
     public function __invoke(UpdateTagRequest $request): JsonResponse
@@ -26,9 +27,7 @@ class UpdateTagUsecase
 
         $tag = $this->findOrFail(Tag::class, $id, '更新に失敗しました。');
 
-        if (! $tag->isOwner((string) $user->id)) {
-            throw new ForbiddenException('このタグは更新できません。');
-        }
+        $this->assertOwner($tag, $user->id, 'このタグは更新できません。');
 
         $oldName = $tag->name;
 
@@ -39,6 +38,7 @@ class UpdateTagUsecase
         ]);
     }
 
+    // HACK: これすでに存在しているかを確認してるから関数名不適切だよな
     private function checkDuplication(User $user, string $newName, int $id): void
     {
         $duplicated = $user->tags()
