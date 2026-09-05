@@ -84,6 +84,16 @@ class DeleteTagApiTest extends TestCase
         $this->assertDatabaseHas('tags', ['id' => $tag->id]);
     }
 
+    public function test_idが数値でない場合422が返ること(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->spaDelete('/api/tags/abc');
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('id');
+    }
+
     public function test_未認証の場合401が返ること(): void
     {
         $tag = Tag::factory()->create();

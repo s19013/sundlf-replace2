@@ -5,6 +5,7 @@ namespace Tests\Feature\Tag;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -77,6 +78,28 @@ class CreateTagApiTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors('name');
+    }
+
+    public function test_事前チェック通過後に競合登録が発生した場合も409が返ること(): void
+    {
+        $user = User::factory()->create();
+
+        // ensureNotExists()の重複チェック通過後、実際のINSERT直前に
+        // 別リクエストが同名タグを登録した状況を模擬する
+        Tag::creating(function (Tag $tag) use ($user): void {
+            DB::table('tags')->insert([
+                'user_id' => $user->id,
+                'name' => $tag->name,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        $response = $this->actingAs($user)->spaPost('/api/tags', ['name' => '競合タグ']);
+
+        $response->assertStatus(409);
+        $response->assertJson(['messages' => ['競合タグはすでに登録されています。']]);
+        $this->assertDatabaseCount('tags', 1);
     }
 
     public function test_未認証の場合401が返ること(): void

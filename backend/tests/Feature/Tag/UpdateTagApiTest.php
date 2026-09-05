@@ -5,6 +5,7 @@ namespace Tests\Feature\Tag;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -99,6 +100,34 @@ class UpdateTagApiTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors('name');
+    }
+
+    public function test_事前チェック通過後に競合更新が発生した場合も409が返ること(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id, 'name' => '旧タグ']);
+        $conflictTag = Tag::factory()->create(['user_id' => $user->id, 'name' => '別タグ']);
+
+        // ensureNotExistsExceptSelf()の重複チェック通過後、実際のUPDATE直前に
+        // 別のタグが同名に変更された状況を模擬する
+        Tag::updating(function (Tag $updating) use ($conflictTag): void {
+            DB::table('tags')->where('id', $conflictTag->id)->update(['name' => $updating->name]);
+        });
+
+        $response = $this->actingAs($user)->spaPatch("/api/tags/{$tag->id}", ['name' => '競合タグ']);
+
+        $response->assertStatus(409);
+        $response->assertJson(['messages' => ['競合タグはすでに登録されています。']]);
+    }
+
+    public function test_idが数値でない場合422が返ること(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->spaPatch('/api/tags/abc', ['name' => '新タグ']);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('id');
     }
 
     public function test_未認証の場合401が返ること(): void
