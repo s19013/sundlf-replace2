@@ -9,6 +9,7 @@ use App\Models\Tag;
 use App\Models\User;
 use App\Usecases\Concerns\AssertOwner;
 use App\Usecases\Concerns\FindsModelOrFail;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 
 class UpdateTagUsecase
@@ -31,7 +32,11 @@ class UpdateTagUsecase
 
         $oldName = $tag->name;
 
-        $tag->update(['name' => $newName]);
+        try {
+            $tag->update(['name' => $newName]);
+        } catch (UniqueConstraintViolationException) {
+            throw new DuplicationException($newName);
+        }
 
         return response()->json([
             'messages' => ["{$oldName}を{$newName}に更新しました。"],

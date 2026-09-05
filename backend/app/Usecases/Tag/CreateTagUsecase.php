@@ -6,6 +6,7 @@ use App\Exceptions\DuplicationException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Tag\CreateTagRequest;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 
 class CreateTagUsecase
@@ -18,7 +19,11 @@ class CreateTagUsecase
 
         $this->ensureNotExists($user, $name);
 
-        $user->tags()->create(['name' => $name]);
+        try {
+            $user->tags()->create(['name' => $name]);
+        } catch (UniqueConstraintViolationException) {
+            throw new DuplicationException($name);
+        }
 
         return response()->json([
             'messages' => ["{$name}を登録しました。"],
