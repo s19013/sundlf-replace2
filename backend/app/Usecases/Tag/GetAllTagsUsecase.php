@@ -2,6 +2,7 @@
 
 namespace App\Usecases\Tag;
 
+use App\Exceptions\NotFoundException;
 use App\Facades\Authenticated;
 use App\Http\Resources\TagResource;
 use Illuminate\Http\JsonResponse;
@@ -16,9 +17,7 @@ class GetAllTagsUsecase
         $tags = $user->tags()->get();
 
         if ($tags->isEmpty()) {
-            return response()->json([
-                'messages' => ['見つかりませんでした。'],
-            ], 404);
+            throw new NotFoundException('タグが登録されていません。');
         }
 
         return response()->json([
