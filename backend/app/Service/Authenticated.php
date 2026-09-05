@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Exceptions\UnauthenticatedException;
 use App\Models\User;
-use Auth;
+use Illuminate\Support\Facades\Auth;
 
 class Authenticated
 {
