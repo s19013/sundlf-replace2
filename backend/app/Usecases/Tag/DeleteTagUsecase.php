@@ -20,7 +20,7 @@ class DeleteTagUsecase
 
         $id = (int) $request->validated('id');
         $tag = $this->findOrFail(Tag::class, $id, '削除に失敗しました。');
-        $this->assertOwner($tag, $user->id, 'このタグは更新できません。');
+        $this->assertOwner($tag, $user->id, 'このタグは削除できません。');
 
         $name = $tag->name;
         $tag->delete();
