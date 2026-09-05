@@ -1,3 +1,7 @@
+// claude code は jsoncを読み込んでくれない。
+// そのため、settings.jsoncは人間用 で コミット対象
+// jsonの方は、claude 用でコミット非対象で運用する
+// 基本的には、こちらを編集したうえで、コメントなじjsonを作成する。
 {
     "language": "japanese",
     "permissions": {
