@@ -48,6 +48,20 @@ class CompletelyDeleteMemoApiTest extends TestCase
         $this->assertDatabaseMissing('article_tags', ['article_id' => $memo->id]);
     }
 
+    public function test_完全削除してもタグのcountは変化しないこと(): void
+    {
+        $user = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        $tag = Tag::factory()->create(['user_id' => $user->id, 'count' => 0]);
+        $memo->tags()->attach($tag->id);
+        // 論理削除の時点でタグのcountは既に減算済みという想定
+        $memo->delete();
+
+        $this->actingAs($user)->spaDelete("/api/memos/{$memo->id}/completely");
+
+        $this->assertDatabaseHas('tags', ['id' => $tag->id, 'count' => 0]);
+    }
+
     // --- 異常系 ---
 
     public function test_存在しないメモの場合404が返ること(): void

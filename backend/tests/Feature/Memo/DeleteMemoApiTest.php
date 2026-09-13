@@ -3,6 +3,7 @@
 namespace Tests\Feature\Memo;
 
 use App\Models\Memo;
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -39,6 +40,31 @@ class DeleteMemoApiTest extends TestCase
 
         $this->actingAs($user)->spaDelete("/api/memos/{$memo->id}");
 
+        $this->assertSoftDeleted('articles', ['id' => $memo->id]);
+    }
+
+    public function test_複数タグ付きメモを論理削除するとすべてのタグのcountがdecreaseすること(): void
+    {
+        $user = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        $tag1 = Tag::factory()->create(['user_id' => $user->id, 'count' => 1]);
+        $tag2 = Tag::factory()->create(['user_id' => $user->id, 'count' => 1]);
+        $memo->tags()->attach([$tag1->id, $tag2->id]);
+
+        $this->actingAs($user)->spaDelete("/api/memos/{$memo->id}");
+
+        $this->assertDatabaseHas('tags', ['id' => $tag1->id, 'count' => 0]);
+        $this->assertDatabaseHas('tags', ['id' => $tag2->id, 'count' => 0]);
+    }
+
+    public function test_タグなしメモを論理削除できること(): void
+    {
+        $user = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->spaDelete("/api/memos/{$memo->id}");
+
+        $response->assertStatus(200);
         $this->assertSoftDeleted('articles', ['id' => $memo->id]);
     }
 
