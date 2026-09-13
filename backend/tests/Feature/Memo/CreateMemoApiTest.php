@@ -82,7 +82,10 @@ class CreateMemoApiTest extends TestCase
             'tags' => [$otherTag->id],
         ]);
 
+        $response->assertStatus(200);
+        $response->assertJsonStructure(['id']);
         $memoId = $response->json('id');
+        $this->assertNotNull($memoId);
 
         $this->assertDatabaseMissing('article_tags', ['article_id' => $memoId, 'tag_id' => $otherTag->id]);
         $this->assertDatabaseHas('tags', ['id' => $otherTag->id, 'count' => 0]);
