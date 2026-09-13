@@ -3,6 +3,7 @@
 namespace App\Usecases\Memo;
 
 use App\Exceptions\NotFoundException;
+use App\Exceptions\UnprocessableException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Memo\SalvageMemoRequest;
 use App\Models\Memo;
@@ -25,6 +26,10 @@ class SalvageMemoUsecase
         }
 
         $this->assertOwner($memo, $user->id, 'このメモは復元できません。');
+
+        if (! $memo->trashed()) {
+            throw new UnprocessableException('ゴミ箱にないメモは復元できません。');
+        }
 
         $memo->salvage();
 
