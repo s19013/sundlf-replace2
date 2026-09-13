@@ -79,7 +79,7 @@ class UpdateTagApiTest extends TestCase
         $response->assertJson(['messages' => ['更新に失敗しました。']]);
     }
 
-    public function test_他人のタグを更新しようとすると403が返ること(): void
+    public function test_他人のタグを更新しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $owner->id, 'name' => '旧タグ']);
@@ -87,7 +87,7 @@ class UpdateTagApiTest extends TestCase
 
         $response = $this->actingAs($otherUser)->spaPatch("/api/tags/{$tag->id}", ['name' => '新タグ']);
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
         $response->assertJson(['messages' => ['このタグは更新できません。']]);
     }
 

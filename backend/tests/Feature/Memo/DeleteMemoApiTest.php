@@ -65,7 +65,7 @@ class DeleteMemoApiTest extends TestCase
         $response->assertStatus(404);
     }
 
-    public function test_他人のメモを削除しようとすると403が返ること(): void
+    public function test_他人のメモを削除しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $owner->id]);
@@ -73,7 +73,7 @@ class DeleteMemoApiTest extends TestCase
 
         $response = $this->actingAs($otherUser)->spaDelete("/api/memos/{$memo->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
         $response->assertJson(['messages' => ['このメモは削除できません。']]);
         $this->assertDatabaseHas('articles', ['id' => $memo->id, 'deleted_at' => null]);
     }

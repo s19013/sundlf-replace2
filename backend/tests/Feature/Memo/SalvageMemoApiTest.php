@@ -57,7 +57,7 @@ class SalvageMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['ゴミ箱にないメモは復元できません。']]);
     }
 
-    public function test_他人のメモを復元しようとすると403が返ること(): void
+    public function test_他人のメモを復元しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $owner->id]);
@@ -66,7 +66,7 @@ class SalvageMemoApiTest extends TestCase
 
         $response = $this->actingAs($otherUser)->spaPost("/api/memos/{$memo->id}/salvage");
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
         $response->assertJson(['messages' => ['このメモは復元できません。']]);
     }
 

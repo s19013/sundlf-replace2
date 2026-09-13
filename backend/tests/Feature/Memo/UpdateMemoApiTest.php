@@ -67,21 +67,28 @@ class UpdateMemoApiTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->spaPatch('/api/memos/9999', ['title' => '新タイトル']);
+        $response = $this->actingAs($user)->spaPatch('/api/memos/9999', [
+            'title' => '新タイトル',
+            'fetched_at' => now()->toIso8601String(),
+        ]);
 
         $response->assertStatus(404);
         $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
-    public function test_他人のメモを更新しようとすると403が返ること(): void
+    public function test_他人のメモを更新しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $owner->id]);
         $otherUser = User::factory()->create();
+        $fetchedAt = $memo->updated_at?->copy()->addMinute()->toIso8601String();
 
-        $response = $this->actingAs($otherUser)->spaPatch("/api/memos/{$memo->id}", ['title' => '新タイトル']);
+        $response = $this->actingAs($otherUser)->spaPatch("/api/memos/{$memo->id}", [
+            'title' => '新タイトル',
+            'fetched_at' => $fetchedAt,
+        ]);
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
         $response->assertJson(['messages' => ['このメモは更新できません。']]);
     }
 

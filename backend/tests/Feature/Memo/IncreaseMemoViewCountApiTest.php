@@ -62,7 +62,7 @@ class IncreaseMemoViewCountApiTest extends TestCase
         $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
-    public function test_他人のメモの場合403が返ること(): void
+    public function test_他人のメモの場合404が返ること(): void
     {
         $owner = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $owner->id]);
@@ -70,7 +70,7 @@ class IncreaseMemoViewCountApiTest extends TestCase
 
         $response = $this->actingAs($otherUser)->spaPost("/api/memos/view-count/increase/{$memo->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
         $response->assertJson(['messages' => ['このメモは更新できません。']]);
     }
 

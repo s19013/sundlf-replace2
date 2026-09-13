@@ -71,7 +71,7 @@ class DeleteTagApiTest extends TestCase
         $response->assertJson(['messages' => ['削除に失敗しました。']]);
     }
 
-    public function test_他人のタグを削除しようとすると403が返ること(): void
+    public function test_他人のタグを削除しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $owner->id]);
@@ -79,7 +79,7 @@ class DeleteTagApiTest extends TestCase
 
         $response = $this->actingAs($otherUser)->spaDelete("/api/tags/{$tag->id}");
 
-        $response->assertStatus(403);
+        $response->assertStatus(404);
         $response->assertJson(['messages' => ['このタグは削除できません。']]);
         $this->assertDatabaseHas('tags', ['id' => $tag->id]);
     }
