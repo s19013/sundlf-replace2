@@ -7,6 +7,7 @@ use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class SearchMemosApiTest extends TestCase
@@ -86,6 +87,46 @@ class SearchMemosApiTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonCount(1, 'memos');
         $response->assertJsonPath('memos.0.body', 'キーワードを含む本文');
+    }
+
+    #[DataProvider('specialCharacterKeywords')]
+    public function test_特殊文字をリテラルとして検索できること(string $keyword, string $matchingTitle, string $nonMatchingTitle): void
+    {
+        $user = User::factory()->create();
+        Memo::factory()->create(['user_id' => $user->id, 'title' => $matchingTitle]);
+        Memo::factory()->create(['user_id' => $user->id, 'title' => $nonMatchingTitle]);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query(['keyword' => $keyword]));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'memos');
+        $response->assertJsonPath('memos.0.title', $matchingTitle);
+    }
+
+    #[DataProvider('specialCharacterKeywords')]
+    public function test_特殊文字をリテラルとして除外検索できること(string $keyword, string $matchingTitle, string $nonMatchingTitle): void
+    {
+        $user = User::factory()->create();
+        Memo::factory()->create(['user_id' => $user->id, 'title' => $matchingTitle]);
+        Memo::factory()->create(['user_id' => $user->id, 'title' => $nonMatchingTitle]);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query(['keyword' => "-{$keyword}"]));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'memos');
+        $response->assertJsonPath('memos.0.title', $nonMatchingTitle);
+    }
+
+    /**
+     * @return array<string, array{string, string, string}>
+     */
+    public static function specialCharacterKeywords(): array
+    {
+        return [
+            'パーセント' => ['50%OFF', '本日50%OFF', '本日50XOFF'],
+            'アンダースコア' => ['A_B', '名前A_B', '名前AXB'],
+            'バックスラッシュ' => ['path\\to', '保存先path\\to', '保存先pathto'],
+        ];
     }
 
     public function test_完全一致タグで絞り込めること(): void

@@ -21,19 +21,19 @@ class SalvageMemoUsecase
         $user = Authenticated::user();
 
         $id = (int) $request->validated('id');
-        $memo = Memo::withTrashed()->find($id);
+        $title = DB::transaction(function () use ($id, $user): string {
+            $memo = Memo::withTrashed()->lockForUpdate()->find($id);
 
-        if ($memo === null) {
-            throw new NotFoundException('メモが見つかりませんでした。');
-        }
+            if ($memo === null) {
+                throw new NotFoundException('メモが見つかりませんでした。');
+            }
 
-        $this->assertOwner($memo, $user->id, 'このメモは復元できません。');
+            $this->assertOwner($memo, $user->id, 'このメモは復元できません。');
 
-        if (! $memo->trashed()) {
-            throw new UnprocessableException('ゴミ箱にないメモは復元できません。');
-        }
+            if (! $memo->trashed()) {
+                throw new UnprocessableException('ゴミ箱にないメモは復元できません。');
+            }
 
-        DB::transaction(function () use ($memo): void {
             $tagIds = $memo->tags()->pluck('tags.id');
 
             if ($tagIds->isNotEmpty()) {
@@ -41,10 +41,12 @@ class SalvageMemoUsecase
             }
 
             $memo->salvage();
+
+            return $memo->title;
         });
 
         return response()->json([
-            'messages' => ["{$memo->title} を復元しました。"],
+            'messages' => ["{$title} を復元しました。"],
         ]);
     }
 }

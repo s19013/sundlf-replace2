@@ -8,6 +8,7 @@ use App\Http\Requests\Memo\SearchMemoRequest;
 use App\Http\Resources\MemoResource;
 use App\Tools\SearchToolKit;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class SearchMemosUsecase
 {
@@ -30,18 +31,22 @@ class SearchMemosUsecase
             };
 
             $parsed = SearchToolKit::parseSearchQuery($request->string('keyword')->toString());
+            $escapeClause = match (DB::connection()->getDriverName()) {
+                'mysql', 'mariadb' => "ESCAPE '\\\\'",
+                default => "ESCAPE '\\'",
+            };
 
             foreach ($parsed['and'] as $word) {
-                $query->where(function ($andQuery) use ($columns, $word): void {
+                $query->where(function ($andQuery) use ($columns, $escapeClause, $word): void {
                     foreach ($columns as $column) {
-                        $andQuery->orWhereRaw("{$column} LIKE ? ESCAPE '\\'", ["%{$word}%"]);
+                        $andQuery->orWhereRaw("{$column} LIKE ? {$escapeClause}", ["%{$word}%"]);
                     }
                 });
             }
 
             foreach ($parsed['not'] as $word) {
                 foreach ($columns as $column) {
-                    $query->whereRaw("{$column} NOT LIKE ? ESCAPE '\\'", ["%{$word}%"]);
+                    $query->whereRaw("{$column} NOT LIKE ? {$escapeClause}", ["%{$word}%"]);
                 }
             }
         }
