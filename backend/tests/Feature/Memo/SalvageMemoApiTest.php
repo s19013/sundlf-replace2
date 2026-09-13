@@ -46,14 +46,15 @@ class SalvageMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
-    public function test_論理削除されていないメモでも復元できること(): void
+    public function test_論理削除されていないメモの場合422が返ること(): void
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
 
         $response = $this->actingAs($user)->spaPost("/api/memos/{$memo->id}/salvage");
 
-        $response->assertStatus(200);
+        $response->assertStatus(422);
+        $response->assertJson(['messages' => ['ゴミ箱にないメモは復元できません。']]);
     }
 
     public function test_他人のメモを復元しようとすると403が返ること(): void
