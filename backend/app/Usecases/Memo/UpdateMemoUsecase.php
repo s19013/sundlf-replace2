@@ -11,6 +11,7 @@ use App\Usecases\Concerns\AssertOwner;
 use App\Usecases\Concerns\FindsModelOrFail;
 use App\Usecases\Memo\Concerns\SyncsMemoTags;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class UpdateMemoUsecase
 {
@@ -36,17 +37,19 @@ class UpdateMemoUsecase
             );
         }
 
-        $memo->fill(array_filter([
-            'title' => $request->input('title'),
-            'body' => $request->input('body'),
-            'star' => $request->input('stars'),
-        ], fn (mixed $value): bool => $value !== null));
+        DB::transaction(function () use ($request, $memo, $user): void {
+            $memo->fill(array_filter([
+                'title' => $request->input('title'),
+                'body' => $request->input('body'),
+                'star' => $request->input('stars'),
+            ], fn (mixed $value): bool => $value !== null));
 
-        $memo->save();
+            $memo->save();
 
-        if ($request->has('tags')) {
-            $this->syncTags($memo, $user, $request->input('tags'));
-        }
+            if ($request->has('tags')) {
+                $this->syncTags($memo, $user, $request->input('tags'));
+            }
+        });
 
         return response()->json([
             'messages' => ['更新しました。'],
