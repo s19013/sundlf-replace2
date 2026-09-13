@@ -28,8 +28,12 @@ class UpdateMemoApiTest extends TestCase
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id, 'title' => '旧タイトル']);
+        $fetchedAt = $memo->updated_at?->copy()->addMinute()->toIso8601String();
 
-        $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", ['title' => '新タイトル']);
+        $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
+            'title' => '新タイトル',
+            'fetched_at' => $fetchedAt,
+        ]);
 
         $response->assertStatus(200);
         $response->assertJson(['messages' => ['更新しました。']]);
@@ -43,8 +47,12 @@ class UpdateMemoApiTest extends TestCase
         $oldTag = Tag::factory()->create(['user_id' => $user->id, 'count' => 1]);
         $newTag = Tag::factory()->create(['user_id' => $user->id, 'count' => 0]);
         $memo->tags()->attach($oldTag->id);
+        $fetchedAt = $memo->updated_at?->copy()->addMinute()->toIso8601String();
 
-        $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", ['tags' => [$newTag->id]]);
+        $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
+            'tags' => [$newTag->id],
+            'fetched_at' => $fetchedAt,
+        ]);
 
         $response->assertStatus(200);
         $this->assertDatabaseHas('tags', ['id' => $oldTag->id, 'count' => 0]);

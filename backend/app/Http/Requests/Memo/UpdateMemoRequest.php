@@ -28,7 +28,7 @@ class UpdateMemoRequest extends FormRequest
             'stars' => ['nullable', 'integer', 'min:0', 'max:5'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['integer'],
-            'fetched_at' => ['nullable', 'date'],
+            'fetched_at' => ['required', 'date'],
         ];
     }
 }
