@@ -18,7 +18,7 @@ class SearchMemoRequest extends FormRequest
     {
         return [
             'keyword' => ['nullable', 'string'],
-            'item_number' => ['nullable', 'integer', 'min:1'],
+            'item_number' => ['nullable', 'integer', 'min:1', 'max:100'],
             'sort' => ['nullable', 'string', 'in:updated_at,created_at,title,count,random'],
             'target' => ['nullable', 'string', 'in:title,body,both'],
             'is_tag_not_attached' => ['nullable', 'boolean'],
