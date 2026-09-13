@@ -40,10 +40,8 @@ class SalvageMemoUsecase
                 Tag::whereIn('id', $tagIds)->increment('count');
             }
 
-            $memo->delete();
+            $memo->salvage();
         });
-
-        $memo->salvage();
 
         return response()->json([
             'messages' => ["{$memo->title} を復元しました。"],
