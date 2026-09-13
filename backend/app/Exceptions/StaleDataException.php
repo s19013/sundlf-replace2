@@ -23,7 +23,7 @@ class StaleDataException extends OriginalException
     public function render(): JsonResponse
     {
         return response()->json([
-            'messages' => $this->messages,
+            'messages' => $this->messages ?: [__('response.stale_data')],
             ...$this->extra,
         ], 409);
     }
