@@ -16,6 +16,7 @@ class FetchMemoUsecase
     use AssertOwner;
     use FindsModelOrFail;
 
+    /** Fetch an owned memo and detect stale client data. */
     public function __invoke(FetchMemoRequest $request): JsonResponse
     {
         $user = Authenticated::user();

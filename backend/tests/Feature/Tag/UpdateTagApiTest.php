@@ -79,6 +79,7 @@ class UpdateTagApiTest extends TestCase
         $response->assertJson(['messages' => ['更新に失敗しました。']]);
     }
 
+    /** Verify that another user's tag cannot be updated. */
     public function test_他人のタグを更新しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();

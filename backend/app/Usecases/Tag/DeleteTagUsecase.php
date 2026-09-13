@@ -14,6 +14,7 @@ class DeleteTagUsecase
     use AssertOwner;
     use FindsModelOrFail;
 
+    /** Delete an owned tag. */
     public function __invoke(DeleteTagRequest $request): JsonResponse
     {
         $user = Authenticated::user();

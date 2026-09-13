@@ -6,6 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CreateMemoRequest extends FormRequest
 {
+    /** Determine whether the request may proceed to validation. */
     public function authorize(): bool
     {
         return true;

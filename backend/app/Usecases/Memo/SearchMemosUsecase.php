@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 class SearchMemosUsecase
 {
+    /** Search the authenticated user's memos using the requested filters. */
     public function __invoke(SearchMemoRequest $request): JsonResponse
     {
         $user = Authenticated::user();

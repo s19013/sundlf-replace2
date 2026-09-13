@@ -20,6 +20,7 @@ class StaleDataException extends OriginalException
         );
     }
 
+    /** Render the conflict as a JSON response. */
     public function render(): JsonResponse
     {
         return response()->json([

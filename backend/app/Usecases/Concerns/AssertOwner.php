@@ -8,6 +8,7 @@ use App\Models\Tag;
 
 trait AssertOwner
 {
+    /** Ensure the requested model belongs to the authenticated user. */
     private function assertOwner(Entry|Tag $model, int $userId, string $message): void
     {
         if (! $model->isOwner((string) $userId)) {

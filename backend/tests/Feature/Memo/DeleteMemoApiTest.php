@@ -22,6 +22,7 @@ class DeleteMemoApiTest extends TestCase
 
     // --- 正常系 ---
 
+    /** Verify that deleting an owned memo returns 200. */
     public function test_正常な削除で200が返ること(): void
     {
         $user = User::factory()->create();
@@ -33,6 +34,7 @@ class DeleteMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['削除対象メモ を削除しました。']]);
     }
 
+    /** Verify that deletion soft-deletes the article record. */
     public function test_削除するとarticlesテーブルが論理削除されること(): void
     {
         $user = User::factory()->create();
@@ -43,6 +45,7 @@ class DeleteMemoApiTest extends TestCase
         $this->assertSoftDeleted('articles', ['id' => $memo->id]);
     }
 
+    /** Verify that soft deletion decrements every attached tag count. */
     public function test_複数タグ付きメモを論理削除するとすべてのタグのcountがdecreaseすること(): void
     {
         $user = User::factory()->create();
@@ -57,6 +60,7 @@ class DeleteMemoApiTest extends TestCase
         $this->assertDatabaseHas('tags', ['id' => $tag2->id, 'count' => 0]);
     }
 
+    /** Verify that a memo without tags can be soft-deleted. */
     public function test_タグなしメモを論理削除できること(): void
     {
         $user = User::factory()->create();
@@ -70,6 +74,7 @@ class DeleteMemoApiTest extends TestCase
 
     // --- 異常系 ---
 
+    /** Verify that deleting a nonexistent memo returns 404. */
     public function test_削除対象のメモが存在しない場合404が返ること(): void
     {
         $user = User::factory()->create();
@@ -80,6 +85,7 @@ class DeleteMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
+    /** Verify that deleting an already trashed memo returns 404. */
     public function test_既に論理削除済みのメモの場合404が返ること(): void
     {
         $user = User::factory()->create();
@@ -91,6 +97,7 @@ class DeleteMemoApiTest extends TestCase
         $response->assertStatus(404);
     }
 
+    /** Verify that another user's memo cannot be deleted. */
     public function test_他人のメモを削除しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
@@ -104,6 +111,7 @@ class DeleteMemoApiTest extends TestCase
         $this->assertDatabaseHas('articles', ['id' => $memo->id, 'deleted_at' => null]);
     }
 
+    /** Verify that memo deletion requires authentication. */
     public function test_未認証の場合401が返ること(): void
     {
         $memo = Memo::factory()->create();

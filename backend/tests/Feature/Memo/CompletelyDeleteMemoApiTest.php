@@ -22,6 +22,7 @@ class CompletelyDeleteMemoApiTest extends TestCase
 
     // --- 正常系 ---
 
+    /** Verify that a trashed memo can be permanently deleted. */
     public function test_論理削除済みメモを完全削除でき200が返ること(): void
     {
         $user = User::factory()->create();
@@ -35,6 +36,7 @@ class CompletelyDeleteMemoApiTest extends TestCase
         $this->assertDatabaseMissing('articles', ['id' => $memo->id]);
     }
 
+    /** Verify that permanent deletion removes pivot records. */
     public function test_完全削除すると中間テーブルの紐付けも削除されること(): void
     {
         $user = User::factory()->create();
@@ -48,6 +50,7 @@ class CompletelyDeleteMemoApiTest extends TestCase
         $this->assertDatabaseMissing('article_tags', ['article_id' => $memo->id]);
     }
 
+    /** Verify that permanent deletion does not change tag counts. */
     public function test_完全削除してもタグのcountは変化しないこと(): void
     {
         $user = User::factory()->create();
@@ -64,6 +67,7 @@ class CompletelyDeleteMemoApiTest extends TestCase
 
     // --- 異常系 ---
 
+    /** Verify that deleting a nonexistent memo returns 404. */
     public function test_存在しないメモの場合404が返ること(): void
     {
         $user = User::factory()->create();
@@ -73,6 +77,7 @@ class CompletelyDeleteMemoApiTest extends TestCase
         $response->assertStatus(404);
     }
 
+    /** Verify that another user's memo cannot be permanently deleted. */
     public function test_他人のメモを完全削除しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
@@ -86,6 +91,7 @@ class CompletelyDeleteMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['このメモは完全削除できません。']]);
     }
 
+    /** Verify that an active memo cannot be permanently deleted. */
     public function test_論理削除されていないメモの場合422が返ること(): void
     {
         $user = User::factory()->create();
@@ -98,6 +104,7 @@ class CompletelyDeleteMemoApiTest extends TestCase
         $this->assertDatabaseHas('articles', ['id' => $memo->id]);
     }
 
+    /** Verify that permanent deletion requires authentication. */
     public function test_未認証の場合401が返ること(): void
     {
         $memo = Memo::factory()->create();
