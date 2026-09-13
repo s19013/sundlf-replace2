@@ -35,7 +35,10 @@ class IncreaseMemoViewCountApiTest extends TestCase
     public function test_updated_atが更新されないこと(): void
     {
         $user = User::factory()->create();
-        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        $memo = Memo::factory()->create([
+            'user_id' => $user->id,
+            'updated_at' => now()->subMinutes(5),
+        ]);
         $originalUpdatedAt = $memo->updated_at;
         if ($originalUpdatedAt === null) {
             $this->fail('updated_at was not set.');
