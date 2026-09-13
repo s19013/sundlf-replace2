@@ -7,8 +7,10 @@ use App\Exceptions\UnprocessableException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Memo\CompletelyDeleteMemoRequest;
 use App\Models\Memo;
+use App\Models\Tag;
 use App\Usecases\Concerns\AssertOwner;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class CompletelyDeleteMemoUsecase
 {
@@ -28,11 +30,20 @@ class CompletelyDeleteMemoUsecase
         $this->assertOwner($memo, $user->id, 'このメモは完全削除できません。');
 
         if (! $memo->trashed()) {
-            throw new UnprocessableException('このメモは削除できません。');
+            throw new UnprocessableException('ゴミ箱にないメモは完全削除できません。');
         }
 
         $title = $memo->title;
-        $memo->forceDelete();
+
+        DB::transaction(function () use ($memo): void {
+            $tagIds = $memo->tags()->pluck('tags.id');
+
+            if ($tagIds->isNotEmpty()) {
+                Tag::whereIn('id', $tagIds)->decrement('count');
+            }
+
+            $memo->forceDelete();
+        });
 
         return response()->json([
             'messages' => ["{$title}を完全削除しました。"],
