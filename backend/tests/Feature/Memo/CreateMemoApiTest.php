@@ -23,7 +23,6 @@ class CreateMemoApiTest extends TestCase
 
     // --- 正常系 ---
 
-    /** Verify that valid input creates a memo and returns its ID. */
     public function test_正常な入力でメモが作成されidが返ること(): void
     {
         $user = User::factory()->create();
@@ -38,7 +37,6 @@ class CreateMemoApiTest extends TestCase
         $response->assertJsonStructure(['id']);
     }
 
-    /** Verify that creating a memo inserts an article record. */
     public function test_作成するとarticlesテーブルにレコードが作成されること(): void
     {
         $user = User::factory()->create();
@@ -57,7 +55,6 @@ class CreateMemoApiTest extends TestCase
         ]);
     }
 
-    /** Verify that attached tags are linked and their counts increase. */
     public function test_タグを指定して作成すると紐付き該当タグのcountがincreaseすること(): void
     {
         $user = User::factory()->create();
@@ -74,7 +71,6 @@ class CreateMemoApiTest extends TestCase
         $this->assertDatabaseHas('tags', ['id' => $tag->id, 'count' => 1]);
     }
 
-    /** Verify that tags owned by another user are not attached. */
     public function test_他人のタグidを指定しても紐付かないこと(): void
     {
         $user = User::factory()->create();
@@ -97,7 +93,6 @@ class CreateMemoApiTest extends TestCase
 
     // --- 異常系 ---
 
-    /** Verify that nonnumeric tag IDs return 422. */
     public function test_tagsに数値以外を含めると422が返ること(): void
     {
         $user = User::factory()->create();
@@ -108,7 +103,6 @@ class CreateMemoApiTest extends TestCase
         $response->assertJsonValidationErrors('tags.0');
     }
 
-    /** Verify that memo creation requires authentication. */
     public function test_未認証の場合401が返ること(): void
     {
         $response = $this->spaPost('/api/memos', ['title' => '新規メモ']);

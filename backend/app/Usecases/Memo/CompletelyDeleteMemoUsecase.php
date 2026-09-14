@@ -14,7 +14,6 @@ class CompletelyDeleteMemoUsecase
 {
     use AssertOwner;
 
-    /** Permanently delete an owned memo that is in the trash. */
     public function __invoke(CompletelyDeleteMemoRequest $request): JsonResponse
     {
         $user = Authenticated::user();

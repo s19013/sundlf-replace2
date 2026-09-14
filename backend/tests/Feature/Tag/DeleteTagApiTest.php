@@ -71,7 +71,6 @@ class DeleteTagApiTest extends TestCase
         $response->assertJson(['messages' => ['削除に失敗しました。']]);
     }
 
-    /** Verify that another user's tag cannot be deleted. */
     public function test_他人のタグを削除しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();

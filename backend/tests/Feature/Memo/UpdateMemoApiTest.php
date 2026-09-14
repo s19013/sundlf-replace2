@@ -24,7 +24,6 @@ class UpdateMemoApiTest extends TestCase
 
     // --- 正常系 ---
 
-    /** Verify that valid input updates a memo. */
     public function test_正常な入力で更新され200が返ること(): void
     {
         $user = User::factory()->create();
@@ -41,7 +40,6 @@ class UpdateMemoApiTest extends TestCase
         $this->assertDatabaseHas('articles', ['id' => $memo->id, 'title' => '新タイトル']);
     }
 
-    /** Verify that replacing tags adjusts both tag counts. */
     public function test_タグを付け替えると新しいタグはincrease外れたタグはdecreaseすること(): void
     {
         $user = User::factory()->create();
@@ -65,7 +63,6 @@ class UpdateMemoApiTest extends TestCase
 
     // --- 異常系 ---
 
-    /** Verify that updating a nonexistent memo returns 404. */
     public function test_更新対象のメモが存在しない場合404が返ること(): void
     {
         $user = User::factory()->create();
@@ -79,7 +76,6 @@ class UpdateMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
-    /** Verify that another user's memo cannot be updated. */
     public function test_他人のメモを更新しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
@@ -96,7 +92,6 @@ class UpdateMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['このメモは更新できません。']]);
     }
 
-    /** Verify that a stale update timestamp returns 409. */
     public function test_fetched_atより後に更新されていた場合409が返ること(): void
     {
         $user = User::factory()->create();
@@ -124,7 +119,6 @@ class UpdateMemoApiTest extends TestCase
         $this->assertDatabaseMissing('articles', ['id' => $memo->id, 'title' => '新タイトル']);
     }
 
-    /** Verify that memo updates require authentication. */
     public function test_未認証の場合401が返ること(): void
     {
         $memo = Memo::factory()->create();

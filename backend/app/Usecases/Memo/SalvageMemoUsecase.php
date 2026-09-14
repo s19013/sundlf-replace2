@@ -16,7 +16,6 @@ class SalvageMemoUsecase
 {
     use AssertOwner;
 
-    /** Restore an owned memo from the trash and update tag counts. */
     public function __invoke(SalvageMemoRequest $request): JsonResponse
     {
         $user = Authenticated::user();

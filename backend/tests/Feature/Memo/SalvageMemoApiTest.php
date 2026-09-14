@@ -22,7 +22,6 @@ class SalvageMemoApiTest extends TestCase
 
     // --- 正常系 ---
 
-    /** Verify that a trashed memo can be restored. */
     public function test_論理削除済みメモを復元でき200が返ること(): void
     {
         $user = User::factory()->create();
@@ -36,7 +35,6 @@ class SalvageMemoApiTest extends TestCase
         $this->assertDatabaseHas('articles', ['id' => $memo->id, 'deleted_at' => null]);
     }
 
-    /** Verify that restoring a memo increments every attached tag count. */
     public function test_複数タグ付きメモを復元するとすべてのタグのcountがincreaseすること(): void
     {
         $user = User::factory()->create();
@@ -52,7 +50,6 @@ class SalvageMemoApiTest extends TestCase
         $this->assertDatabaseHas('tags', ['id' => $tag2->id, 'count' => 1]);
     }
 
-    /** Verify that a memo without tags can be restored. */
     public function test_タグなしメモを復元できること(): void
     {
         $user = User::factory()->create();
@@ -67,7 +64,6 @@ class SalvageMemoApiTest extends TestCase
 
     // --- 異常系 ---
 
-    /** Verify that restoring a nonexistent memo returns 404. */
     public function test_存在しないメモの場合404が返ること(): void
     {
         $user = User::factory()->create();
@@ -78,7 +74,6 @@ class SalvageMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
-    /** Verify that restoring an active memo returns 422. */
     public function test_論理削除されていないメモの場合422が返ること(): void
     {
         $user = User::factory()->create();
@@ -90,7 +85,6 @@ class SalvageMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['ゴミ箱にないメモは復元できません。']]);
     }
 
-    /** Verify that another user's memo cannot be restored. */
     public function test_他人のメモを復元しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
@@ -104,7 +98,6 @@ class SalvageMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['このメモは復元できません。']]);
     }
 
-    /** Verify that restoring a memo requires authentication. */
     public function test_未認証の場合401が返ること(): void
     {
         $memo = Memo::factory()->create();

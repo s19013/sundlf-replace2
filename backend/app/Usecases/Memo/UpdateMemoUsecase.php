@@ -19,7 +19,6 @@ class UpdateMemoUsecase
     use FindsModelOrFail;
     use SyncsMemoTags;
 
-    /** Update an owned memo unless the client's copy is stale. */
     public function __invoke(UpdateMemoRequest $request): JsonResponse
     {
         $user = Authenticated::user();

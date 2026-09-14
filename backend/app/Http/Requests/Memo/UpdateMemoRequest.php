@@ -6,13 +6,11 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateMemoRequest extends FormRequest
 {
-    /** Determine whether the request may proceed to validation. */
     public function authorize(): bool
     {
         return true;
     }
 
-    /** Copy the route memo ID into the validation data. */
     protected function prepareForValidation(): void
     {
         $this->merge(['id' => $this->route('id')]);

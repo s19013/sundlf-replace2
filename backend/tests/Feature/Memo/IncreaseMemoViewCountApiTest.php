@@ -21,7 +21,6 @@ class IncreaseMemoViewCountApiTest extends TestCase
 
     // --- 正常系 ---
 
-    /** Verify that the view count increases by one. */
     public function test_閲覧数が1増加し200が返ること(): void
     {
         $user = User::factory()->create();
@@ -33,7 +32,6 @@ class IncreaseMemoViewCountApiTest extends TestCase
         $this->assertDatabaseHas('articles', ['id' => $memo->id, 'count' => 1]);
     }
 
-    /** Verify that incrementing the view count preserves updated_at. */
     public function test_updated_atが更新されないこと(): void
     {
         $user = User::factory()->create();
@@ -57,7 +55,6 @@ class IncreaseMemoViewCountApiTest extends TestCase
 
     // --- 異常系 ---
 
-    /** Verify that incrementing a nonexistent memo returns 404. */
     public function test_存在しないメモの場合404が返ること(): void
     {
         $user = User::factory()->create();
@@ -68,7 +65,6 @@ class IncreaseMemoViewCountApiTest extends TestCase
         $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
-    /** Verify that another user's memo view count cannot be incremented. */
     public function test_他人のメモの場合404が返ること(): void
     {
         $owner = User::factory()->create();
@@ -81,7 +77,6 @@ class IncreaseMemoViewCountApiTest extends TestCase
         $response->assertJson(['messages' => ['このメモは更新できません。']]);
     }
 
-    /** Verify that incrementing a view count requires authentication. */
     public function test_未認証の場合401が返ること(): void
     {
         $memo = Memo::factory()->create();

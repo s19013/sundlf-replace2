@@ -12,7 +12,6 @@ class CreateMemoUsecase
 {
     use SyncsMemoTags;
 
-    /** Create a memo and synchronize its tags. */
     public function __invoke(CreateMemoRequest $request): JsonResponse
     {
         $user = Authenticated::user();

@@ -21,7 +21,6 @@ class FetchMemoApiTest extends TestCase
 
     // --- 正常系 ---
 
-    /** Verify that an owned memo can be fetched. */
     public function test_正常に取得でき200が返ること(): void
     {
         $user = User::factory()->create();
@@ -33,7 +32,6 @@ class FetchMemoApiTest extends TestCase
         $response->assertJsonPath('memo.title', '対象メモ');
     }
 
-    /** Verify that a pre-update fetch timestamp returns 200. */
     public function test_fetched_atが更新前であれば200が返ること(): void
     {
         $user = User::factory()->create();
@@ -51,7 +49,6 @@ class FetchMemoApiTest extends TestCase
 
     // --- 異常系 ---
 
-    /** Verify that fetching a nonexistent memo returns 404. */
     public function test_存在しないメモの場合404が返ること(): void
     {
         $user = User::factory()->create();
@@ -62,7 +59,6 @@ class FetchMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
-    /** Verify that fetching a trashed memo returns 404. */
     public function test_論理削除済みメモの場合404が返ること(): void
     {
         $user = User::factory()->create();
@@ -74,7 +70,6 @@ class FetchMemoApiTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** Verify that another user's memo cannot be fetched. */
     public function test_他人のメモを取得しようとすると404が返ること(): void
     {
         $owner = User::factory()->create();
@@ -87,7 +82,6 @@ class FetchMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['このメモは取得できません。']]);
     }
 
-    /** Verify that a stale fetch timestamp returns 409. */
     public function test_fetched_atより後に更新されていた場合409が返ること(): void
     {
         $user = User::factory()->create();
@@ -104,7 +98,6 @@ class FetchMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['他の画面でメモが更新されています。反映しますか?']]);
     }
 
-    /** Verify that fetching a memo requires authentication. */
     public function test_未認証の場合401が返ること(): void
     {
         $memo = Memo::factory()->create();

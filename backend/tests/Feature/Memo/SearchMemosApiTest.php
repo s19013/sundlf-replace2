@@ -22,7 +22,6 @@ class SearchMemosApiTest extends TestCase
 
     // --- 正常系 ---
 
-    /** Verify that an empty keyword returns the authenticated user's memos. */
     public function test_キーワード無しでログインユーザーのメモが取得できること(): void
     {
         $user = User::factory()->create();
@@ -35,7 +34,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonCount(2, 'memos');
     }
 
-    /** Verify that another user's memos are excluded. */
     public function test_他ユーザーのメモは対象にならないこと(): void
     {
         $user = User::factory()->create();
@@ -50,7 +48,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonCount(1, 'memos');
     }
 
-    /** Verify that AND keywords narrow the results. */
     public function test_andキーワードで絞り込めること(): void
     {
         $user = User::factory()->create();
@@ -65,7 +62,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.title', '酸っぱいフルーツ');
     }
 
-    /** Verify that negative keywords exclude matching memos. */
     public function test_マイナスキーワードで除外できること(): void
     {
         $user = User::factory()->create();
@@ -79,7 +75,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.title', '甘いフルーツ');
     }
 
-    /** Verify that the body target searches only memo bodies. */
     public function test_targetにbodyを指定すると本文のみ検索されること(): void
     {
         $user = User::factory()->create();
@@ -93,7 +88,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.body', 'キーワードを含む本文');
     }
 
-    /** Verify that exact-match tags narrow the results. */
     public function test_完全一致タグで絞り込めること(): void
     {
         $user = User::factory()->create();
@@ -115,7 +109,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.id', $memoWithBoth->id);
     }
 
-    /** Verify that partial-match tags narrow the results. */
     public function test_部分一致タグで絞り込めること(): void
     {
         $user = User::factory()->create();
@@ -138,7 +131,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.id', $memoWithA->id);
     }
 
-    /** Verify that exclusion tags remove matching memos. */
     public function test_除外タグで絞り込めること(): void
     {
         $user = User::factory()->create();
@@ -158,7 +150,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.id', $memoWithoutTag->id);
     }
 
-    /** Verify that the untagged filter returns only memos without tags. */
     public function test_is_tag_not_attachedでタグ無しメモのみ絞り込めること(): void
     {
         $user = User::factory()->create();
@@ -178,7 +169,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.id', $memoWithoutTag->id);
     }
 
-    /** Verify that the stars filter narrows the results. */
     public function test_starsで星数を絞り込めること(): void
     {
         $user = User::factory()->create();
@@ -192,7 +182,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.star', 5);
     }
 
-    /** Verify that the trash filter returns only trashed memos. */
     public function test_is_in_trashboxでゴミ箱のメモのみ絞り込めること(): void
     {
         $user = User::factory()->create();
@@ -208,7 +197,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonMissing(['id' => $activeMemo->id]);
     }
 
-    /** Verify that item_number limits the result count. */
     public function test_item_numberで取得件数が制限されること(): void
     {
         $user = User::factory()->create();
@@ -220,7 +208,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonCount(2, 'memos');
     }
 
-    /** Verify that title sorting returns results in descending order. */
     public function test_sortにtitleを指定すると降順で取得できること(): void
     {
         $user = User::factory()->create();
@@ -235,7 +222,6 @@ class SearchMemosApiTest extends TestCase
 
     // --- 異常系 ---
 
-    /** Verify that an empty search result returns 404. */
     public function test_該当メモが無い場合404が返ること(): void
     {
         $user = User::factory()->create();
@@ -246,7 +232,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJson(['messages' => ['見つかりませんでした。']]);
     }
 
-    /** Verify that an invalid sort value returns 422. */
     public function test_sortに不正な値を指定すると422が返ること(): void
     {
         $user = User::factory()->create();
@@ -257,7 +242,6 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonValidationErrors('sort');
     }
 
-    /** Verify that memo search requires authentication. */
     public function test_未認証の場合401が返ること(): void
     {
         $response = $this->spaGet('/api/memos/search');

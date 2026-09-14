@@ -16,7 +16,6 @@ class DeleteMemoUsecase
     use AssertOwner;
     use FindsModelOrFail;
 
-    /** Move an owned memo to the trash and update tag counts. */
     public function __invoke(DeleteMemoRequest $request): JsonResponse
     {
         $user = Authenticated::user();

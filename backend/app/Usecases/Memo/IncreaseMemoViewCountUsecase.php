@@ -14,7 +14,6 @@ class IncreaseMemoViewCountUsecase
     use AssertOwner;
     use FindsModelOrFail;
 
-    /** Increment the view count of an owned memo. */
     public function __invoke(IncreaseMemoViewCountRequest $request): JsonResponse
     {
         $user = Authenticated::user();
