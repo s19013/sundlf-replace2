@@ -28,13 +28,19 @@ class DeleteMemoUsecase
         $title = $memo->title;
 
         DB::transaction(function () use ($memo): void {
-            $tagIds = $memo->tags()->pluck('tags.id');
+            $locked = Memo::whereKey($memo->id)->lockForUpdate()->first();
+
+            if ($locked === null || $locked->trashed()) {
+                return;
+            }
+
+            $tagIds = $locked->tags()->pluck('tags.id');
 
             if ($tagIds->isNotEmpty()) {
                 Tag::whereIn('id', $tagIds)->decrement('count');
             }
 
-            $memo->delete();
+            $locked->delete();
         });
 
         return response()->json([

@@ -9,6 +9,7 @@ use App\Http\Requests\Memo\CompletelyDeleteMemoRequest;
 use App\Models\Memo;
 use App\Usecases\Concerns\AssertOwner;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class CompletelyDeleteMemoUsecase
 {
@@ -33,8 +34,16 @@ class CompletelyDeleteMemoUsecase
 
         $title = $memo->title;
 
-        // ON DELETE CASCADE を使って中間テーブルのデータも削除される
-        $memo->forceDelete();
+        DB::transaction(function () use ($memo): void {
+            $locked = Memo::withTrashed()->whereKey($memo->id)->lockForUpdate()->first();
+
+            if ($locked === null || ! $locked->trashed()) {
+                return;
+            }
+
+            // ON DELETE CASCADE を使って中間テーブルのデータも削除される
+            $locked->forceDelete();
+        });
 
         return response()->json([
             'messages' => ["{$title}を完全削除しました。"],

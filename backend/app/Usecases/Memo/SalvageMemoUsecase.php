@@ -34,13 +34,19 @@ class SalvageMemoUsecase
         }
 
         DB::transaction(function () use ($memo): void {
-            $tagIds = $memo->tags()->pluck('tags.id');
+            $locked = Memo::withTrashed()->whereKey($memo->id)->lockForUpdate()->first();
+
+            if ($locked === null || ! $locked->trashed()) {
+                return;
+            }
+
+            $tagIds = $locked->tags()->pluck('tags.id');
 
             if ($tagIds->isNotEmpty()) {
                 Tag::whereIn('id', $tagIds)->increment('count');
             }
 
-            $memo->salvage();
+            $locked->salvage();
         });
 
         return response()->json([
