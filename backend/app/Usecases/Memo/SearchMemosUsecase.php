@@ -8,6 +8,7 @@ use App\Http\Requests\Memo\SearchMemoRequest;
 use App\Http\Resources\MemoResource;
 use App\Tools\SearchToolKit;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class SearchMemosUsecase
 {
@@ -31,17 +32,22 @@ class SearchMemosUsecase
 
             $parsed = SearchToolKit::parseSearchQuery($request->string('keyword')->toString());
 
+            // MySQL/MariaDBの文字列リテラルは `\` をエスケープ文字として解釈するため、
+            // ESCAPE句に渡すバックスラッシュ自体を `\\` にエスケープする必要がある。
+            $driverName = DB::connection()->getDriverName();
+            $escapeClause = in_array($driverName, ['mysql', 'mariadb'], true) ? "ESCAPE '\\\\'" : "ESCAPE '\\'";
+
             foreach ($parsed['and'] as $word) {
-                $query->where(function ($andQuery) use ($columns, $word): void {
+                $query->where(function ($andQuery) use ($columns, $word, $escapeClause): void {
                     foreach ($columns as $column) {
-                        $andQuery->orWhereRaw("{$column} LIKE ? ESCAPE '\\'", ["%{$word}%"]);
+                        $andQuery->orWhereRaw("{$column} LIKE ? {$escapeClause}", ["%{$word}%"]);
                     }
                 });
             }
 
             foreach ($parsed['not'] as $word) {
                 foreach ($columns as $column) {
-                    $query->whereRaw("{$column} NOT LIKE ? ESCAPE '\\'", ["%{$word}%"]);
+                    $query->whereRaw("{$column} NOT LIKE ? {$escapeClause}", ["%{$word}%"]);
                 }
             }
         }
