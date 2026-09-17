@@ -107,6 +107,10 @@ Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life
 ブランチ移動で処理内容が一時的に古くなった場合は、別途ファイルを作成する。
 その際は元ファイル名に `.branch-<ブランチ名>` を付けたファイル名にし、元ファイルの
 冒頭に「<ブランチ名>では `xxx.branch-yyy.md` を参照」と一行追記する。
+ブランチ名に `/` などファイルシステム上使用できない区切り文字が含まれる場合は、
+ファイル名に埋め込む前に `-` へ置換する(例: `feature/memo-api` →
+`xxx.branch-feature-memo-api.md`)。置換後に別のブランチ名のファイルと衝突する
+場合は、末尾に連番を付与するなどして一意なファイル名にする。
 featureブランチがマージ・削除されたら、対応するブランチ別ファイルは元ファイルへ
 統合するか削除する。
 
