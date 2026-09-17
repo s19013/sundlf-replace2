@@ -23,6 +23,8 @@ class DeleteTagUsecase
         $this->assertOwner($tag, $user->id, 'このタグは削除できません。');
 
         $name = $tag->name;
+
+        // ON DELETE CASCADE を使って中間テーブルのデータも削除される
         $tag->delete();
 
         return response()->json([
