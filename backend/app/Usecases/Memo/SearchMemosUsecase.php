@@ -6,6 +6,7 @@ use App\Exceptions\NotFoundException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Memo\SearchMemoRequest;
 use App\Http\Resources\MemoResource;
+use App\Http\Resources\PaginationResource;
 use App\Tools\SearchToolKit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -92,21 +93,25 @@ class SearchMemosUsecase
 
         $sort = $request->string('sort', 'updated_at')->toString();
         $itemNumber = (int) $request->input('item_number', 10);
+        $page = $request->integer('page', 1);
 
         if ($sort === 'random') {
             $query->inRandomOrder();
         } else {
-            $query->orderBy($sort, 'desc');
+            // updated_at等は同値になりやすく、順序が不定だとページ間で重複・欠落するためidを第2キーにする
+            $query->orderBy($sort, 'desc')->orderBy('id', 'desc');
         }
 
-        $memos = $query->with('tags')->limit($itemNumber)->get();
+        $memos = $query->with('tags')->paginate($itemNumber, page: $page);
 
+        // 検索結果が0件の場合と、存在しないページを指定された場合のどちらも404
         if ($memos->isEmpty()) {
             throw new NotFoundException;
         }
 
         return response()->json([
-            'memos' => MemoResource::collection($memos),
+            'memos' => MemoResource::collection($memos->getCollection()),
+            'pagination' => new PaginationResource($memos),
         ]);
     }
 }
