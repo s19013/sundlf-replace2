@@ -21,7 +21,7 @@ get /api/memos/search
 | 名前                   | 型     | 必須 | デフォルト | 説明                               |
 | ---------------------- | ------ | ---- | ---------- | ---------------------------------- |
 | keyword                | string | no   | null       |                                    |
-| item_number            | int    | no   | 10         | 表示数                             |
+| item_number            | int    | no   | 10         | 表示数(1〜100)                     |
 | sort                   | string | no   | updated_at | 何でソートするか                   |
 | target                 | string | no   | title      | 何を対象に検索するか               |
 | is_tag_not_attached    | bool   | no   | null       | タグ無しのデータを検索するか       |
@@ -47,6 +47,26 @@ get /api/memos/search
   ]
 }
 ```
+
+# バリデーション
+
+keyword:['nullable', 'string']
+item_number:['nullable', 'integer', 'min:1', 'max:100']
+sort:['nullable', 'string', 'in:updated_at,created_at,title,count,random']
+target:['nullable', 'string', 'in:title,body,both']
+is_tag_not_attached:['nullable', 'boolean']
+exact_match_tags:['nullable', 'array']
+exact_match_tags.\*:['integer']
+partial_match_tags:['nullable', 'array']
+partial_match_tags.\*:['integer']
+exclusion_match_tags:['nullable', 'array']
+exclusion_match_tags.\*:['integer']
+stars:['nullable', 'integer', 'min:0', 'max:5']
+created_at_range_start:['nullable', 'date']
+created_at_range_end:['nullable', 'date']
+updated_at_range_start:['nullable', 'date']
+updated_at_range_end:['nullable', 'date']
+is_in_trashbox:['nullable', 'boolean']
 
 # 処理の流れ
 
