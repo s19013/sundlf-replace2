@@ -30,6 +30,7 @@ class UpdateMemoUsecase
         $this->assertOwner($memo, $user->id, 'このメモは更新できません。');
 
         DB::transaction(function () use ($request, $memo, $user): void {
+            /** @var Memo|null $locked */
             $locked = Memo::whereKey($memo->id)->lockForUpdate()->first();
 
             if ($locked === null) {
