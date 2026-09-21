@@ -39,14 +39,19 @@ post `/api/memos`
 
 title:['nullable', 'string']
 body:['nullable', 'string']
+stars:['nullable', 'integer', 'min:0', 'max:5']
 tags:['nullable', 'array']
+tags.\*:['integer']
 
 # 処理の流れ
 
-- 作成処理
-- 新しく付与されたタグはincrease
+- `DB::transaction`内で以下をまとめて実行する(タグ同期に失敗した場合に、メモだけ作成された状態が残らないようにするため)
+  - 作成処理
+  - 新しく付与されたタグはincrease
 - レスポンス返却
 
 # エラー
 
 # 備考
+
+- ログイン者が所有していないタグのidが指定された場合は無視され、紐付かない。

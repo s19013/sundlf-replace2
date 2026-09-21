@@ -40,7 +40,8 @@ get `/api/memos/{id}/{?fetched_at}`
 
 # バリデーション
 
-id:['required']
+id:['required', 'integer']
+fetched_at:['nullable', 'date']
 
 # 処理の流れ
 
@@ -65,7 +66,9 @@ id:['required']
 
 ## メモの作成者とログイン者のidが違う
 
-ステータスコード:403
+他人のメモの存在を推測できないようにするため、403ではなく404を返す。
+
+ステータスコード:404
 
 ```json
 {

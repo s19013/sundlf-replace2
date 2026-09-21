@@ -5,6 +5,7 @@ namespace App\Usecases\Tag;
 use App\Exceptions\NotFoundException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Tag\SearchTagRequest;
+use App\Http\Resources\PaginationResource;
 use App\Http\Resources\TagResource;
 use App\Tools\SearchToolKit;
 use Illuminate\Http\JsonResponse;
@@ -31,15 +32,19 @@ class SearchTagsUsecase
 
         $sort = $request->string('sort', 'updated_at')->toString();
         $itemNumber = (int) $request->input('item_number', 10);
+        $page = $request->integer('page', 1);
 
-        $tags = $query->orderBy($sort, 'desc')->limit($itemNumber)->get();
+        // count等は同値になりやすく、順序が不定だとページ間で重複・欠落するためidを第2キーにする
+        $tags = $query->orderBy($sort, 'desc')->orderBy('id', 'desc')->paginate($itemNumber, page: $page);
 
+        // 検索結果が0件の場合と、存在しないページを指定された場合のどちらも404
         if ($tags->isEmpty()) {
             throw new NotFoundException;
         }
 
         return response()->json([
-            'tags' => TagResource::collection($tags),
+            'tags' => TagResource::collection($tags->getCollection()),
+            'pagination' => new PaginationResource($tags),
         ]);
     }
 }
