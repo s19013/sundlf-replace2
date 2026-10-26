@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->index()->constrained()->cascadeOnDelete();
             $table->unsignedBigInteger('count')->default(0);
             $table->unsignedTinyInteger('star')->default(0);
             $table->string('title');
@@ -21,6 +21,7 @@ return new class extends Migration
             $table->boolean('has_tags')->default(false);
             $table->softDeletes();
             $table->timestamps();
+
         });
     }
 
