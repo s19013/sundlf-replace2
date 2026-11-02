@@ -155,7 +155,7 @@ class SearchMemosApiTest extends TestCase
         $user = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $user->id]);
 
-        $memoWithTag = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memoWithTag = Memo::factory()->create(['user_id' => $user->id]);
         $memoWithTag->tags()->attach([$tag->id]);
 
         $memoWithoutTag = Memo::factory()->create(['user_id' => $user->id]);
