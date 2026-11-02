@@ -19,8 +19,8 @@ class DeleteTagUsecase
         $user = Authenticated::user();
 
         $id = (int) $request->validated('id');
-        $tag = $this->findOrFail(Tag::class, $id, '削除に失敗しました。');
-        $this->assertOwner($tag, $user->id, 'このタグは削除できません。');
+        $tag = $this->findOrFail(Tag::class, $id, 'タグが見つかりませんでした。');
+        $this->assertOwner($tag, $user->id, 'タグが見つかりませんでした。');
 
         $name = $tag->name;
 

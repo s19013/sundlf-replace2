@@ -89,7 +89,7 @@ class UpdateMemoApiTest extends TestCase
         ]);
 
         $response->assertStatus(404);
-        $response->assertJson(['messages' => ['このメモは更新できません。']]);
+        $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
     public function test_fetched_atより後に更新されていた場合409が返ること(): void

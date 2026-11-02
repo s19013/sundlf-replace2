@@ -24,9 +24,9 @@ class UpdateTagUsecase
         $id = (int) $request->validated('id');
         $newName = $request->string('name')->toString();
 
-        $tag = $this->findOrFail(Tag::class, $id, '更新に失敗しました。');
+        $tag = $this->findOrFail(Tag::class, $id, 'タグが見つかりませんでした。');
 
-        $this->assertOwner($tag, $user->id, 'このタグは更新できません。');
+        $this->assertOwner($tag, $user->id, 'タグが見つかりませんでした。');
 
         $this->ensureNotExistsExceptSelf($user, $newName, $id);
 

@@ -23,7 +23,7 @@ class FetchMemoUsecase
         $id = (int) $request->validated('id');
         $memo = $this->findOrFail(Memo::class, $id, 'メモが見つかりませんでした。');
 
-        $this->assertOwner($memo, $user->id, 'このメモは取得できません。');
+        $this->assertOwner($memo, $user->id, 'メモが見つかりませんでした。');
 
         if ($request->filled('fetched_at') && $memo->hasBeenUpdatedSinceRetrieval($request->string('fetched_at')->toString())) {
             throw new StaleDataException(['他の画面でメモが更新されています。反映しますか?']);

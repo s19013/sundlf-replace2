@@ -23,7 +23,7 @@ class DeleteMemoUsecase
         $id = (int) $request->validated('id');
         $memo = $this->findOrFail(Memo::class, $id, 'メモが見つかりませんでした。');
 
-        $this->assertOwner($memo, $user->id, 'このメモは削除できません。');
+        $this->assertOwner($memo, $user->id, 'メモが見つかりませんでした。');
 
         $title = $memo->title;
 
