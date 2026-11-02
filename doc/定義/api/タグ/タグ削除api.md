@@ -22,6 +22,8 @@ delete `/api/tags/{id}`
 | ---- | ------ | ---- | ------ |
 | id   | string | yes  | タグID |
 
+※ URLのパスパラメータのため型はstring。数値形式であることはバリデーション(`integer`)で検証する。
+
 # レスポンス
 
 ステータスコード:200
@@ -34,7 +36,7 @@ delete `/api/tags/{id}`
 
 # バリデーション
 
-id:['required']
+id:['required', 'integer']
 
 # 処理の流れ
 

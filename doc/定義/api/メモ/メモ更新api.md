@@ -22,6 +22,8 @@ patch `/api/memos/{id}`
 | ---- | ------ | ---- | ------ |
 | id   | string | yes  | メモID |
 
+※ URLのパスパラメータのため型はstring。数値形式であることはバリデーション(`integer`)で検証する。
+
 # リクエストボディ
 
 ```json

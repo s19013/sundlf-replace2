@@ -22,6 +22,8 @@ patch `/api/tags/{id}`
 | ---- | ------ | ---- | ------ |
 | id   | string | yes  | タグID |
 
+※ URLのパスパラメータのため型はstring。数値形式であることはバリデーション(`integer`)で検証する。
+
 # リクエストボディ
 
 ```json
@@ -43,7 +45,7 @@ patch `/api/tags/{id}`
 # バリデーション
 
 name:['required']
-id:['required']
+id:['required', 'integer']
 
 # 処理の流れ
 
