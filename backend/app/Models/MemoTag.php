@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\SyncsEntryHasTags;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
@@ -12,8 +14,18 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  */
 class MemoTag extends Pivot
 {
+    use SyncsEntryHasTags;
+
     /**
      * 命名規則上の推測テーブル名(memo_tags)と実テーブル名が異なるため明示する。
      */
     protected $table = 'article_tags';
+
+    /**
+     * @return Builder<Memo>
+     */
+    protected function parentEntryQuery(): Builder
+    {
+        return Memo::withTrashed()->whereKey($this->article_id);
+    }
 }
