@@ -52,10 +52,13 @@ class UpdateMemoUsecase
                 'star' => $request->input('stars'),
             ], fn (mixed $value): bool => $value !== null));
 
-            $locked->save();
+            $isTagsChanged = $request->has('tags') && $this->syncTags($locked, $user, $request->input('tags'));
 
-            if ($request->has('tags')) {
-                $this->syncTags($locked, $user, $request->input('tags'));
+            // タグの付け替えも編集とみなし、updated_atの更新と変更した属性の保存を1回のUPDATEで行う
+            if ($isTagsChanged) {
+                $locked->touch();
+            } else {
+                $locked->save();
             }
         });
 

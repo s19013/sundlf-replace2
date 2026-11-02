@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\SyncsEntryHasTags;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
 /**
@@ -12,5 +14,15 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  */
 class BookMarkTag extends Pivot
 {
+    use SyncsEntryHasTags;
+
     protected $table = 'book_mark_tags';
+
+    /**
+     * @return Builder<BookMark>
+     */
+    protected function parentEntryQuery(): Builder
+    {
+        return BookMark::withTrashed()->whereKey($this->book_mark_id);
+    }
 }
