@@ -79,7 +79,7 @@ class FetchMemoApiTest extends TestCase
         $response = $this->actingAs($otherUser)->spaGet("/api/memos/{$memo->id}");
 
         $response->assertStatus(404);
-        $response->assertJson(['messages' => ['このメモは取得できません。']]);
+        $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
     public function test_fetched_atより後に更新されていた場合409が返ること(): void

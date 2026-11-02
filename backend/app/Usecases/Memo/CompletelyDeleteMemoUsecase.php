@@ -26,7 +26,7 @@ class CompletelyDeleteMemoUsecase
             throw new NotFoundException('メモが見つかりませんでした。');
         }
 
-        $this->assertOwner($memo, $user->id, 'このメモは完全削除できません。');
+        $this->assertOwner($memo, $user->id, 'メモが見つかりませんでした。');
 
         if (! $memo->trashed()) {
             throw new UnprocessableException('ゴミ箱にないメモは完全削除できません。');

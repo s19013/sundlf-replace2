@@ -8,7 +8,13 @@
 
 期限間近かどうか
 
-deleted_at->copy()->addDays(削除までの期間 - 通知を出す日数)->isPast();
+deleted_at->copy()->addDays(削除までの期間 - 通知を出す日数)->isNowOrPast();
+
+- 削除までの期間: `DAYS_UNTIL_PERMANENT_DELETE` = 30(日)
+- 通知を出す日数: `DEADLINE_WARNING_DAYS` = 7(日)
+- つまり、論理削除から23日経過した時点(ちょうど23日後を含む)から true になる。
+- `deleted_at`が null(論理削除されていない)の場合は false。
+- 上記の定数・判定は`Trashable`トレイト(`backend/app/Models/Concerns/Trashable.php`)に定義されている。
 
 ## isInTrash
 

@@ -76,7 +76,7 @@ class UpdateTagApiTest extends TestCase
         $response = $this->actingAs($user)->spaPatch('/api/tags/9999', ['name' => '新タグ']);
 
         $response->assertStatus(404);
-        $response->assertJson(['messages' => ['更新に失敗しました。']]);
+        $response->assertJson(['messages' => ['タグが見つかりませんでした。']]);
     }
 
     public function test_他人のタグを更新しようとすると404が返ること(): void
@@ -88,7 +88,7 @@ class UpdateTagApiTest extends TestCase
         $response = $this->actingAs($otherUser)->spaPatch("/api/tags/{$tag->id}", ['name' => '新タグ']);
 
         $response->assertStatus(404);
-        $response->assertJson(['messages' => ['このタグは更新できません。']]);
+        $response->assertJson(['messages' => ['タグが見つかりませんでした。']]);
     }
 
     public function test_nameが未指定の場合422が返ること(): void

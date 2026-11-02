@@ -95,7 +95,7 @@ class SalvageMemoApiTest extends TestCase
         $response = $this->actingAs($otherUser)->spaPost("/api/memos/{$memo->id}/salvage");
 
         $response->assertStatus(404);
-        $response->assertJson(['messages' => ['このメモは復元できません。']]);
+        $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
     public function test_未認証の場合401が返ること(): void

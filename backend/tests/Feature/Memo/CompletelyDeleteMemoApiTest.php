@@ -83,7 +83,7 @@ class CompletelyDeleteMemoApiTest extends TestCase
         $response = $this->actingAs($otherUser)->spaDelete("/api/memos/{$memo->id}/completely");
 
         $response->assertStatus(404);
-        $response->assertJson(['messages' => ['このメモは完全削除できません。']]);
+        $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
     public function test_論理削除されていないメモの場合422が返ること(): void

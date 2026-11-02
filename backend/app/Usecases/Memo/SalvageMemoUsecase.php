@@ -27,7 +27,7 @@ class SalvageMemoUsecase
             throw new NotFoundException('メモが見つかりませんでした。');
         }
 
-        $this->assertOwner($memo, $user->id, 'このメモは復元できません。');
+        $this->assertOwner($memo, $user->id, 'メモが見つかりませんでした。');
 
         if (! $memo->trashed()) {
             throw new UnprocessableException('ゴミ箱にないメモは復元できません。');
