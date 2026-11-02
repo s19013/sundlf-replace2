@@ -31,7 +31,7 @@ class SearchTagsUsecase
         }
 
         $sort = $request->string('sort', 'updated_at')->toString();
-        $itemNumber = (int) $request->input('item_number', 10);
+        $itemNumber = $request->integer('item_number') ?: 10;
         $page = $request->integer('page', 1);
 
         // count等は同値になりやすく、順序が不定だとページ間で重複・欠落するためidを第2キーにする

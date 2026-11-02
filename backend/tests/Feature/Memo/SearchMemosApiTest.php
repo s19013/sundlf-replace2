@@ -208,6 +208,18 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonCount(2, 'memos');
     }
 
+    public function test_item_numberが空の場合はデフォルトの10件で取得されること(): void
+    {
+        $user = User::factory()->create();
+        Memo::factory()->count(16)->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query(['item_number' => '']));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(10, 'memos');
+        $response->assertJsonPath('pagination.per_page', 10);
+    }
+
     public function test_sortにtitleを指定すると降順で取得できること(): void
     {
         $user = User::factory()->create();

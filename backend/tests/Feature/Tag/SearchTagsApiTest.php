@@ -71,6 +71,18 @@ class SearchTagsApiTest extends TestCase
         $response->assertJsonCount(2, 'tags');
     }
 
+    public function test_item_numberが空の場合はデフォルトの10件で取得されること(): void
+    {
+        $user = User::factory()->create();
+        Tag::factory()->count(16)->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->spaGet('/api/tags?'.http_build_query(['item_number' => '']));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(10, 'tags');
+        $response->assertJsonPath('pagination.per_page', 10);
+    }
+
     public function test_他ユーザーのタグは対象にならないこと(): void
     {
         $user = User::factory()->create();
