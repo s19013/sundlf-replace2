@@ -59,6 +59,62 @@ class DeleteTagApiTest extends TestCase
         $this->assertDatabaseMissing('book_mark_tags', ['tag_id' => $tag->id]);
     }
 
+    public function test_唯一のタグを削除するとメモとブックマークのhas_tagsがfalseになること(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id]);
+        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $bookMark = BookMark::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo->tags()->attach($tag->id);
+        $bookMark->tags()->attach($tag->id);
+
+        $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
+
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => false]);
+        $this->assertDatabaseHas('book_marks', ['id' => $bookMark->id, 'has_tags' => false]);
+    }
+
+    public function test_他のタグが残っているメモのhas_tagsはtrueのままであること(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id]);
+        $remainingTag = Tag::factory()->create(['user_id' => $user->id]);
+        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo->tags()->attach([$tag->id, $remainingTag->id]);
+
+        $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
+
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => true]);
+    }
+
+    public function test_ゴミ箱内のメモもhas_tagsがfalseになること(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id]);
+        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo->tags()->attach($tag->id);
+        $memo->delete();
+
+        $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
+
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => false]);
+    }
+
+    public function test_タグを削除してもメモのupdated_atは更新されないこと(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id]);
+        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo->tags()->attach($tag->id);
+        $beforeUpdatedAt = $memo->updated_at?->toIso8601String();
+
+        $this->travel(1)->minutes();
+
+        $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
+
+        $this->assertSame($beforeUpdatedAt, $memo->fresh()?->updated_at?->toIso8601String());
+    }
+
     // --- 異常系 ---
 
     public function test_削除対象のタグが存在しない場合404が返ること(): void
