@@ -11,6 +11,7 @@ trait SyncsMemoTags
     /**
      * ログインユーザーが所有するタグに絞り込んだ上でメモへの紐付けを同期し、
      * 新しく付与されたタグは`count`をincrease、外されたタグはdecreaseする。
+     * あわせて`has_tags`を同期し、タグの付け替えはユーザーによる編集とみなして`updated_at`を更新する。
      *
      * @param  array<int, int>|null  $tagIds
      */
@@ -33,6 +34,12 @@ trait SyncsMemoTags
 
         if ($removedTagIds->isNotEmpty()) {
             Tag::whereIn('id', $removedTagIds)->decrement('count');
+        }
+
+        $memo->has_tags = $validTagIds->isNotEmpty();
+
+        if ($addedTagIds->isNotEmpty() || $removedTagIds->isNotEmpty()) {
+            $memo->touch();
         }
     }
 }
