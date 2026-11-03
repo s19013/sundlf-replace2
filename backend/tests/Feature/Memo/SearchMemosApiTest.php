@@ -3,6 +3,7 @@
 namespace Tests\Feature\Memo;
 
 use App\Models\Memo;
+use App\Models\MemoStatus;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -167,6 +168,27 @@ class SearchMemosApiTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonCount(1, 'memos');
         $response->assertJsonPath('memos.0.id', $memoWithoutTag->id);
+    }
+
+    /**
+     * status行は作成時のイベントと移行で必ず作るため、行が無いメモはタグなしとして扱わない(#131で変更)。
+     */
+    public function test_is_tag_not_attachedでstatus行が無いメモは対象にならないこと(): void
+    {
+        $user = User::factory()->create();
+        $memoWithoutTag = Memo::factory()->create(['user_id' => $user->id]);
+        $memoWithoutStatus = Memo::factory()->create(['user_id' => $user->id]);
+        // イベントを通さずに作られた場合などを模擬する
+        MemoStatus::whereKey($memoWithoutStatus->id)->delete();
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'is_tag_not_attached' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'memos');
+        $response->assertJsonPath('memos.0.id', $memoWithoutTag->id);
+        $response->assertJsonMissing(['id' => $memoWithoutStatus->id]);
     }
 
     public function test_is_tag_not_attachedで他ユーザーのタグ無しメモは対象にならないこと(): void
