@@ -46,6 +46,19 @@ class CreateTagApiTest extends TestCase
         ]);
     }
 
+    public function test_登録するとtag_statusesテーブルにもレコードが作成されること(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->spaPost('/api/tags', ['name' => '新タグ']);
+
+        $tag = Tag::where('user_id', $user->id)->where('name', '新タグ')->firstOrFail();
+        $this->assertDatabaseHas('tag_statuses', [
+            'tag_id' => $tag->id,
+            'count' => 0,
+        ]);
+    }
+
     // --- 異常系 ---
 
     public function test_同じユーザーが同じ名前のタグを登録済みの場合409が返ること(): void
@@ -99,7 +112,9 @@ class CreateTagApiTest extends TestCase
 
         $response->assertStatus(409);
         $response->assertJson(['messages' => ['競合タグはすでに登録されています。']]);
-        $this->assertDatabaseCount('tags', 1);
+        // 模擬した別リクエストのINSERTも登録処理と同じトランザクション内で実行されるため、一緒にロールバックされる。
+        // 実際の別リクエストは別トランザクションなので残るが、ここでは自分の登録が残っていないことを確認する
+        $this->assertDatabaseCount('tags', 0);
     }
 
     public function test_未認証の場合401が返ること(): void
