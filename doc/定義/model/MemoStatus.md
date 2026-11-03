@@ -8,7 +8,7 @@
 
 `updated_at` を持たないため、`UPDATED_AT = null` とする。
 
-status行に共通する設定(`$incrementing`・`UPDATED_AT`・`count` の既定値とキャスト)は抽象基底クラス `StatusRow` に、`MemoStatus` / `BookMarkStatus` に共通する設定(`has_tags` の既定値とキャスト・`tags()`)は `StatusRow` を継承した抽象基底クラス `EntryStatus` にまとめている。サブクラスは `$primaryKey`、中間テーブル名(`tagPivotTable()`)、親へのリレーションだけを持つ。
+status行に共通する設定(`$incrementing`・`UPDATED_AT`・`count` の既定値とキャスト)は抽象基底クラス `StatusRow` に、`MemoStatus` / `BookMarkStatus` に共通する設定(`user_id` の一括代入許可・`has_tags` の既定値とキャスト・`tags()`)は `StatusRow` を継承した抽象基底クラス `EntryStatus` にまとめている。サブクラスは `$primaryKey`、中間テーブル名(`tagPivotTable()`)、親へのリレーションだけを持つ。
 
 # 追加属性
 
@@ -32,4 +32,4 @@ status行に共通する設定(`$incrementing`・`UPDATED_AT`・`count` の既�
 
 # 備考
 
-メモ作成時に、同じトランザクション内で作成する(`HasStatusRow` トレイトの created イベント)。イベントを通さずにメモを作る場合は、呼び出し側で作成すること。
+メモ作成時に、同じトランザクション内で作成する(`HasStatusRow` トレイトの created イベント)。`user_id` には本体の値を設定する(`Entry::statusRowAttributes()`)。イベントを通さずにメモを作る場合は、呼び出し側で作成すること。

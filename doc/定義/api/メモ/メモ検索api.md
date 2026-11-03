@@ -122,6 +122,6 @@ is_in_trashbox:['nullable', 'boolean']
 
 - 並び順は`sort`で指定した項目の降順。値が同じメモ同士は`id`の降順で決まる(ページ間で重複・欠落しないようにするため)。
 - `sort=count`の場合は、`article_statuses`の`count`をサブクエリで取得して並べ替える(JOINすると`created_at`などの列名が重複するため)。
-- `is_tag_not_attached`は`article_statuses.has_tags`で判定する。
+- `is_tag_not_attached`は`article_statuses`の`(user_id, has_tags)`インデックスで、ユーザーの`has_tags = false`の行を引いて判定する。`article_statuses`の行が無いメモはタグなしとして扱わない(詳細は[`article_statuses.md`](../../db/article_statuses.md)の「検索への影響」)。
 - `sort=random`はリクエストごとにシャッフルされるため、ページを切り替えると同じメモが再び現れたり、抜けたりすることがある。ページ間の整合性は保証しない。
 - フロントは`pagination.current_page`と`pagination.last_page`から、ページネーション(先頭・前へ・直接リンク・プルダウン・次へ・末尾)を組み立てる。
