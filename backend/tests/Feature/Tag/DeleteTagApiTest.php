@@ -84,7 +84,7 @@ class DeleteTagApiTest extends TestCase
 
         $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
 
-        $this->assertDatabaseHas('articles', ['id' => $memo->id]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => true]);
     }
 
     public function test_ゴミ箱内のメモもhas_tagsがfalseになること(): void

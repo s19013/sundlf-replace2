@@ -81,7 +81,7 @@ class CreateMemoApiTest extends TestCase
             'tags' => [$tag->id],
         ]);
 
-        $this->assertDatabaseHas('articles', ['id' => $response->json('id')]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $response->json('id'), 'has_tags' => true]);
     }
 
     public function test_タグを指定せずに作成するとhas_tagsがfalseになること(): void
