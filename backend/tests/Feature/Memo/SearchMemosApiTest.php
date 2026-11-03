@@ -3,6 +3,7 @@
 namespace Tests\Feature\Memo;
 
 use App\Models\Memo;
+use App\Models\MemoStatus;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -167,6 +168,22 @@ class SearchMemosApiTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonCount(1, 'memos');
         $response->assertJsonPath('memos.0.id', $memoWithoutTag->id);
+    }
+
+    public function test_is_tag_not_attachedでstatus行が無いメモもタグ無しとして絞り込めること(): void
+    {
+        $user = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        // イベントを通さずに作られた場合などを模擬する
+        MemoStatus::whereKey($memo->id)->delete();
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'is_tag_not_attached' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'memos');
+        $response->assertJsonPath('memos.0.id', $memo->id);
     }
 
     public function test_starsで星数を絞り込めること(): void
