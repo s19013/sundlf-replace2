@@ -8,6 +8,8 @@
 
 `updated_at` を持たないため、`UPDATED_AT = null` とする。
 
+`MemoStatus` / `BookMarkStatus` に共通する設定(`$incrementing`・`UPDATED_AT`・既定値・キャスト・`tags()`)は、抽象基底クラス `EntryStatus` にまとめている。サブクラスは `$primaryKey`、中間テーブル名(`tagPivotTable()`)、親へのリレーションだけを持つ。
+
 # 追加属性
 
 なし
@@ -24,6 +26,10 @@
 
 `articles` を belongsTo で取得
 
+## tags
+
+中間テーブルを使い、本体に紐付いているタグを belongsToMany で取得する。主キーが本体の id と同じなので、中間テーブルをそのまま使える。`has_tags` を1文の UPDATE で判定するために使う。
+
 # 備考
 
-メモ作成時に、同じトランザクション内で作成する。
+メモ作成時に、同じトランザクション内で作成する(`HasStatusRow` トレイトの created イベント)。イベントを通さずにメモを作る場合は、呼び出し側で作成すること。

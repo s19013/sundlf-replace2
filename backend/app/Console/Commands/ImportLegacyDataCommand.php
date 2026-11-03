@@ -412,7 +412,7 @@ class ImportLegacyDataCommand extends Command
             $legacy->table('article_tags')->whereNotNull('tag_id')->whereNotIn('tag_id', $deletedTagIds)->count()
         );
 
-        // tag_idがNULLの行(旧システムでの「タグなし」表現)はarticles.has_tagsへ意味を
+        // tag_idがNULLの行(旧システムでの「タグなし」表現)はarticle_statuses.has_tagsへ意味を
         // 統合したため移行しない(新スキーマではtag_idがNOT NULLのため投入もできない)。
         // 論理削除済みタグ(移行対象外)を参照する行も同様に移行しない。
         // article_id/tag_idの複合ユニークキーのみで単一の主キーがないためchunkByIdが使えず、

@@ -34,7 +34,7 @@ return new class extends Migration
     }
 
     /**
-     * Reverse the migrations.
+     * statusテーブルを削除する。
      */
     public function down(): void
     {
