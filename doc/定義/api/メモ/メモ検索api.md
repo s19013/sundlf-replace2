@@ -121,5 +121,6 @@ is_in_trashbox:['nullable', 'boolean']
 # 備考
 
 - 並び順は`sort`で指定した項目の降順。値が同じメモ同士は`id`の降順で決まる(ページ間で重複・欠落しないようにするため)。
+- `sort=count`の場合は、`article_statuses`をJOINして`count`で並べ替える。
 - `sort=random`はリクエストごとにシャッフルされるため、ページを切り替えると同じメモが再び現れたり、抜けたりすることがある。ページ間の整合性は保証しない。
 - フロントは`pagination.current_page`と`pagination.last_page`から、ページネーション(先頭・前へ・直接リンク・プルダウン・次へ・末尾)を組み立てる。

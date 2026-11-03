@@ -2,6 +2,8 @@
 
 [articles.md](../db/articles.md)
 
+count(閲覧数)・has_tags(タグもちフラグ)は [article_statuses.md](../db/article_statuses.md) で管理する
+
 # 追加属性
 
 ## isDeadlineApproaching
@@ -34,9 +36,9 @@ user_id と 引数userId が同じなら true
 
 ## countIncrease
 
-count を +1
+`article_statuses.count` を +1
 
-※ updated_at は更新させない -> 検索に影響がでるため
+※ status テーブル側を更新するので、本体の updated_at は変わらない -> 検索に影響がでないようにするため
 
 ## hasBeenUpdatedSinceRetrieval
 
@@ -59,6 +61,10 @@ deleted_at を nullにする
 ## tags
 
 中間テーブル(article_tags) 経由でタグを取得
+
+## status
+
+`article_statuses` を hasOne で取得
 
 # 備考
 

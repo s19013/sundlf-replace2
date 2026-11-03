@@ -36,7 +36,7 @@ id:['required', 'integer']
 
 - メモ取得
 - メモの作成者idとログイン者のid確認
-- 閲覧数増加処理
+- 閲覧数増加処理(`article_statuses.count` を +1)
 
 # エラー
 
@@ -66,7 +66,7 @@ id:['required', 'integer']
 
 # 備考
 
-- 閲覧数(`count`)を加算する際、`updated_at`は更新しない。検索での更新日順ソートや、楽観的排他制御(`fetched_at`との比較)に影響を与えないため。
+- 閲覧数(`count`)は`article_statuses`で管理しているため、加算しても`articles.updated_at`は変わらない。検索での更新日順ソートや、楽観的排他制御(`fetched_at`との比較)に影響を与えない。
 
 ## なぜ個別に増加apiを設けるのか
 
