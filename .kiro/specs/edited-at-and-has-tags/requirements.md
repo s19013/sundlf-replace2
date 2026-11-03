@@ -48,11 +48,11 @@
 **Objective:** As a メモを使うユーザー, I want 一覧の並べ替えや期間指定、画面の更新日時表示が自分の編集日時に基づくようにしたい, so that 編集した順にメモを探せる
 
 #### Acceptance Criteria
-1. When メモ検索で更新日時順の並べ替えが指定された（並べ替えの指定が無い既定の場合を含む）, the Memo API shall 編集日時の新しい順にメモを返す
-2. When メモ検索で更新日時の期間（開始・終了）が指定された, the Memo API shall 編集日時が期間内のメモだけを返す
-3. The Memo API shall メモのレスポンスで、更新日時として編集日時を UTC の ISO 8601 形式で返す
-4. The Frontend shall メモの更新日時として、API が返す編集日時をローカル日時に変換して表示する
-5. The Memo API shall 並べ替えのパラメータ名・期間指定のパラメータ名・レスポンスの項目名を、未決事項 1 で決めた名前で提供する
+1. When メモ検索で編集日時順の並べ替え（`sort=edited_at`）が指定された（並べ替えの指定が無い既定の場合を含む）, the Memo API shall 編集日時の新しい順にメモを返す
+2. When メモ検索で編集日時の期間（`edited_at_range_start` / `edited_at_range_end`）が指定された, the Memo API shall 編集日時が期間内のメモだけを返す
+3. The Memo API shall メモのレスポンスで、`updated_at` の代わりに `edited_at`（編集日時）を UTC の ISO 8601 形式で返す
+4. If メモ検索で旧名のパラメータ（`sort=updated_at`、`updated_at_range_start`、`updated_at_range_end`）が指定された, the Memo API shall 旧名として受け付けず、バリデーションエラーを返す
+5. The Frontend shall メモの更新日時として、API が返す `edited_at` をローカル日時に変換して表示する
 
 ### Requirement 4: 編集日時による楽観的排他制御
 **Objective:** As a メモを使うユーザー, I want 他の画面での編集とだけ競合を判定してほしい, so that 自分が編集していない変化で保存が拒否されない
@@ -81,7 +81,7 @@
 1. When メモ検索でタグなし検索が指定された, the Memo API shall 検索したユーザーのメモのうち、タグの有無が「なし」のメモだけを返す
 2. The Memo API shall タグなし検索の結果に、他ユーザーのメモを含めない
 3. When タグなし検索とゴミ箱検索が同時に指定された, the Memo API shall ゴミ箱内でタグの有無が「なし」のメモだけを返す
-4. The Memo API shall 開発環境で1ユーザー20,000件（他ユーザーを含め全100,000件）のメモがある条件で、タグなし件数の割合（3件・1%・10%・50%・90%）にかかわらず、タグなし検索の1ページ目の取得と件数取得をそれぞれ10ms以下で行う
+4. The Memo API shall 開発環境で1ユーザー20,000件（他ユーザーを含め全100,000件）のメモがある条件で、タグなし件数の割合（3件・1%・10%・50%・90%）にかかわらず、タグなし検索の1ページ目の取得と件数取得をそれぞれ20ms以下で行う
 5. The Memo API shall タグなし検索を速くするために、特定の DB バージョンや DB のセッション変数の設定を必要としない
 
 ### Requirement 7: 既存データの移行
@@ -109,10 +109,8 @@
 2. The Documentation shall モデル定義とメモ API 定義に、並べ替え・期間絞り込み・楽観的排他制御・表示が編集日時に基づくことを記載する
 3. The Documentation shall status テーブルの分離理由を、閲覧数・タグ使用回数だけを対象とする内容に更新する
 
-## 未決事項
+## 決定事項
 
-1. **API の名前**：並べ替え（`sort=updated_at`）、期間指定（`updated_at_range_start` / `updated_at_range_end`）、レスポンスの `updated_at` を、名前はそのままで中身を編集日時にするか、`edited_at` に改名するか。
-   - 名前を残す場合：フロントエンドの変更がほぼ不要。ただし API の `updated_at` と DB の `updated_at` で意味が食い違う。
-   - 改名する場合：意味が明確になる。代わりにフロントエンドと生成型（`schema.d.ts`）の変更が必要。
-2. **ゴミ箱への移動・復元時の編集日時**：Requirement 2-4 では「変更しない」とした。現状はゴミ箱への移動・復元で `updated_at` が変わるため、ゴミ箱一覧が「削除した順」に近い並びになっている。変更後は「編集した順」に並ぶ。
-3. **性能目標の値**：Requirement 6-4 の 10ms 以下は、#127 以前（本体に `has_tags`）の計測結果（1ページ目約0.2ms、件数取得0.1〜3.0ms）に余裕を持たせた仮の値。
+1. **API の名前**：並べ替え・期間指定・レスポンスの項目名は `edited_at` に改名する（Requirement 3）。API の `updated_at` と DB の `updated_at` で意味が食い違わないようにするため。フロントエンドと生成型（`schema.d.ts`）も合わせて変更する。
+2. **ゴミ箱への移動・復元時の編集日時**：変更しない（Requirement 2-4）。現状はゴミ箱への移動・復元で `updated_at` が変わるため、ゴミ箱一覧は「削除した順」に近い並びになっているが、変更後は「編集した順」に並ぶ。
+3. **性能目標の値**：20ms 以下とする（Requirement 6-4）。#127 以前（本体に `has_tags`）の計測結果（1ページ目約0.2ms、件数取得0.1〜3.0ms）に余裕を持たせた値。
