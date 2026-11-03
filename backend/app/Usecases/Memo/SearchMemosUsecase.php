@@ -102,7 +102,7 @@ class SearchMemosUsecase
             $query->orderBy($sort, 'desc')->orderBy('id', 'desc');
         }
 
-        $memos = $query->with('tags')->paginate($itemNumber, page: $page);
+        $memos = $query->with('tags.status')->paginate($itemNumber, page: $page);
 
         // 検索結果が0件の場合と、存在しないページを指定された場合のどちらも404
         if ($memos->isEmpty()) {

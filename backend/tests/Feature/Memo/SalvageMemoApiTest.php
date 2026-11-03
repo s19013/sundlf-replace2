@@ -39,15 +39,15 @@ class SalvageMemoApiTest extends TestCase
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
-        $tag1 = Tag::factory()->create(['user_id' => $user->id, 'count' => 0]);
-        $tag2 = Tag::factory()->create(['user_id' => $user->id, 'count' => 0]);
+        $tag1 = Tag::factory()->usageCount(0)->create(['user_id' => $user->id]);
+        $tag2 = Tag::factory()->usageCount(0)->create(['user_id' => $user->id]);
         $memo->tags()->attach([$tag1->id, $tag2->id]);
         $memo->delete();
 
         $this->actingAs($user)->spaPost("/api/memos/{$memo->id}/salvage");
 
-        $this->assertDatabaseHas('tags', ['id' => $tag1->id, 'count' => 1]);
-        $this->assertDatabaseHas('tags', ['id' => $tag2->id, 'count' => 1]);
+        $this->assertDatabaseHas('tag_statuses', ['tag_id' => $tag1->id, 'count' => 1]);
+        $this->assertDatabaseHas('tag_statuses', ['tag_id' => $tag2->id, 'count' => 1]);
     }
 
     public function test_タグなしメモを復元できること(): void

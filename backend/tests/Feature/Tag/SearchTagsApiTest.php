@@ -187,10 +187,24 @@ class SearchTagsApiTest extends TestCase
         $response->assertJson(['pagination' => ['total' => 2]]);
     }
 
+    public function test_countを指定すると使用回数の多い順に並ぶこと(): void
+    {
+        $user = User::factory()->create();
+        $few = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
+        $many = Tag::factory()->usageCount(3)->create(['user_id' => $user->id]);
+        $none = Tag::factory()->usageCount(0)->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->spaGet('/api/tags?sort=count');
+
+        $response->assertStatus(200);
+        $this->assertSame([$many->id, $few->id, $none->id], $response->json('tags.*.id'));
+        $this->assertSame([3, 1, 0], $response->json('tags.*.count'));
+    }
+
     public function test_countが同値の場合はid降順で並び全ページで重複なく取得できること(): void
     {
         $user = User::factory()->create();
-        $tags = Tag::factory()->count(5)->create(['user_id' => $user->id, 'count' => 0]);
+        $tags = Tag::factory()->count(5)->usageCount(0)->create(['user_id' => $user->id]);
 
         $ids = [];
         foreach ([1, 2, 3] as $page) {

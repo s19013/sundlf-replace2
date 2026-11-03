@@ -47,14 +47,14 @@ class DeleteMemoApiTest extends TestCase
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
-        $tag1 = Tag::factory()->create(['user_id' => $user->id, 'count' => 1]);
-        $tag2 = Tag::factory()->create(['user_id' => $user->id, 'count' => 1]);
+        $tag1 = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
+        $tag2 = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $memo->tags()->attach([$tag1->id, $tag2->id]);
 
         $this->actingAs($user)->spaDelete("/api/memos/{$memo->id}");
 
-        $this->assertDatabaseHas('tags', ['id' => $tag1->id, 'count' => 0]);
-        $this->assertDatabaseHas('tags', ['id' => $tag2->id, 'count' => 0]);
+        $this->assertDatabaseHas('tag_statuses', ['tag_id' => $tag1->id, 'count' => 0]);
+        $this->assertDatabaseHas('tag_statuses', ['tag_id' => $tag2->id, 'count' => 0]);
     }
 
     public function test_タグなしメモを論理削除できること(): void

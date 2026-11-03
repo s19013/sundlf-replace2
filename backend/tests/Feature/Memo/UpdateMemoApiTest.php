@@ -44,8 +44,8 @@ class UpdateMemoApiTest extends TestCase
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
-        $oldTag = Tag::factory()->create(['user_id' => $user->id, 'count' => 1]);
-        $newTag = Tag::factory()->create(['user_id' => $user->id, 'count' => 0]);
+        $oldTag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
+        $newTag = Tag::factory()->usageCount(0)->create(['user_id' => $user->id]);
         $memo->tags()->attach($oldTag->id);
         $fetchedAt = $memo->updated_at?->copy()->addMinute()->toIso8601String();
 
@@ -55,17 +55,39 @@ class UpdateMemoApiTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('tags', ['id' => $oldTag->id, 'count' => 0]);
-        $this->assertDatabaseHas('tags', ['id' => $newTag->id, 'count' => 1]);
+        $this->assertDatabaseHas('tag_statuses', ['tag_id' => $oldTag->id, 'count' => 0]);
+        $this->assertDatabaseHas('tag_statuses', ['tag_id' => $newTag->id, 'count' => 1]);
         $this->assertDatabaseHas('article_tags', ['article_id' => $memo->id, 'tag_id' => $newTag->id]);
         $this->assertDatabaseMissing('article_tags', ['article_id' => $memo->id, 'tag_id' => $oldTag->id]);
+    }
+
+    public function test_タグを付け替えてもタグのupdated_atは更新されないこと(): void
+    {
+        $user = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        $oldTag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
+        $newTag = Tag::factory()->create(['user_id' => $user->id]);
+        $memo->tags()->attach($oldTag->id);
+        $oldTagUpdatedAt = $oldTag->updated_at?->toIso8601String();
+        $newTagUpdatedAt = $newTag->updated_at?->toIso8601String();
+
+        $this->travel(1)->minutes();
+
+        $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
+            'tags' => [$newTag->id],
+            'fetched_at' => now()->toIso8601String(),
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame($oldTagUpdatedAt, $oldTag->fresh()?->updated_at?->toIso8601String());
+        $this->assertSame($newTagUpdatedAt, $newTag->fresh()?->updated_at?->toIso8601String());
     }
 
     public function test_タグを全て外すとhas_tagsがfalseになること(): void
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
-        $tag = Tag::factory()->create(['user_id' => $user->id, 'count' => 1]);
+        $tag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
 
         $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
@@ -114,7 +136,7 @@ class UpdateMemoApiTest extends TestCase
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
-        $tag = Tag::factory()->create(['user_id' => $user->id, 'count' => 1]);
+        $tag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
         $beforeUpdatedAt = $memo->updated_at?->toIso8601String();
 

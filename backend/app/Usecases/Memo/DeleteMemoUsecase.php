@@ -5,7 +5,7 @@ namespace App\Usecases\Memo;
 use App\Facades\Authenticated;
 use App\Http\Requests\Memo\DeleteMemoRequest;
 use App\Models\Memo;
-use App\Models\Tag;
+use App\Models\TagStatus;
 use App\Usecases\Concerns\AssertOwner;
 use App\Usecases\Concerns\FindsModelOrFail;
 use Illuminate\Http\JsonResponse;
@@ -37,7 +37,7 @@ class DeleteMemoUsecase
             $tagIds = $locked->tags()->pluck('tags.id');
 
             if ($tagIds->isNotEmpty()) {
-                Tag::whereIn('id', $tagIds)->decrement('count');
+                TagStatus::whereIn('tag_id', $tagIds)->decrement('count');
             }
 
             $locked->delete();

@@ -14,7 +14,7 @@ class GetAllTagsUsecase
     {
         $user = Authenticated::user();
 
-        $tags = $user->tags()->get();
+        $tags = $user->tags()->with('status')->get();
 
         if ($tags->isEmpty()) {
             throw new NotFoundException('タグが登録されていません。');
