@@ -4,7 +4,6 @@ namespace Tests\Feature\Migrations;
 
 use App\Models\BookMark;
 use App\Models\Memo;
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -17,19 +16,13 @@ use Tests\TestCase;
 class AddUserIdToStatusTablesMigrationTest extends TestCase
 {
     use RefreshDatabase;
+    use RunsMigrationFile;
 
     private const ADD_COLUMN = '2026_11_03_064738_add_user_id_to_article_statuses_and_book_mark_statuses_tables';
 
     private const COPY = '2026_11_03_064808_copy_user_id_to_article_statuses_and_book_mark_statuses_tables';
 
     private const ADD_INDEX = '2026_11_03_064809_add_user_id_index_to_article_statuses_and_book_mark_statuses_tables';
-
-    private function runMigration(string $name, string $method): void
-    {
-        $migration = require database_path("migrations/{$name}.php");
-        assert($migration instanceof Migration && method_exists($migration, $method));
-        $migration->{$method}();
-    }
 
     public function test_コピーのupで本体のuser_idがゴミ箱内も含めて全行にコピーされること(): void
     {

@@ -8,7 +8,6 @@ use App\Models\Memo;
 use App\Models\MemoStatus;
 use App\Models\Tag;
 use App\Models\TagStatus;
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -16,6 +15,7 @@ use Tests\TestCase;
 class CopyCountAndHasTagsToStatusTablesMigrationTest extends TestCase
 {
     use RefreshDatabase;
+    use RunsMigrationFile;
 
     /**
      * コピー元の本体の`count`・`has_tags`は後続のマイグレーションで削除されるため、その`down()`で復元してから検証する。
@@ -25,21 +25,15 @@ class CopyCountAndHasTagsToStatusTablesMigrationTest extends TestCase
     {
         parent::setUp();
 
-        $migration = require database_path('migrations/2026_11_03_043655_drop_count_and_has_tags_from_articles_book_marks_and_tags_tables.php');
-        assert($migration instanceof Migration && method_exists($migration, 'down'));
-        $migration->down();
+        $this->runMigration('2026_11_03_043655_drop_count_and_has_tags_from_articles_book_marks_and_tags_tables', 'down');
     }
 
+    /**
+     * @param  'up'|'down'  $method
+     */
     private function runCopyMigration(string $method): void
     {
         $this->runMigration('2026_11_03_042851_copy_count_and_has_tags_to_status_tables', $method);
-    }
-
-    private function runMigration(string $name, string $method): void
-    {
-        $migration = require database_path("migrations/{$name}.php");
-        assert($migration instanceof Migration && method_exists($migration, $method));
-        $migration->{$method}();
     }
 
     /**

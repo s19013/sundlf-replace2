@@ -6,13 +6,13 @@ use App\Models\BookMark;
 use App\Models\Entry;
 use App\Models\Memo;
 use App\Models\Tag;
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class RecalculateHasTagsMigrationTest extends TestCase
 {
     use RefreshDatabase;
+    use RunsMigrationFile;
 
     /**
      * 補正対象の本体の`has_tags`は後続のマイグレーションで削除されるため、その`down()`で復元してから検証する。
@@ -22,9 +22,7 @@ class RecalculateHasTagsMigrationTest extends TestCase
     {
         parent::setUp();
 
-        $migration = require database_path('migrations/2026_11_03_043655_drop_count_and_has_tags_from_articles_book_marks_and_tags_tables.php');
-        assert($migration instanceof Migration && method_exists($migration, 'down'));
-        $migration->down();
+        $this->runMigration('2026_11_03_043655_drop_count_and_has_tags_from_articles_book_marks_and_tags_tables', 'down');
     }
 
     /**
@@ -35,11 +33,9 @@ class RecalculateHasTagsMigrationTest extends TestCase
         return [Memo::factory()->create(), BookMark::factory()->create()];
     }
 
-    private function runMigration(): void
+    private function runRecalculateMigration(): void
     {
-        $migration = require database_path('migrations/2026_11_02_135800_recalculate_has_tags_on_articles_and_book_marks_tables.php');
-        assert($migration instanceof Migration && method_exists($migration, 'up'));
-        $migration->up();
+        $this->runMigration('2026_11_02_135800_recalculate_has_tags_on_articles_and_book_marks_tables', 'up');
     }
 
     /**
@@ -62,7 +58,7 @@ class RecalculateHasTagsMigrationTest extends TestCase
             $entry->tags()->attach($tag->id);
             $this->setHasTags($entry, false);
 
-            $this->runMigration();
+            $this->runRecalculateMigration();
 
             $this->assertTrue($this->fetchHasTags($entry));
         }
@@ -73,7 +69,7 @@ class RecalculateHasTagsMigrationTest extends TestCase
         foreach ($this->createEntries() as $entry) {
             $this->setHasTags($entry, true);
 
-            $this->runMigration();
+            $this->runRecalculateMigration();
 
             $this->assertFalse($this->fetchHasTags($entry));
         }
@@ -87,7 +83,7 @@ class RecalculateHasTagsMigrationTest extends TestCase
             $entry->delete();
             $this->setHasTags($entry, false);
 
-            $this->runMigration();
+            $this->runRecalculateMigration();
 
             $this->assertTrue($this->fetchHasTags($entry));
         }
@@ -102,7 +98,7 @@ class RecalculateHasTagsMigrationTest extends TestCase
             $updatedAt = $entry->newQuery()->whereKey($entry->getKey())->toBase()->value('updated_at');
 
             $this->travel(1)->minutes();
-            $this->runMigration();
+            $this->runRecalculateMigration();
 
             $this->assertSame($updatedAt, $entry->newQuery()->whereKey($entry->getKey())->toBase()->value('updated_at'));
         }
