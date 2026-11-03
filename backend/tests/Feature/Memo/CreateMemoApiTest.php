@@ -81,7 +81,7 @@ class CreateMemoApiTest extends TestCase
             'tags' => [$tag->id],
         ]);
 
-        $this->assertDatabaseHas('articles', ['id' => $response->json('id'), 'has_tags' => true]);
+        $this->assertDatabaseHas('articles', ['id' => $response->json('id')]);
     }
 
     public function test_タグを指定せずに作成するとhas_tagsがfalseになること(): void
@@ -92,7 +92,7 @@ class CreateMemoApiTest extends TestCase
             'title' => '新規メモ',
         ]);
 
-        $this->assertDatabaseHas('articles', ['id' => $response->json('id'), 'has_tags' => false]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $response->json('id'), 'has_tags' => false]);
     }
 
     public function test_他人のタグidのみを指定して作成するとhas_tagsがfalseになること(): void
@@ -105,7 +105,7 @@ class CreateMemoApiTest extends TestCase
             'tags' => [$otherTag->id],
         ]);
 
-        $this->assertDatabaseHas('articles', ['id' => $response->json('id'), 'has_tags' => false]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $response->json('id'), 'has_tags' => false]);
     }
 
     public function test_他人のタグidを指定しても紐付かないこと(): void

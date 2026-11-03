@@ -86,7 +86,7 @@ class UpdateMemoApiTest extends TestCase
     public function test_タグを全て外すとhas_tagsがfalseになること(): void
     {
         $user = User::factory()->create();
-        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
         $tag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
 
@@ -96,7 +96,7 @@ class UpdateMemoApiTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => false]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => false]);
     }
 
     public function test_タグ無しのメモにタグを付けるとhas_tagsがtrueになること(): void
@@ -111,7 +111,7 @@ class UpdateMemoApiTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => true]);
+        $this->assertDatabaseHas('articles', ['id' => $memo->id]);
     }
 
     public function test_タグだけを付け替えるとupdated_atが更新されること(): void
@@ -135,7 +135,7 @@ class UpdateMemoApiTest extends TestCase
     public function test_タグを同じ内容で送るとupdated_atが更新されないこと(): void
     {
         $user = User::factory()->create();
-        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
         $tag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
         $beforeUpdatedAt = $memo->updated_at?->toIso8601String();

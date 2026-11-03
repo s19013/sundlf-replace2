@@ -23,7 +23,7 @@ class EntryHasTagsSyncTest extends TestCase
 
     private function fetchHasTags(Entry $entry): bool
     {
-        return (bool) $entry->newQuery()->withTrashed()->whereKey($entry->getKey())->value('has_tags');
+        return (bool) $entry->status()->value('has_tags');
     }
 
     public function test_タグを紐付けるとhas_tagsがtrueになること(): void

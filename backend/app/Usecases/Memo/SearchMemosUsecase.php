@@ -55,7 +55,7 @@ class SearchMemosUsecase
         }
 
         if ($request->boolean('is_tag_not_attached')) {
-            $query->where('has_tags', false);
+            $query->whereHas('status', fn ($statusQuery) => $statusQuery->where('has_tags', false));
         }
 
         foreach (array_map('intval', $request->array('exact_match_tags')) as $tagId) {

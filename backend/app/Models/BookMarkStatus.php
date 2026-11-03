@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * ブックマークのうち、ユーザーが直接変更しない項目(閲覧数・タグもちフラグ)を管理する。
@@ -47,5 +48,16 @@ class BookMarkStatus extends Model
     public function bookMark(): BelongsTo
     {
         return $this->belongsTo(BookMark::class)->withTrashed();
+    }
+
+    /**
+     * 本体に紐付いているタグ。主キーが本体のidと同じなので、中間テーブルをそのまま使える。
+     * `has_tags`を1文のUPDATEで判定するために使う。
+     *
+     * @return BelongsToMany<Tag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'book_mark_tags', 'book_mark_id', 'tag_id');
     }
 }

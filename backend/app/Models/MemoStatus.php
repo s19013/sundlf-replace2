@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * メモのうち、ユーザーが直接変更しない項目(閲覧数・タグもちフラグ)を管理する。
@@ -52,5 +53,16 @@ class MemoStatus extends Model
     public function memo(): BelongsTo
     {
         return $this->belongsTo(Memo::class, 'article_id')->withTrashed();
+    }
+
+    /**
+     * 本体に紐付いているタグ。主キーが本体のidと同じなので、中間テーブルをそのまま使える。
+     * `has_tags`を1文のUPDATEで判定するために使う。
+     *
+     * @return BelongsToMany<Tag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'article_tags', 'article_id', 'tag_id');
     }
 }
