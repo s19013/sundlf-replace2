@@ -36,4 +36,4 @@ unique制約
 
 # 備考
 
-以前はタグが一つも紐付いていない状態を`tag_id = NULL`の行で表現していたが、[`book_marks.md`](./book_marks.md)の`has_tags`カラムに意味を統合したため`tag_id`をNOT NULLに変更した。この中間テーブルに`tag_id`がNULLの行は今後作らない。
+以前はタグが一つも紐付いていない状態を`tag_id = NULL`の行で表現していたが、[`book_mark_statuses.md`](./book_mark_statuses.md)の`has_tags`カラムに意味を統合したため`tag_id`をNOT NULLに変更した。この中間テーブルに`tag_id`がNULLの行は今後作らない。

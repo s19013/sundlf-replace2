@@ -5,7 +5,6 @@
 | id         | ID         | bigint(20) UNSIGNED | false    |              | true         | 主キー、AUTO_INCREMENT                       |
 | name       | タグ名     | varchar(255)        | false    |              | false        |                                              |
 | user_id    | ユーザーID | bigint(20) UNSIGNED | false    |              | true         | 外部キー（`users.id`）、`tags_user_id_index` |
-| count      | 使用回数   | bigint(20) UNSIGNED | false    | 0            | false        | 紐づくメモ・ブックマークの数                 |
 | created_at | 作成日時   | timestamp           | true     | NULL         | false        |                                              |
 | updated_at | 更新日時   | timestamp           | true     | NULL         | false        |                                              |
 
@@ -31,6 +30,8 @@
 ユーザー単位での重複禁止をdbでも制御
 
 # 備考
+
+`count`（使用回数）は[`tag_statuses.md`](./tag_statuses.md)へ移動した。
 
 削除について
 論理削除は行わず、物理削除
