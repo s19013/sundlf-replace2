@@ -18,6 +18,7 @@ class StatusRowTest extends TestCase
 
         $this->assertDatabaseHas('article_statuses', [
             'article_id' => $memo->id,
+            'user_id' => $memo->user_id,
             'has_tags' => false,
             'count' => 0,
         ]);
@@ -29,6 +30,7 @@ class StatusRowTest extends TestCase
 
         $this->assertDatabaseHas('book_mark_statuses', [
             'book_mark_id' => $bookMark->id,
+            'user_id' => $bookMark->user_id,
             'has_tags' => false,
             'count' => 0,
         ]);
