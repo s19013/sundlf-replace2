@@ -43,9 +43,7 @@ abstract class Entry extends Model
     protected function casts(): array
     {
         return [
-            'count' => 'integer',
             'star' => 'integer',
-            'has_tags' => 'boolean',
         ];
     }
 }

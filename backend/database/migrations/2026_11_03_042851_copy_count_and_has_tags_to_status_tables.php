@@ -29,10 +29,25 @@ return new class extends Migration
     }
 
     /**
-     * コピーしたstatus行を削除する。
+     * statusの値を本体へ書き戻してから、status行を削除する。
+     * 本体側のカラムは、後続のマイグレーション(2026_11_03_043655)のdownで先に復元されている。
      */
     public function down(): void
     {
+        DB::table('articles')->update([
+            'count' => DB::raw('COALESCE((SELECT article_statuses.count FROM article_statuses WHERE article_statuses.article_id = articles.id), 0)'),
+            'has_tags' => DB::raw('COALESCE((SELECT article_statuses.has_tags FROM article_statuses WHERE article_statuses.article_id = articles.id), 0)'),
+        ]);
+
+        DB::table('book_marks')->update([
+            'count' => DB::raw('COALESCE((SELECT book_mark_statuses.count FROM book_mark_statuses WHERE book_mark_statuses.book_mark_id = book_marks.id), 0)'),
+            'has_tags' => DB::raw('COALESCE((SELECT book_mark_statuses.has_tags FROM book_mark_statuses WHERE book_mark_statuses.book_mark_id = book_marks.id), 0)'),
+        ]);
+
+        DB::table('tags')->update([
+            'count' => DB::raw('COALESCE((SELECT tag_statuses.count FROM tag_statuses WHERE tag_statuses.tag_id = tags.id), 0)'),
+        ]);
+
         DB::table('tag_statuses')->delete();
         DB::table('book_mark_statuses')->delete();
         DB::table('article_statuses')->delete();
