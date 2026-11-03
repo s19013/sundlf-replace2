@@ -6,7 +6,7 @@
 
 `updated_at` を持たないため、`UPDATED_AT = null` とする。
 
-`MemoStatus` / `BookMarkStatus` に共通する設定(`$incrementing`・`UPDATED_AT`・既定値・キャスト・`tags()`)は、抽象基底クラス `EntryStatus` にまとめている。サブクラスは `$primaryKey`、中間テーブル名(`tagPivotTable()`)、親へのリレーションだけを持つ。
+status行に共通する設定(`$incrementing`・`UPDATED_AT`・`count` の既定値とキャスト)は抽象基底クラス `StatusRow` に、`MemoStatus` / `BookMarkStatus` に共通する設定(`has_tags` の既定値とキャスト・`tags()`)は `StatusRow` を継承した抽象基底クラス `EntryStatus` にまとめている。サブクラスは `$primaryKey`、中間テーブル名(`tagPivotTable()`)、親へのリレーションだけを持つ。
 
 # 追加属性
 

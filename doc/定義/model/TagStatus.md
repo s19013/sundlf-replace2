@@ -6,6 +6,8 @@
 
 `updated_at` を持たないため、`UPDATED_AT = null` とする。
 
+`$incrementing`・`UPDATED_AT`・`count` の既定値とキャストは、抽象基底クラス `StatusRow` にまとめている。`TagStatus` は `$primaryKey` と親へのリレーションだけを持つ。
+
 # 追加属性
 
 なし

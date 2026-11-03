@@ -2,20 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * エントリー(メモ・ブックマーク)のうち、ユーザーが直接変更しない項目(閲覧数・タグもちフラグ)を管理するstatus行の基底クラス。
- * エントリーの`updated_at`に影響させずに更新するため、本体とは別テーブルにしている。
- * エントリー1件につき1行なので、サブクラスでエントリーのidを主キー(`$primaryKey`)に指定する。
+ * エントリー(メモ・ブックマーク)のstatus行(閲覧数・タグもちフラグ)の基底クラス。
  */
-abstract class EntryStatus extends Model
+abstract class EntryStatus extends StatusRow
 {
-    public $incrementing = false;
-
-    public const UPDATED_AT = null;
-
     /**
      * @var array<string, mixed>
      */
@@ -37,8 +30,8 @@ abstract class EntryStatus extends Model
     protected function casts(): array
     {
         return [
+            ...parent::casts(),
             'has_tags' => 'boolean',
-            'count' => 'integer',
         ];
     }
 
