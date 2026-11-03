@@ -30,4 +30,14 @@ abstract class Entry extends Model
             'star' => 'integer',
         ];
     }
+
+    /**
+     * タグなし検索をstatus側のインデックスで絞り込むため、status行にも所有者を持たせる。
+     *
+     * @return array{user_id: int}
+     */
+    protected function statusRowAttributes(): array
+    {
+        return ['user_id' => $this->user_id];
+    }
 }

@@ -248,6 +248,7 @@ class ImportLegacyDataCommand extends Command
                 DB::table('article_statuses')->insert($rows->map(function (stdClass $row) use ($articleIdsWithTags): array {
                     return [
                         'article_id' => $row->id,
+                        'user_id' => $row->user_id,
                         'has_tags' => isset($articleIdsWithTags[$row->id]),
                         'count' => $row->count,
                         'created_at' => $row->created_at,
@@ -287,6 +288,7 @@ class ImportLegacyDataCommand extends Command
                 DB::table('book_mark_statuses')->insert($rows->map(function (stdClass $row) use ($bookMarkIdsWithTags): array {
                     return [
                         'book_mark_id' => $row->id,
+                        'user_id' => $row->user_id,
                         'has_tags' => isset($bookMarkIdsWithTags[$row->id]),
                         'count' => $row->count,
                         'created_at' => $row->created_at,

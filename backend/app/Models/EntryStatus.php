@@ -6,9 +6,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * エントリー(メモ・ブックマーク)のstatus行(閲覧数・タグもちフラグ)の基底クラス。
+ *
+ * `user_id`は本体の写しで、タグなし検索を`(user_id, has_tags)`のインデックスで絞り込むために持つ。
+ *
+ * @property int $user_id
  */
 abstract class EntryStatus extends StatusRow
 {
+    /**
+     * @var list<string>
+     */
+    protected $fillable = [
+        'user_id',
+    ];
+
     /**
      * @var array<string, mixed>
      */

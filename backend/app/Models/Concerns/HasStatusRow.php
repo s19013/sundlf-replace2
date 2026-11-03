@@ -21,10 +21,20 @@ trait HasStatusRow
      */
     abstract public function status(): HasOne;
 
+    /**
+     * status行の作成時に、本体のidの他に設定する値。
+     *
+     * @return array<string, mixed>
+     */
+    protected function statusRowAttributes(): array
+    {
+        return [];
+    }
+
     protected static function bootHasStatusRow(): void
     {
         static::created(function (self $model): void {
-            $model->status()->create();
+            $model->status()->create($model->statusRowAttributes());
         });
     }
 }

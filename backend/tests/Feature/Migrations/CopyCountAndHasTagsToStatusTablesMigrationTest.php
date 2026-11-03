@@ -32,9 +32,37 @@ class CopyCountAndHasTagsToStatusTablesMigrationTest extends TestCase
 
     private function runCopyMigration(string $method): void
     {
-        $migration = require database_path('migrations/2026_11_03_042851_copy_count_and_has_tags_to_status_tables.php');
+        $this->runMigration('2026_11_03_042851_copy_count_and_has_tags_to_status_tables', $method);
+    }
+
+    private function runMigration(string $name, string $method): void
+    {
+        $migration = require database_path("migrations/{$name}.php");
         assert($migration instanceof Migration && method_exists($migration, $method));
         $migration->{$method}();
+    }
+
+    /**
+     * コピーのupはstatus行を`user_id`無しで作成するため、`user_id`を追加する後続のマイグレーションを
+     * 実行前に巻き戻し、実行後にやり直す(実際の実行順と同じ状態にする)。
+     */
+    private function runCopyMigrationUp(): void
+    {
+        $userIdMigrations = [
+            '2026_11_03_064738_add_user_id_to_article_statuses_and_book_mark_statuses_tables',
+            '2026_11_03_064808_copy_user_id_to_article_statuses_and_book_mark_statuses_tables',
+            '2026_11_03_064809_add_user_id_index_to_article_statuses_and_book_mark_statuses_tables',
+        ];
+
+        foreach (array_reverse($userIdMigrations) as $name) {
+            $this->runMigration($name, 'down');
+        }
+
+        $this->runCopyMigration('up');
+
+        foreach ($userIdMigrations as $name) {
+            $this->runMigration($name, 'up');
+        }
     }
 
     /**
@@ -65,7 +93,7 @@ class CopyCountAndHasTagsToStatusTablesMigrationTest extends TestCase
         DB::table('book_marks')->where('id', $trashedBookMark->id)->update(['count' => 9, 'has_tags' => false]);
         DB::table('tags')->where('id', $tag->id)->update(['count' => 2]);
 
-        $this->runCopyMigration('up');
+        $this->runCopyMigrationUp();
 
         $this->assertDatabaseCount('article_statuses', 2);
         $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'count' => 3, 'has_tags' => true]);
@@ -84,7 +112,7 @@ class CopyCountAndHasTagsToStatusTablesMigrationTest extends TestCase
         $tag = Tag::factory()->create(['created_at' => '2020-01-02 03:04:05']);
         $this->deleteAllStatusRows();
 
-        $this->runCopyMigration('up');
+        $this->runCopyMigrationUp();
 
         $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'created_at' => '2020-01-02 03:04:05']);
         $this->assertDatabaseHas('book_mark_statuses', ['book_mark_id' => $bookMark->id, 'created_at' => '2020-01-02 03:04:05']);
