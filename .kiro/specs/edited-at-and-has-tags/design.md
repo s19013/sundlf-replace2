@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Purpose**: メモ・ブックマークの日時を、次の2つに分ける。
+**Purpose**: メモ・ブックマーク・タグの日時を、次の2つに分ける。
 
 - `updated_at`：行の更新日時（Laravel 標準）
 - `edited_at`：ユーザーが内容を編集した日時
@@ -12,9 +12,9 @@
 **Users**: メモを使うユーザーは、編集日時で一覧を並べ替え・絞り込みでき、自分が編集していない変化（タグ削除など）で並び順が変わったり、保存が競合と判定されたりしなくなる。
 
 **Impact**:
-- 本体テーブルに `edited_at` と `has_tags` を追加する
-- status テーブルから `has_tags` を削除する
-- メモ API の `updated_at` 系のパラメータとレスポンス項目を `edited_at` に改名する
+- メモ・ブックマークの本体テーブルに `edited_at` と `has_tags` を、`tags` に `edited_at` を追加する
+- status テーブルから `has_tags` を削除する（`count` は3つの status テーブルに残す）
+- メモ API・タグ API の `updated_at` 系のパラメータとレスポンス項目を `edited_at` に改名する
 - `updated_at` を変えないための特別扱いをやめる
 
 ### Goals
@@ -22,9 +22,10 @@
 - 並べ替え・期間絞り込み・レスポンス・楽観的排他制御で、編集日時を使う（3.1〜3.5、4.1〜4.3）
 - タグなし検索を、本体テーブルの複合インデックスで20ms以下にする（5.1〜5.7、6.1〜6.5）
 - 既存データと旧データ移行を新しい構造に合わせる（7.1〜7.5、8.1〜8.2）
+- タグの編集日時を、作成とタグ名の変更のときだけ更新し、タグ検索の並べ替えとレスポンスで使う（10.1〜10.10）
 
 ### Non-Goals
-- タグ（`tags`）の `updated_at` の意味と、タグ検索の並べ替えの変更
+- タグの使用回数を `tags` へ戻すこと（`tag_statuses` に残す）
 - ブックマーク API の実装（ブックマークはデータ層だけを対象にする）
 - メモ画面の実装（フロントエンドにはまだメモの画面が無い。対象は生成型の更新まで）
 - 旧 API パラメータ名（`sort=updated_at` など）の互換対応
@@ -55,13 +56,21 @@
 | 6.4、6.5 | 20ms以下、DB 設定に依存しない | EditedAtMigrations | 複合インデックス | — |
 | 7.1〜7.5 | 既存データの移行とロールバック | EditedAtMigrations | Batch 契約 | 移行フロー |
 | 8.1、8.2 | 旧データ移行 | ImportLegacyDataCommand | Batch 契約 | — |
-| 9.1〜9.3 | ドキュメント | Documentation | — | — |
+| 9.1〜9.4 | ドキュメント | Documentation | — | — |
+| 10.1 | タグの編集日時の保持 | EditedAtMigrations、Tag | `edited_at` カラム | — |
+| 10.2〜10.4 | 作成・タグ名変更で更新、変更なしでは更新しない | TracksEditedAt、Tag | `editableAttributes()` | 保存フロー |
+| 10.5 | 使用回数の増減で日時を変えない | （変更なし。`tag_statuses` を更新） | — | — |
+| 10.6、10.7 | `sort=edited_at`、旧名はエラー | SearchTagRequest、SearchTagsUsecase | API 契約 | — |
+| 10.8 | タグのレスポンスで `edited_at` を返す | TagResource | API 契約 | — |
+| 10.9 | 既存タグの移行とロールバック | EditedAtMigrations | Batch 契約 | 移行フロー |
+| 10.10 | 旧データ移行 | ImportLegacyDataCommand | Batch 契約 | — |
 
 ## Architecture
 
 ### Existing Architecture Analysis
 
 - MVC + Usecase 構成。メモの業務処理は `app/Usecases/Memo/` の `__invoke` で行う。
+- `Tag` は `Entry` を継承しない。`HasOwner` / `HasStatusRow` を use し、使用回数は `tag_statuses` で管理する。タグ名の変更は `UpdateTagUsecase` の `update()` で行う。
 - `Entry`（`Memo` / `BookMark` の抽象基底）は、トレイトで共通の振る舞いを持つ。
   - `DetectsStaleData`：楽観的排他制御
   - `HasStatusRow`：status 行の作成
@@ -83,9 +92,12 @@ graph TB
         FetchMemoUsecase
         SearchMemosUsecase
         DeleteTagUsecase
+        UpdateTagUsecase
+        SearchTagsUsecase
     end
     subgraph Models
         Entry
+        Tag
         TracksEditedAt
         DetectsStaleData
         MemoTag
@@ -96,8 +108,13 @@ graph TB
         Articles
         ArticleTags
         ArticleStatuses
+        Tags
     end
     SearchMemoRequest --> SearchMemosUsecase
+    UpdateTagUsecase --> Tag
+    SearchTagsUsecase --> Tag
+    Tag --> TracksEditedAt
+    Tag --> Tags
     SearchMemosUsecase --> MemoResource
     CreateMemoUsecase --> Entry
     UpdateMemoUsecase --> Entry
@@ -116,6 +133,7 @@ graph TB
 - **Selected pattern**: 既存の MVC + Usecase を維持する。「編集日時の更新」と「`has_tags` の同期」は、#118 と同じくモデル層（トレイト・中間モデルのイベント）に置き、Usecase ごとの書き忘れを防ぐ。
 - **Domain boundaries**:
   - `articles` / `book_marks`：ユーザーが編集する項目と、検索条件になる項目（`has_tags`）を持つ
+  - `tags`：ユーザーが編集する項目（`name`）と、編集日時を持つ
   - status テーブル：書き込みが頻繁で、検索の絞り込みに使わない項目（`count`）だけを持つ
 - **Existing patterns preserved**: Usecase の `__invoke`、モデルの共通トレイト、中間モデルのイベントによる同期、DDL / DML を分けた3段階のマイグレーション、旧データ移行コマンドでの生クエリ insert
 - **New components rationale**: `TracksEditedAt` は、作成・編集時に `edited_at` を `created_at` / `updated_at` と同じ時刻で設定する責務を1か所にまとめる
@@ -179,19 +197,22 @@ flowchart LR
 
 | Component | Domain/Layer | Intent | Req Coverage | Key Dependencies | Contracts |
 |-----------|--------------|--------|--------------|------------------|-----------|
-| TracksEditedAt（新規） | Model / Trait | 作成・編集時に `edited_at` を設定する | 1.2〜1.5、2.4 | HasTimestamps (P0) | Service, State |
+| TracksEditedAt（新規） | Model / Trait | 作成・編集時に `edited_at` を設定する | 1.2〜1.5、2.4、10.2〜10.4 | HasTimestamps (P0) | Service, State |
 | Entry / Memo / BookMark | Model | `edited_at`・`has_tags` のキャストと既定値、編集対象属性の宣言 | 1.1、1.3、5.1 | TracksEditedAt (P0) | State |
+| Tag | Model | `edited_at` のキャスト、編集対象属性（`name`）の宣言 | 10.1〜10.5 | TracksEditedAt (P0) | State |
 | DetectsStaleData | Model / Trait | 取得後に編集されたかを `edited_at` で判定する | 4.1〜4.3 | Entry (P0) | Service |
 | SyncsEntryHasTags / MemoTag / BookMarkTag | Model / Pivot | 紐付けの増減で本体の `has_tags` を同期する | 1.6、2.1、5.3、5.4、5.6 | Entry (P0) | Event |
 | MemoStatus / BookMarkStatus / StatusRow | Model | `count` だけを持つ status 行 | 5.2、5.7 | — | State |
 | UpdateMemoUsecase | Usecase | タグだけの変更を編集として扱う | 1.4、4.1 | TracksEditedAt (P0) | Service |
 | SearchMemosUsecase / SearchMemoRequest | Usecase / Request | `edited_at` で並べ替え・絞り込み、本体の `has_tags` でタグなし検索 | 2.5、3.1、3.2、3.4、6.1〜6.3 | Entry (P0) | API |
 | MemoResource | Resource | `edited_at` を返す | 3.3 | — | API |
+| SearchTagsUsecase / SearchTagRequest | Usecase / Request | `edited_at` でタグを並べ替える | 10.6、10.7 | Tag (P0) | API |
+| TagResource | Resource | `edited_at` を返す（メモのレスポンス内のタグを含む） | 10.8 | — | API |
 | DeleteTagUsecase | Usecase | タグ削除の前に本体の `has_tags` を同期する | 1.6、2.1、5.5、5.6 | Entry (P0) | Service |
-| EditedAtMigrations（新規 M1〜M3） | Database | カラム・インデックス・データの移行 | 1.1、5.1、5.2、6.4、7.1〜7.5 | — | Batch |
-| ImportLegacyDataCommand | Console | 旧データの `edited_at` と `has_tags` を本体へ設定する | 8.1、8.2 | — | Batch |
-| 生成型（schema.d.ts / ziggy） | Frontend | API の型を `edited_at` に更新する | 3.5 | MemoResource (P0) | — |
-| Documentation | doc | DB・モデル・API 定義の更新 | 9.1〜9.3 | — | — |
+| EditedAtMigrations（新規 M1〜M3） | Database | カラム・インデックス・データの移行 | 1.1、5.1、5.2、6.4、7.1〜7.5、10.1、10.9 | — | Batch |
+| ImportLegacyDataCommand | Console | 旧データの `edited_at` と `has_tags` を本体へ設定する | 8.1、8.2、10.10 | — | Batch |
+| 生成型（schema.d.ts / ziggy） | Frontend | API の型を `edited_at` に更新する | 3.5 | MemoResource (P0)、TagResource (P0) | — |
+| Documentation | doc | DB・モデル・API 定義の更新 | 9.1〜9.4 | — | — |
 
 ### Model Layer
 
@@ -200,16 +221,16 @@ flowchart LR
 | Field | Detail |
 |-------|--------|
 | Intent | 作成時と、ユーザーが編集した保存のときだけ、`edited_at` を `created_at` / `updated_at` と同じ時刻で設定する |
-| Requirements | 1.2、1.3、1.4、1.5、2.4 |
+| Requirements | 1.2、1.3、1.4、1.5、2.4、10.2、10.3、10.4 |
 
 **Responsibilities & Constraints**
-- `Entry` が use する。Eloquent のタイムスタンプ更新（`updateTimestamps()`）を拡張し、同じ時刻を `edited_at` に設定する。
+- `Entry` と `Tag` が use する。Eloquent のタイムスタンプ更新（`updateTimestamps()`）を拡張し、同じ時刻を `edited_at` に設定する。
 - 新規作成時は、常に `edited_at` を設定する。ただし呼び出し側が `edited_at` を明示した場合はその値を優先する（テスト・データ移行用）。
 - 既存行の更新時は、編集対象の属性が変更されているか、`markAsEdited()` が呼ばれているときだけ設定する。
 - クエリビルダーの `update()`、SoftDeletes の論理削除、status テーブルの更新は対象外（仕組み上 `edited_at` に触れない）。
 
 **Dependencies**
-- Inbound: `Entry` — トレイトとして利用する（P0）
+- Inbound: `Entry`・`Tag` — トレイトとして利用する（P0）
 - External: `Illuminate\Database\Eloquent\Concerns\HasTimestamps` — `updateTimestamps()` の拡張点（P0）
 
 **Contracts**: Service [x] / State [x]
@@ -232,7 +253,7 @@ trait TracksEditedAt
     public function markAsEdited(): static;
 }
 ```
-- Preconditions: `Entry` のサブクラスであり、`edited_at` カラムを持つ。
+- Preconditions: Eloquent モデルで、タイムスタンプを使い、`edited_at` カラムを持つ。
 - Postconditions:
   - 新規作成後は `edited_at == created_at`
   - 編集の保存後は `edited_at == updated_at`
@@ -240,7 +261,7 @@ trait TracksEditedAt
 - Invariants: `edited_at <= updated_at`
 
 **Implementation Notes**
-- `editableAttributes()` は Memo が `title` / `body` / `star`、BookMark が `title` / `url` / `star` を返す。
+- `editableAttributes()` は Memo が `title` / `body` / `star`、BookMark が `title` / `url` / `star`、Tag が `name` を返す。
 - `markAsEdited()` の印は、保存後にクリアする（同じインスタンスで再度 `save()` しても、編集扱いが続かない）。
 - Risks: 編集対象の属性を追加したら、`editableAttributes()` の更新が必要。モデル定義ドキュメントに明記する。
 
@@ -250,6 +271,13 @@ trait TracksEditedAt
 - `Entry` に `TracksEditedAt` を追加する。キャストに `edited_at => datetime` と `has_tags => boolean` を、既定値に `has_tags => false` を追加する。
 - `has_tags` は `$fillable` に含めない（同期処理だけが書く）。
 - PHPDoc の `@property` に `edited_at`（`Carbon`）と `has_tags`（`bool`）を追加する。
+
+#### Tag
+
+**Responsibilities & Constraints**
+- `TracksEditedAt` を追加し、キャストに `edited_at => datetime` を追加する。PHPDoc の `@property` に `edited_at` を追加する。
+- タグ名の変更（`UpdateTagUsecase` の `update()`）は `save()` を通るため、名前が変わったときだけ `edited_at` が更新される。同じ名前なら dirty にならず、何も書かない（10.3、10.4）。`UpdateTagUsecase` のコードは変えない。
+- 使用回数の増減は `tag_statuses` への UPDATE なので、`tags` の `edited_at` も `updated_at` も変わらない（10.5）。
 
 #### DetectsStaleData
 
@@ -315,6 +343,24 @@ trait DetectsStaleData
 - レスポンスの `updated_at` を `edited_at` に置き換える。行の更新日時（`updated_at`）は返さない。
 - 対象は、メモ取得・メモ検索・メモ更新の競合時のレスポンス（`saved`）。
 
+#### SearchTagsUsecase / SearchTagRequest
+
+**Contracts**: API [x]
+
+##### API Contract（タグ検索）
+| Parameter | 変更前 | 変更後 | Validation |
+|-----------|--------|--------|------------|
+| `sort` | `updated_at`（既定）, `name`, `count`, `created_at` | `edited_at`（既定）, `name`, `count`, `created_at` | `in:` に含まれない値は 422 |
+
+- `sort=updated_at` は `in:` から外すことで 422 になる（10.7）。
+- タグの件数は少ない（タグ1,000件の `sort=count` で1.7ms）ため、`edited_at` 用のインデックスは追加しない。
+
+#### TagResource
+
+**Contracts**: API [x]
+
+- レスポンスの `updated_at` を `edited_at` に置き換える。タグ検索・全タグ取得に加えて、`MemoResource` の `tags` にも反映される（10.8）。
+
 #### DeleteTagUsecase
 
 - 対象を `MemoStatus` / `BookMarkStatus` から、`Memo::withTrashed()` / `BookMark::withTrashed()` に変える。条件（このタグに紐付き、他のタグには紐付いていない）は変えない。
@@ -327,16 +373,16 @@ trait DetectsStaleData
 **Contracts**: Batch [x]
 
 ##### Batch / Job Contract
-- **M1（DDL）**：`articles` / `book_marks` に `edited_at`（timestamp、nullable）と `has_tags`（boolean、既定 false）を追加する。down はこの2カラムを削除する。
+- **M1（DDL）**：`articles` / `book_marks` に `edited_at`（timestamp、nullable）と `has_tags`（boolean、既定 false）を、`tags` に `edited_at`（timestamp、nullable）を追加する。down はこれらのカラムを削除する。
 - **M2（DML）**：
   - up：
-    - ゴミ箱内を含む全行の `edited_at` に `updated_at` を写す
+    - `articles` / `book_marks`（ゴミ箱内を含む）と `tags` の全行の `edited_at` に `updated_at` を写す
     - status テーブルの `has_tags` を本体へ写す（status 行が無い本体は false のまま）
     - `DB::table()` で書き、`updated_at` は変更しない（7.3）
   - down：本体の `has_tags` を status テーブルへ書き戻す
 - **M3（DDL）**：
   - up：
-    - `edited_at` を NOT NULL にする
+    - 3テーブルの `edited_at` を NOT NULL にする
     - 本体に `(user_id, deleted_at, edited_at)` と `(user_id, has_tags, deleted_at, edited_at)` を作成してから、`(user_id, deleted_at, updated_at)` を削除する（外部キー用のインデックスを途切れさせない）
     - status テーブルから `has_tags` を削除する
   - down：status の `has_tags` カラムと旧インデックスを復元し、新しいインデックスを削除し、`edited_at` を nullable に戻す
@@ -347,6 +393,7 @@ trait DetectsStaleData
 - articles / book_marks の insert で、`edited_at` に旧データの `updated_at` を設定する（8.1）。
 - `has_tags` を、status テーブルではなく本体の insert で設定する。判定方法（旧中間テーブルでの紐付けの有無）は変えない（8.2）。
 - status テーブルへの insert は `count` だけにする。
+- tags の insert で、`edited_at` に旧データの `updated_at` を設定する（10.10）。
 
 ## Data Models
 
@@ -365,6 +412,8 @@ trait DetectsStaleData
 | `(user_id, deleted_at, edited_at)` | 追加。通常の一覧・ゴミ箱一覧の編集日時順 |
 | `(user_id, has_tags, deleted_at, edited_at)` | 追加。タグなし検索 |
 | `(user_id, deleted_at, updated_at)` | 削除 |
+
+**tags（変更）**：`edited_at`（timestamp、NULL 不可）を追加する。ユーザーがタグ名を編集した日時（UTC）。インデックスは追加しない。
 
 **article_statuses / book_mark_statuses（変更）**：`has_tags` を削除する。`article_id` / `book_mark_id`（主キー）・`count`・`created_at` は残す。
 
@@ -392,9 +441,21 @@ interface MemoResponse {
 }
 ```
 
+**API Data Transfer（TagResource）**
+
+```typescript
+interface TagResponse {
+  id: number
+  name: string
+  count: number
+  created_at: string | null
+  edited_at: string       // 変更: updated_at から置き換え。UTC ISO 8601
+}
+```
+
 ## Error Handling
 
-- 旧名の検索パラメータ（`sort=updated_at`、`updated_at_range_start`、`updated_at_range_end`）は、FormRequest のバリデーションで 422 にする（3.4）。
+- 旧名の検索パラメータは、FormRequest のバリデーションで 422 にする。メモ検索は `sort=updated_at`・`updated_at_range_start`・`updated_at_range_end`（3.4）、タグ検索は `sort=updated_at`（10.7）が対象。
 - 排他制御の競合は、既存の `StaleDataException` のまま。判定基準だけを `edited_at` に変える。
 - マイグレーションの失敗はロールバックで戻す。インデックス作り直しの順序（新規作成 → 旧削除）を守り、外部キーのエラーを避ける。
 
@@ -416,8 +477,14 @@ interface MemoResponse {
   - タグ削除の後に更新しても競合にならない
   - タグだけの付け替えで `edited_at` が更新される
   - タグなし検索（他ユーザーの除外、ゴミ箱との組み合わせ）
+- **タグ（`CreateTagApiTest` / `UpdateTagApiTest` / `SearchTagsApiTest` / `AllTagsApiTest`）**
+  - 作成時に `edited_at == created_at` になる
+  - タグ名の変更で `edited_at` が更新され、同じ名前では変わらない
+  - メモへの紐付けの追加・解除、メモのゴミ箱への移動・復元で、タグの `edited_at` と `updated_at` が変わらない
+  - `sort=edited_at` と既定値での並び順、`sort=updated_at` で 422
+  - タグのレスポンス（メモのレスポンス内を含む）に `edited_at` があり、`updated_at` が無い
 - **Migrations（新規テスト + 既存2テストの setUp 修正）**
-  - M2 の up で、`edited_at = updated_at`（ゴミ箱を含む）になる
+  - M2 の up で、メモ・ブックマーク（ゴミ箱を含む）とタグの `edited_at = updated_at` になる
   - `has_tags` が status から写され、status 行が無い本体は false になる
   - `updated_at` が変わらない
   - M3 → M2 → M1 の down で、移行前の構造と値に戻る
@@ -436,7 +503,9 @@ interface MemoResponse {
   - 本体の `has_tags` の件数が、status テーブルの `has_tags = true` の件数と一致する
 - ロールバックの引き金：M3 の失敗、または移行後の並び順・タグなし検索の不一致。`migrate:rollback` で M3 → M2 → M1 の順に戻す。
 
-## Documentation（9.1〜9.3）
+## Documentation（9.1〜9.4）
+
+- `doc/定義/db/tags.md`・`doc/定義/model/Tag.md`・`doc/定義/api/タグ/タグ検索api.md`・`全タグ取得api.md`：`edited_at` の追加、並べ替えとレスポンスの改名（9.4）
 
 - `doc/定義/db/articles.md`・`book_marks.md`：`edited_at` と `has_tags` の追加、`updated_at` と `edited_at` の意味の違い、インデックス
 - `doc/定義/db/article_statuses.md`・`book_mark_statuses.md`：`has_tags` の削除。分離理由を `count` だけの内容に更新

@@ -50,7 +50,8 @@
   - `has_tags` の読み書き：`SyncsEntryHasTags` + `MemoTag` / `BookMarkTag`、`DeleteTagUsecase`、`SearchMemosUsecase`、`EntryStatus`（既定値・キャスト・`tags()`）、`ImportLegacyDataCommand`（status への insert）
   - フロントエンドには、メモの画面と `updated_at` の参照が無い（`frontend/src/entities` は `auth` / `counter` だけ）。影響は生成ファイル（`schema.d.ts` / ziggy）の再生成だけ。
   - ブックマークの Usecase・API は未実装。
-  - `TagResource` / `SearchTagsUsecase` の `updated_at` はタグの日時で、対象外。
+  - タグの `updated_at` は、タグ検索の既定の並べ替え（`SearchTagsUsecase`、`SearchTagRequest` の `sort`）と `TagResource` で使っている。タグ名の変更は `UpdateTagUsecase` の `update()`（`save()` 経由）、使用回数は `tag_statuses` への UPDATE なので、`TracksEditedAt` を `Tag` にも use すれば、メモと同じ仕組みで「タグ名を変えたときだけ `edited_at` を更新する」を満たせる（要件追加の Requirement 10）。
+  - `GetAllTagsUsecase` / `CreateTagUsecase` は並べ替えをしない。タグの件数は少ない（1,000件の `sort=count` で1.7ms）ため、`edited_at` 用のインデックスは追加しない。
 
 ## Architecture Pattern Evaluation
 

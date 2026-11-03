@@ -18,8 +18,9 @@
 
 ### 対象範囲
 
-- 対象：メモ（`articles`）、ブックマーク（`book_marks`）、各 status テーブル、メモの API とフロントエンド、旧データ移行コマンド、関連ドキュメント
-- 対象外：タグ（`tags`）の `updated_at` の意味と、タグ検索の並べ替え。ブックマークの API は未実装のため、ブックマークはデータ層（テーブル・モデル・同期処理）だけを対象にする
+- 対象：メモ（`articles`）、ブックマーク（`book_marks`）、タグ（`tags`）、各 status テーブル、メモ・タグの API とフロントエンド、旧データ移行コマンド、関連ドキュメント
+- タグも同じ考え方で、`updated_at`（行の更新日時）と `edited_at`（ユーザーがタグ名を編集した日時）に分ける（Requirement 10）。タグの使用回数（`count`）は、引き続き `tag_statuses` で管理する
+- 対象外：ブックマークの API は未実装のため、ブックマークはデータ層（テーブル・モデル・同期処理）だけを対象にする
 
 ## Requirements
 
@@ -108,9 +109,26 @@
 1. The Documentation shall DB 定義（`articles`・`book_marks`・各 status テーブル）に、行の更新日時と編集日時の意味の違い、およびタグの有無の格納先を記載する
 2. The Documentation shall モデル定義とメモ API 定義に、並べ替え・期間絞り込み・楽観的排他制御・表示が編集日時に基づくことを記載する
 3. The Documentation shall status テーブルの分離理由を、閲覧数・タグ使用回数だけを対象とする内容に更新する
+4. The Documentation shall タグの DB 定義・モデル定義・タグ API 定義に、行の更新日時と編集日時の意味の違いと、並べ替え・レスポンスが編集日時に基づくことを記載する
+
+### Requirement 10: タグの編集日時
+**Objective:** As a タグを使うユーザー, I want タグも自分が編集したときだけ変わる日時で並べ替えたい, so that メモと同じ考え方でタグを探せる
+
+#### Acceptance Criteria
+1. The Tag Service shall タグごとに、行の更新日時（`updated_at`）とは別に編集日時（`edited_at`）を保持する
+2. When タグが作成された, the Tag Service shall 編集日時を作成日時と同じ時刻に設定する
+3. When ユーザーがタグ名を変更して保存した, the Tag Service shall 編集日時を保存した時刻に更新する
+4. If タグ名の変更要求が保存済みの名前と同じである, the Tag Service shall 編集日時を更新しない
+5. When メモへの紐付けの追加・解除、メモのゴミ箱への移動・復元によってタグの使用回数が増減した, the Tag Service shall タグの編集日時と行の更新日時のどちらも変更しない
+6. When タグ検索で編集日時順の並べ替え（`sort=edited_at`）が指定された（並べ替えの指定が無い既定の場合を含む）, the Tag API shall 編集日時の新しい順にタグを返す
+7. If タグ検索で旧名の並べ替え（`sort=updated_at`）が指定された, the Tag API shall 旧名として受け付けず、バリデーションエラーを返す
+8. The Tag API shall タグのレスポンス（タグ検索・全タグ取得、およびメモのレスポンスに含まれるタグ）で、`updated_at` の代わりに `edited_at` を UTC の ISO 8601 形式で返す
+9. When マイグレーションが実行された, the Database Migration shall 既存のすべてのタグの編集日時に、そのときの行の更新日時を設定し、ロールバック時は編集日時を削除する
+10. When 旧データ移行コマンドがタグを取り込んだ, the Legacy Import Command shall 編集日時に旧データの更新日時を設定する
 
 ## 決定事項
 
 1. **API の名前**：並べ替え・期間指定・レスポンスの項目名は `edited_at` に改名する（Requirement 3）。API の `updated_at` と DB の `updated_at` で意味が食い違わないようにするため。フロントエンドと生成型（`schema.d.ts`）も合わせて変更する。
 2. **ゴミ箱への移動・復元時の編集日時**：変更しない（Requirement 2-4）。現状はゴミ箱への移動・復元で `updated_at` が変わるため、ゴミ箱一覧は「削除した順」に近い並びになっているが、変更後は「編集した順」に並ぶ。
 3. **性能目標の値**：20ms 以下とする（Requirement 6-4）。#127 以前（本体に `has_tags`）の計測結果（1ページ目約0.2ms、件数取得0.1〜3.0ms）に余裕を持たせた値。
+4. **タグも対象にする**：タグにも `edited_at` を追加し、タグ検索の並べ替えとレスポンスを `edited_at` に改名する（Requirement 10）。タグの使用回数は `tag_statuses` に残す。
