@@ -38,7 +38,7 @@ class UpdateMemoUsecase
             }
 
             if ($request->filled('fetched_at') && $locked->hasBeenUpdatedSinceRetrieval($request->string('fetched_at')->toString())) {
-                $locked->load('tags');
+                $locked->load(['status', 'tags.status']);
 
                 throw new StaleDataException(
                     ['保存できませんでした。', '他の画面で記事が更新されています。', '競合状態を修正してください'],

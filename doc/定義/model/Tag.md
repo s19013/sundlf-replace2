@@ -2,6 +2,8 @@
 
 [tags](../db/tags.md)
 
+count(使用回数)は [tag_statuses.md](../db/tag_statuses.md) で管理する
+
 # 追加属性
 
 なし
@@ -18,14 +20,20 @@ user_id と 引数userId が同じなら true
 
 # リレーション
 
-テーブル定義を参照
+ほかはテーブル定義を参照
+
+## status
+
+`tag_statuses` を hasOne で取得
 
 # 備考
 
 ## count(使用回数)の増減
 
+増減の対象は `tag_statuses.count`。`tags` 側を更新しないので、`tags.updated_at` は変わらない(タグ検索の更新日順に影響しない)。
+
 当初は「リポジトリに作成予定」としていたが、実装ではモデルやリポジトリにメソッドは作らず、
-メモ関連のUsecase内で`Tag::whereIn('id', ...)->increment('count')` / `decrement('count')`を直接呼んでいる。
+メモ関連のUsecase内で増減処理(`increment('count')` / `decrement('count')`)を直接呼んでいる。
 (複数のタグをまとめて増減したいため)
 
 | タイミング | 増減                                       | 実装場所                                        |

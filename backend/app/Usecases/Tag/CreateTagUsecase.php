@@ -8,6 +8,7 @@ use App\Http\Requests\Tag\CreateTagRequest;
 use App\Models\User;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class CreateTagUsecase
 {
@@ -20,7 +21,8 @@ class CreateTagUsecase
         $this->ensureNotExists($user, $name);
 
         try {
-            $user->tags()->create(['name' => $name]);
+            // createdイベントでstatus行も作成するため、同じトランザクションにまとめる
+            DB::transaction(fn () => $user->tags()->create(['name' => $name]));
         } catch (UniqueConstraintViolationException) {
             throw new DuplicationException($name);
         }

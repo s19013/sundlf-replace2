@@ -52,14 +52,14 @@ class CompletelyDeleteMemoApiTest extends TestCase
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
-        $tag = Tag::factory()->create(['user_id' => $user->id, 'count' => 0]);
+        $tag = Tag::factory()->usageCount(0)->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
         // 論理削除の時点でタグのcountは既に減算済みという想定
         $memo->delete();
 
         $this->actingAs($user)->spaDelete("/api/memos/{$memo->id}/completely");
 
-        $this->assertDatabaseHas('tags', ['id' => $tag->id, 'count' => 0]);
+        $this->assertDatabaseHas('tag_statuses', ['tag_id' => $tag->id, 'count' => 0]);
     }
 
     // --- 異常系 ---

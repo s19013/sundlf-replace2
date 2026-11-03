@@ -7,6 +7,7 @@ use App\Facades\Authenticated;
 use App\Http\Requests\Tag\SearchTagRequest;
 use App\Http\Resources\PaginationResource;
 use App\Http\Resources\TagResource;
+use App\Models\TagStatus;
 use App\Tools\SearchToolKit;
 use Illuminate\Http\JsonResponse;
 
@@ -34,8 +35,16 @@ class SearchTagsUsecase
         $itemNumber = $request->integer('item_number') ?: 10;
         $page = $request->integer('page', 1);
 
+        // 使用回数はtag_statusesにあるため、サブクエリで並べ替える
+        $sortColumn = $sort === 'count'
+            ? TagStatus::select('count')->whereColumn('tag_statuses.tag_id', 'tags.id')
+            : $sort;
+
         // count等は同値になりやすく、順序が不定だとページ間で重複・欠落するためidを第2キーにする
-        $tags = $query->orderBy($sort, 'desc')->orderBy('id', 'desc')->paginate($itemNumber, page: $page);
+        $tags = $query->with('status')
+            ->orderBy($sortColumn, 'desc')
+            ->orderBy('id', 'desc')
+            ->paginate($itemNumber, page: $page);
 
         // 検索結果が0件の場合と、存在しないページを指定された場合のどちらも404
         if ($tags->isEmpty()) {

@@ -29,7 +29,7 @@ class FetchMemoUsecase
             throw new StaleDataException(['他の画面でメモが更新されています。反映しますか?']);
         }
 
-        $memo->load('tags');
+        $memo->load(['status', 'tags.status']);
 
         return response()->json([
             'memo' => new MemoResource($memo),

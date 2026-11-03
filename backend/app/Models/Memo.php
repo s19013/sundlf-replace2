@@ -4,20 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
  * @property int $user_id
- * @property int $count
  * @property int $star
  * @property string $title
  * @property string $body
- * @property bool $has_tags
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read bool $is_deadline_approaching
  * @property-read bool $is_in_trash
+ * @property-read \App\Models\MemoStatus|null $status
  * @property-read \App\Models\MemoTag|null $pivot
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Tag> $tags
  * @property-read int|null $tags_count
@@ -52,5 +52,13 @@ class Memo extends Entry
         return $this->belongsToMany(Tag::class, 'article_tags', 'article_id', 'tag_id')
             ->using(MemoTag::class)
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasOne<MemoStatus, $this>
+     */
+    public function status(): HasOne
+    {
+        return $this->hasOne(MemoStatus::class, 'article_id');
     }
 }

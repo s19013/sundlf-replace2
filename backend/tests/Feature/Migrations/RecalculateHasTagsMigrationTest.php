@@ -15,6 +15,19 @@ class RecalculateHasTagsMigrationTest extends TestCase
     use RefreshDatabase;
 
     /**
+     * 補正対象の本体の`has_tags`は後続のマイグレーションで削除されるため、その`down()`で復元してから検証する。
+     * テストDB(SQLite)ではDDLもトランザクション内で実行されるので、テスト終了時に元のスキーマへ戻る。
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $migration = require database_path('migrations/2026_11_03_043655_drop_count_and_has_tags_from_articles_book_marks_and_tags_tables.php');
+        assert($migration instanceof Migration && method_exists($migration, 'down'));
+        $migration->down();
+    }
+
+    /**
      * @return array<int, Memo|BookMark>
      */
     private function createEntries(): array

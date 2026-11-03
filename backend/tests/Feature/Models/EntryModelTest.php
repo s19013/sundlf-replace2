@@ -41,7 +41,7 @@ class EntryModelTest extends TestCase
                 $this->fail('updated_at was not set after refresh.');
             }
 
-            $this->assertSame(1, $model->count);
+            $this->assertSame(1, $model->status?->count);
             $this->assertTrue($updatedAtAfterIncrease->eq($originalUpdatedAt));
         }
     }

@@ -40,7 +40,9 @@ name:['required']
 
 - バリデーションチェック
 - 重複チェック
-- 登録
+- `DB::transaction`内で以下をまとめて実行する
+  - 登録
+  - status行(`tag_statuses`)の作成
 - レスポンス返却
 
 # エラー

@@ -63,15 +63,15 @@ class DeleteTagApiTest extends TestCase
     {
         $user = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $user->id]);
-        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
-        $bookMark = BookMark::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        $bookMark = BookMark::factory()->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
         $bookMark->tags()->attach($tag->id);
 
         $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
 
-        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => false]);
-        $this->assertDatabaseHas('book_marks', ['id' => $bookMark->id, 'has_tags' => false]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => false]);
+        $this->assertDatabaseHas('book_mark_statuses', ['book_mark_id' => $bookMark->id, 'has_tags' => false]);
     }
 
     public function test_他のタグが残っているメモのhas_tagsはtrueのままであること(): void
@@ -79,32 +79,32 @@ class DeleteTagApiTest extends TestCase
         $user = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $user->id]);
         $remainingTag = Tag::factory()->create(['user_id' => $user->id]);
-        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
         $memo->tags()->attach([$tag->id, $remainingTag->id]);
 
         $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
 
-        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => true]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => true]);
     }
 
     public function test_ゴミ箱内のメモもhas_tagsがfalseになること(): void
     {
         $user = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $user->id]);
-        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
         $memo->delete();
 
         $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
 
-        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => false]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => false]);
     }
 
     public function test_タグを削除してもメモのupdated_atは更新されないこと(): void
     {
         $user = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $user->id]);
-        $memo = Memo::factory()->create(['user_id' => $user->id, 'has_tags' => true]);
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
         $beforeUpdatedAt = $memo->updated_at?->toIso8601String();
 

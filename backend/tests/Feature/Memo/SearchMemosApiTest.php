@@ -3,6 +3,7 @@
 namespace Tests\Feature\Memo;
 
 use App\Models\Memo;
+use App\Models\MemoStatus;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -169,6 +170,22 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.id', $memoWithoutTag->id);
     }
 
+    public function test_is_tag_not_attachedでstatus行が無いメモもタグ無しとして絞り込めること(): void
+    {
+        $user = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        // イベントを通さずに作られた場合などを模擬する
+        MemoStatus::whereKey($memo->id)->delete();
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'is_tag_not_attached' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'memos');
+        $response->assertJsonPath('memos.0.id', $memo->id);
+    }
+
     public function test_starsで星数を絞り込めること(): void
     {
         $user = User::factory()->create();
@@ -230,6 +247,21 @@ class SearchMemosApiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJsonPath('memos.0.title', 'ううう');
+    }
+
+    public function test_sortにcountを指定すると閲覧数の多い順に取得できること(): void
+    {
+        $user = User::factory()->create();
+        $few = Memo::factory()->create(['user_id' => $user->id]);
+        $many = Memo::factory()->create(['user_id' => $user->id]);
+        $few->status()->update(['count' => 1]);
+        $many->status()->update(['count' => 3]);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query(['sort' => 'count']));
+
+        $response->assertStatus(200);
+        $this->assertSame([$many->id, $few->id], $response->json('memos.*.id'));
+        $this->assertSame([3, 1], $response->json('memos.*.count'));
     }
 
     public function test_paginationに現在ページ・最終ページ・1ページの件数・総件数が含まれること(): void

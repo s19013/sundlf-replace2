@@ -22,10 +22,10 @@ class MemoTag extends Pivot
     protected $table = 'article_tags';
 
     /**
-     * @return Builder<Memo>
+     * @return Builder<MemoStatus>
      */
-    protected function parentEntryQuery(): Builder
+    protected function parentStatusQuery(): Builder
     {
-        return Memo::withTrashed()->whereKey($this->article_id);
+        return MemoStatus::whereKey($this->article_id);
     }
 }

@@ -94,5 +94,6 @@ sort:['nullable', 'string', 'in:name,count,created_at,updated_at']
 # 備考
 
 - 並び順は`sort`で指定した項目の降順。値が同じタグ同士は`id`の降順で決まる(ページ間で重複・欠落しないようにするため)。
+- `sort=count`の場合は、`tag_statuses`の`count`をサブクエリで取得して並べ替える(JOINすると`created_at`などの列名が重複するため)。
 - フロントは`pagination.current_page`と`pagination.last_page`から、ページネーション(先頭・前へ・直接リンク・プルダウン・次へ・末尾)を組み立てる。
 - タグモーダルは全件取得(`tags.all`)を使うため、このAPIのページネーションは使わない。

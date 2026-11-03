@@ -7,7 +7,7 @@ use App\Exceptions\UnprocessableException;
 use App\Facades\Authenticated;
 use App\Http\Requests\Memo\SalvageMemoRequest;
 use App\Models\Memo;
-use App\Models\Tag;
+use App\Models\TagStatus;
 use App\Usecases\Concerns\AssertOwner;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +43,7 @@ class SalvageMemoUsecase
             $tagIds = $locked->tags()->pluck('tags.id');
 
             if ($tagIds->isNotEmpty()) {
-                Tag::whereIn('id', $tagIds)->increment('count');
+                TagStatus::whereIn('tag_id', $tagIds)->increment('count');
             }
 
             $locked->salvage();

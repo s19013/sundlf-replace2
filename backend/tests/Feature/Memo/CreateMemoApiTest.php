@@ -58,7 +58,7 @@ class CreateMemoApiTest extends TestCase
     public function test_タグを指定して作成すると紐付き該当タグのcountがincreaseすること(): void
     {
         $user = User::factory()->create();
-        $tag = Tag::factory()->create(['user_id' => $user->id, 'count' => 0]);
+        $tag = Tag::factory()->usageCount(0)->create(['user_id' => $user->id]);
 
         $response = $this->actingAs($user)->spaPost('/api/memos', [
             'title' => '新規メモ',
@@ -68,7 +68,7 @@ class CreateMemoApiTest extends TestCase
         $memoId = $response->json('id');
 
         $this->assertDatabaseHas('article_tags', ['article_id' => $memoId, 'tag_id' => $tag->id]);
-        $this->assertDatabaseHas('tags', ['id' => $tag->id, 'count' => 1]);
+        $this->assertDatabaseHas('tag_statuses', ['tag_id' => $tag->id, 'count' => 1]);
     }
 
     public function test_タグを指定して作成するとhas_tagsがtrueになること(): void
@@ -81,7 +81,7 @@ class CreateMemoApiTest extends TestCase
             'tags' => [$tag->id],
         ]);
 
-        $this->assertDatabaseHas('articles', ['id' => $response->json('id'), 'has_tags' => true]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $response->json('id'), 'has_tags' => true]);
     }
 
     public function test_タグを指定せずに作成するとhas_tagsがfalseになること(): void
@@ -92,7 +92,7 @@ class CreateMemoApiTest extends TestCase
             'title' => '新規メモ',
         ]);
 
-        $this->assertDatabaseHas('articles', ['id' => $response->json('id'), 'has_tags' => false]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $response->json('id'), 'has_tags' => false]);
     }
 
     public function test_他人のタグidのみを指定して作成するとhas_tagsがfalseになること(): void
@@ -105,14 +105,14 @@ class CreateMemoApiTest extends TestCase
             'tags' => [$otherTag->id],
         ]);
 
-        $this->assertDatabaseHas('articles', ['id' => $response->json('id'), 'has_tags' => false]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $response->json('id'), 'has_tags' => false]);
     }
 
     public function test_他人のタグidを指定しても紐付かないこと(): void
     {
         $user = User::factory()->create();
         $otherUser = User::factory()->create();
-        $otherTag = Tag::factory()->create(['user_id' => $otherUser->id, 'count' => 0]);
+        $otherTag = Tag::factory()->usageCount(0)->create(['user_id' => $otherUser->id]);
 
         $response = $this->actingAs($user)->spaPost('/api/memos', [
             'title' => '新規メモ',
@@ -125,7 +125,7 @@ class CreateMemoApiTest extends TestCase
         $this->assertNotNull($memoId);
 
         $this->assertDatabaseMissing('article_tags', ['article_id' => $memoId, 'tag_id' => $otherTag->id]);
-        $this->assertDatabaseHas('tags', ['id' => $otherTag->id, 'count' => 0]);
+        $this->assertDatabaseHas('tag_statuses', ['tag_id' => $otherTag->id, 'count' => 0]);
     }
 
     // --- 異常系 ---

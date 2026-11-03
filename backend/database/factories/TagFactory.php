@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,5 +22,15 @@ class TagFactory extends Factory
             'user_id' => User::factory(),
             'name' => fake()->unique()->word(),
         ];
+    }
+
+    /**
+     * 使用回数(`tag_statuses.count`)を設定する。status行はタグ作成時のイベントで作られるため、作成後に更新する。
+     */
+    public function usageCount(int $count): static
+    {
+        return $this->afterCreating(function (Tag $tag) use ($count): void {
+            $tag->status()->update(['count' => $count]);
+        });
     }
 }

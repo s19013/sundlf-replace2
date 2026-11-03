@@ -36,6 +36,9 @@ class ImportLegacyDataCommand extends Command
 
     /** @var list<string> truncate用。子から親の順 */
     private const TABLES_CHILD_TO_PARENT = [
+        'book_mark_statuses',
+        'tag_statuses',
+        'article_statuses',
         'book_mark_tags',
         'article_tags',
         'book_marks',
@@ -229,18 +232,25 @@ class ImportLegacyDataCommand extends Command
             ->select('id', 'user_id', 'count', 'title', 'body', 'deleted_at', 'created_at', 'updated_at')
             ->orderBy('id')
             ->chunkById($chunk, function (Collection $rows) use ($bar, $articleIdsWithTags): void {
-                DB::table('articles')->insert($rows->map(function (stdClass $row) use ($articleIdsWithTags): array {
+                DB::table('articles')->insert($rows->map(function (stdClass $row): array {
                     return [
                         'id' => $row->id,
                         'user_id' => $row->user_id,
-                        'count' => $row->count,
                         'star' => 0, // 旧データに存在しない新規カラムのため固定値
                         'title' => $row->title,
                         'body' => $row->body,
-                        'has_tags' => isset($articleIdsWithTags[$row->id]),
                         'deleted_at' => $row->deleted_at,
                         'created_at' => $row->created_at,
                         'updated_at' => $row->updated_at,
+                    ];
+                })->all());
+                // 生クエリのためcreatedイベントが発火しない。status行もここで作成する
+                DB::table('article_statuses')->insert($rows->map(function (stdClass $row) use ($articleIdsWithTags): array {
+                    return [
+                        'article_id' => $row->id,
+                        'has_tags' => isset($articleIdsWithTags[$row->id]),
+                        'count' => $row->count,
+                        'created_at' => $row->created_at,
                     ];
                 })->all());
                 $bar->advance($rows->count());
@@ -261,18 +271,25 @@ class ImportLegacyDataCommand extends Command
             ->select('id', 'user_id', 'count', 'title', 'url', 'deleted_at', 'created_at', 'updated_at')
             ->orderBy('id')
             ->chunkById($chunk, function (Collection $rows) use ($bar, $bookMarkIdsWithTags): void {
-                DB::table('book_marks')->insert($rows->map(function (stdClass $row) use ($bookMarkIdsWithTags): array {
+                DB::table('book_marks')->insert($rows->map(function (stdClass $row): array {
                     return [
                         'id' => $row->id,
                         'user_id' => $row->user_id,
-                        'count' => $row->count,
                         'star' => 0, // 旧データに存在しない新規カラムのため固定値
                         'title' => $row->title,
                         'url' => $row->url,
-                        'has_tags' => isset($bookMarkIdsWithTags[$row->id]),
                         'deleted_at' => $row->deleted_at,
                         'created_at' => $row->created_at,
                         'updated_at' => $row->updated_at,
+                    ];
+                })->all());
+                // 生クエリのためcreatedイベントが発火しない。status行もここで作成する
+                DB::table('book_mark_statuses')->insert($rows->map(function (stdClass $row) use ($bookMarkIdsWithTags): array {
+                    return [
+                        'book_mark_id' => $row->id,
+                        'has_tags' => isset($bookMarkIdsWithTags[$row->id]),
+                        'count' => $row->count,
+                        'created_at' => $row->created_at,
                     ];
                 })->all());
                 $bar->advance($rows->count());
@@ -363,14 +380,20 @@ class ImportLegacyDataCommand extends Command
                 'id' => $row->id,
                 'name' => $duplicate['renamed_name'] ?? $row->name,
                 'user_id' => $row->user_id,
-                'count' => $row->count,
                 'created_at' => $row->created_at,
                 'updated_at' => $row->updated_at,
             ];
         });
+        $counts = $rows->pluck('count', 'id');
 
         foreach ($mapped->chunk($chunk) as $batch) {
-            DB::table('tags')->insert($batch->all());
+            DB::table('tags')->insert($batch->values()->all());
+            // 生クエリのためcreatedイベントが発火しない。status行もここで作成する
+            DB::table('tag_statuses')->insert($batch->map(fn (array $tag): array => [
+                'tag_id' => $tag['id'],
+                'count' => $counts[$tag['id']],
+                'created_at' => $tag['created_at'],
+            ])->values()->all());
             $bar->advance($batch->count());
         }
 
@@ -388,7 +411,7 @@ class ImportLegacyDataCommand extends Command
             $legacy->table('article_tags')->whereNotNull('tag_id')->whereNotIn('tag_id', $deletedTagIds)->count()
         );
 
-        // tag_idがNULLの行(旧システムでの「タグなし」表現)はarticles.has_tagsへ意味を
+        // tag_idがNULLの行(旧システムでの「タグなし」表現)はarticle_statuses.has_tagsへ意味を
         // 統合したため移行しない(新スキーマではtag_idがNOT NULLのため投入もできない)。
         // 論理削除済みタグ(移行対象外)を参照する行も同様に移行しない。
         // article_id/tag_idの複合ユニークキーのみで単一の主キーがないためchunkByIdが使えず、
