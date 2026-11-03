@@ -18,7 +18,7 @@ class MemoResource extends JsonResource
             'title' => (string) $this->title,
             'body' => (string) $this->body,
             'star' => (int) $this->star,
-            'count' => (int) $this->count,
+            'count' => (int) $this->status?->count,
             'tags' => TagResource::collection($this->whenLoaded('tags')),
             'is_in_trash' => (bool) $this->is_in_trash,
             'is_deadline_approaching' => (bool) $this->is_deadline_approaching,

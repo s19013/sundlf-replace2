@@ -3,22 +3,21 @@
 namespace App\Models\Concerns;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @phpstan-require-extends Model
  *
- * @property int $count
- *
- * @method static mixed withoutTimestamps(callable $callback)
+ * @method HasOne<covariant Model, $this> status()
  */
 trait HasIncrementableCount
 {
     /**
-     * count を +1 する。
-     * 検索への影響を避けるため updated_at は更新しない。
+     * 閲覧数(status行のcount)を +1 する。
+     * status行は本体とは別テーブルなので、本体の updated_at は変わらない(検索への影響を避けるため)。
      */
     public function countIncrease(): void
     {
-        static::withoutTimestamps(fn () => $this->increment('count'));
+        $this->status()->increment('count');
     }
 }

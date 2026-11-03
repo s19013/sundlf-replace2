@@ -24,12 +24,12 @@ class IncreaseMemoViewCountApiTest extends TestCase
     public function test_閲覧数が1増加し200が返ること(): void
     {
         $user = User::factory()->create();
-        $memo = Memo::factory()->create(['user_id' => $user->id, 'count' => 0]);
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
 
         $response = $this->actingAs($user)->spaPost("/api/memos/view-count/increase/{$memo->id}");
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'count' => 1]);
+        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'count' => 1]);
     }
 
     public function test_updated_atが更新されないこと(): void

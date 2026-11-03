@@ -232,6 +232,21 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.title', 'ううう');
     }
 
+    public function test_sortにcountを指定すると閲覧数の多い順に取得できること(): void
+    {
+        $user = User::factory()->create();
+        $few = Memo::factory()->create(['user_id' => $user->id]);
+        $many = Memo::factory()->create(['user_id' => $user->id]);
+        $few->status()->update(['count' => 1]);
+        $many->status()->update(['count' => 3]);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query(['sort' => 'count']));
+
+        $response->assertStatus(200);
+        $this->assertSame([$many->id, $few->id], $response->json('memos.*.id'));
+        $this->assertSame([3, 1], $response->json('memos.*.count'));
+    }
+
     public function test_paginationに現在ページ・最終ページ・1ページの件数・総件数が含まれること(): void
     {
         $user = User::factory()->create();

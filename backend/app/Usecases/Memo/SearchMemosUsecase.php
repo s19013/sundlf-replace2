@@ -7,6 +7,7 @@ use App\Facades\Authenticated;
 use App\Http\Requests\Memo\SearchMemoRequest;
 use App\Http\Resources\MemoResource;
 use App\Http\Resources\PaginationResource;
+use App\Models\MemoStatus;
 use App\Tools\SearchToolKit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -98,11 +99,16 @@ class SearchMemosUsecase
         if ($sort === 'random') {
             $query->inRandomOrder();
         } else {
+            // 閲覧数はarticle_statusesにあるため、サブクエリで並べ替える
+            $sortColumn = $sort === 'count'
+                ? MemoStatus::select('count')->whereColumn('article_statuses.article_id', 'articles.id')
+                : $sort;
+
             // updated_at等は同値になりやすく、順序が不定だとページ間で重複・欠落するためidを第2キーにする
-            $query->orderBy($sort, 'desc')->orderBy('id', 'desc');
+            $query->orderBy($sortColumn, 'desc')->orderBy('id', 'desc');
         }
 
-        $memos = $query->with('tags.status')->paginate($itemNumber, page: $page);
+        $memos = $query->with(['status', 'tags.status'])->paginate($itemNumber, page: $page);
 
         // 検索結果が0件の場合と、存在しないページを指定された場合のどちらも404
         if ($memos->isEmpty()) {
