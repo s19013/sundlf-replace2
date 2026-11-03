@@ -2,6 +2,14 @@
 
 use Illuminate\Support\Str;
 
+// ORDER BY ... LIMIT のとき、並び順どおりに読んで途中で止まる実行計画も比較させる(MariaDB 10.6.17 / 10.11.7 / 11.0.5 以降)。
+// 無効(既定値0)だとタグなしが多いユーザーのタグなし検索で全件を並べ替える計画が選ばれ、遅くなるため(#131)。
+// この変数が無いDB(MySQL本体・古いMariaDB)では接続時にエラーになるので、空にして送らないようにする。
+$optimizerJoinLimitPrefRatio = env('DB_OPTIMIZER_JOIN_LIMIT_PREF_RATIO', '100');
+$optimizerInitCommand = filled($optimizerJoinLimitPrefRatio)
+    ? 'SET SESSION optimizer_join_limit_pref_ratio = '.(int) $optimizerJoinLimitPrefRatio
+    : null;
+
 return [
 
     /*
@@ -60,9 +68,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-                // ORDER BY ... LIMIT のとき、並び順どおりに読んで途中で止まる実行計画も比較させる(MariaDB 10.6.17 / 10.11.7 / 11.0.5 以降)。
-                // 無効(既定値0)だとタグなしが多いユーザーのタグなし検索で全件を並べ替える計画が選ばれ、遅くなるため(#131)
-                PDO::MYSQL_ATTR_INIT_COMMAND => 'SET SESSION optimizer_join_limit_pref_ratio = 100',
+                PDO::MYSQL_ATTR_INIT_COMMAND => $optimizerInitCommand,
             ]) : [],
         ],
 
@@ -83,6 +89,7 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::MYSQL_ATTR_INIT_COMMAND => $optimizerInitCommand,
             ]) : [],
         ],
 
