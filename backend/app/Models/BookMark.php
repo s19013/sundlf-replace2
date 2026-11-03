@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -47,5 +48,13 @@ class BookMark extends Entry
         return $this->belongsToMany(Tag::class, 'book_mark_tags', 'book_mark_id', 'tag_id')
             ->using(BookMarkTag::class)
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasOne<BookMarkStatus, $this>
+     */
+    public function status(): HasOne
+    {
+        return $this->hasOne(BookMarkStatus::class);
     }
 }

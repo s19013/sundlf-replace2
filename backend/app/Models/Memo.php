@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -52,5 +53,13 @@ class Memo extends Entry
         return $this->belongsToMany(Tag::class, 'article_tags', 'article_id', 'tag_id')
             ->using(MemoTag::class)
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasOne<MemoStatus, $this>
+     */
+    public function status(): HasOne
+    {
+        return $this->hasOne(MemoStatus::class, 'article_id');
     }
 }
