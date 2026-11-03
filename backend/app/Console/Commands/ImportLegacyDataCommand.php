@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionInterface;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -381,18 +380,18 @@ class ImportLegacyDataCommand extends Command
                 'id' => $row->id,
                 'name' => $duplicate['renamed_name'] ?? $row->name,
                 'user_id' => $row->user_id,
-                'count' => $row->count,
                 'created_at' => $row->created_at,
                 'updated_at' => $row->updated_at,
             ];
         });
+        $counts = $rows->pluck('count', 'id');
 
         foreach ($mapped->chunk($chunk) as $batch) {
-            DB::table('tags')->insert($batch->map(fn (array $tag): array => Arr::except($tag, ['count']))->values()->all());
+            DB::table('tags')->insert($batch->values()->all());
             // 生クエリのためcreatedイベントが発火しない。status行もここで作成する
             DB::table('tag_statuses')->insert($batch->map(fn (array $tag): array => [
                 'tag_id' => $tag['id'],
-                'count' => $tag['count'],
+                'count' => $counts[$tag['id']],
                 'created_at' => $tag['created_at'],
             ])->values()->all());
             $bar->advance($batch->count());
