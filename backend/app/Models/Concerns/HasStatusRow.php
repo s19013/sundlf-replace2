@@ -11,11 +11,16 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * createdイベントで作成するため、`createQuietly()`・`withoutEvents()`・`DB::table()->insert()`で本体を作る場合は呼び出し側でstatus行も作成すること。
  *
  * @phpstan-require-extends Model
- *
- * @method HasOne<covariant Model, $this> status()
  */
 trait HasStatusRow
 {
+    /**
+     * ユーザーが直接変更しない項目(閲覧数・使用回数・タグもちフラグ)を管理するstatus行。
+     *
+     * @return HasOne<covariant Model, $this>
+     */
+    abstract public function status(): HasOne;
+
     protected static function bootHasStatusRow(): void
     {
         static::created(function (self $model): void {
