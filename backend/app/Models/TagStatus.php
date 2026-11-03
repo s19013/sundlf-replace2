@@ -28,7 +28,7 @@ class TagStatus extends Model
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * 属性のキャスト定義。
      *
      * @return array<string, string>
      */

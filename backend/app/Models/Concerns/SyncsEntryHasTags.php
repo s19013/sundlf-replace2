@@ -2,8 +2,7 @@
 
 namespace App\Models\Concerns;
 
-use App\Models\BookMarkStatus;
-use App\Models\MemoStatus;
+use App\Models\EntryStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -21,7 +20,7 @@ trait SyncsEntryHasTags
     /**
      * 親エントリーのstatus行1件に絞り込んだクエリを返す。
      *
-     * @return Builder<MemoStatus>|Builder<BookMarkStatus>
+     * @return Builder<covariant EntryStatus>
      */
     abstract protected function parentStatusQuery(): Builder;
 

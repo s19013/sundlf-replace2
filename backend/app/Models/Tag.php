@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasOwner;
+use App\Models\Concerns\HasStatusRow;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Tag extends Model
 {
     /** @use HasFactory<\Database\Factories\TagFactory> */
-    use HasFactory, HasOwner;
+    use HasFactory, HasOwner, HasStatusRow;
 
     /**
      * The attributes that are mass assignable.
@@ -29,16 +30,6 @@ class Tag extends Model
         'user_id',
         'name',
     ];
-
-    /**
-     * 作成時に、同じトランザクション内でstatus行も作成する。
-     */
-    protected static function booted(): void
-    {
-        static::created(function (Tag $tag): void {
-            $tag->status()->create();
-        });
-    }
 
     /**
      * ユーザーが直接変更しない項目(使用回数)を管理するstatus行。
