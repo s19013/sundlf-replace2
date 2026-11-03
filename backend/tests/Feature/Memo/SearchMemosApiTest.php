@@ -169,6 +169,48 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.id', $memoWithoutTag->id);
     }
 
+    public function test_is_tag_not_attachedで他ユーザーのタグ無しメモは対象にならないこと(): void
+    {
+        $user = User::factory()->create();
+        $memoWithoutTag = Memo::factory()->create(['user_id' => $user->id]);
+
+        $otherUser = User::factory()->create();
+        $otherUsersMemoWithoutTag = Memo::factory()->create(['user_id' => $otherUser->id]);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'is_tag_not_attached' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'memos');
+        $response->assertJsonPath('memos.0.id', $memoWithoutTag->id);
+        $response->assertJsonMissing(['id' => $otherUsersMemoWithoutTag->id]);
+    }
+
+    public function test_is_tag_not_attachedとis_in_trashboxでゴミ箱のタグ無しメモのみ絞り込めること(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id]);
+
+        $activeMemoWithoutTag = Memo::factory()->create(['user_id' => $user->id]);
+        $trashedMemoWithTag = Memo::factory()->create(['user_id' => $user->id]);
+        $trashedMemoWithTag->tags()->attach([$tag->id]);
+        $trashedMemoWithTag->delete();
+        $trashedMemoWithoutTag = Memo::factory()->create(['user_id' => $user->id]);
+        $trashedMemoWithoutTag->delete();
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'is_tag_not_attached' => '1',
+            'is_in_trashbox' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'memos');
+        $response->assertJsonPath('memos.0.id', $trashedMemoWithoutTag->id);
+        $response->assertJsonMissing(['id' => $activeMemoWithoutTag->id]);
+        $response->assertJsonMissing(['id' => $trashedMemoWithTag->id]);
+    }
+
     public function test_starsで星数を絞り込めること(): void
     {
         $user = User::factory()->create();
