@@ -7,7 +7,9 @@ use App\Models\Entry;
 use App\Models\Memo;
 use App\Models\Tag;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class RecalculateHasTagsMigrationTest extends TestCase
@@ -34,6 +36,13 @@ class RecalculateHasTagsMigrationTest extends TestCase
             $migration = require database_path("migrations/{$fileName}");
             assert($migration instanceof Migration && method_exists($migration, 'down'));
             $migration->down();
+        }
+
+        // 現在のモデルは作成時にedited_atを書き込むため、ファクトリでデータを作れるようedited_atだけを戻す
+        foreach (['articles', 'book_marks', 'tags'] as $tableName) {
+            Schema::table($tableName, function (Blueprint $table) {
+                $table->timestamp('edited_at')->nullable();
+            });
         }
     }
 

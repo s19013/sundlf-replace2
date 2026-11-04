@@ -60,6 +60,17 @@ class CreateTagApiTest extends TestCase
         ]);
     }
 
+    public function test_登録するとedited_atがcreated_atと同じ時刻になること(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->spaPost('/api/tags', ['name' => '新タグ']);
+
+        $tag = Tag::where('user_id', $user->id)->where('name', '新タグ')->firstOrFail();
+        $this->assertNotNull($tag->edited_at);
+        $this->assertSame($tag->created_at?->toIso8601String(), $tag->edited_at->toIso8601String());
+    }
+
     // --- 異常系 ---
 
     public function test_同じユーザーが同じ名前のタグを登録済みの場合409が返ること(): void
