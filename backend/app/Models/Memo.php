@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $edited_at
  * @property-read bool $is_deadline_approaching
  * @property-read bool $is_in_trash
  * @property-read \App\Models\MemoStatus|null $status
@@ -43,6 +44,11 @@ class Memo extends Entry
         'body',
         'star',
     ];
+
+    protected function editableAttributes(): array
+    {
+        return ['title', 'body', 'star'];
+    }
 
     /**
      * @return BelongsToMany<Tag, $this, MemoTag>

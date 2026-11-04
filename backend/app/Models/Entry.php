@@ -6,6 +6,7 @@ use App\Models\Concerns\DetectsStaleData;
 use App\Models\Concerns\HasIncrementableCount;
 use App\Models\Concerns\HasOwner;
 use App\Models\Concerns\HasStatusRow;
+use App\Models\Concerns\TracksEditedAt;
 use App\Models\Concerns\Trashable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,6 +18,7 @@ abstract class Entry extends Model
         HasOwner,
         HasStatusRow,
         SoftDeletes,
+        TracksEditedAt,
         Trashable;
 
     /**
@@ -28,6 +30,7 @@ abstract class Entry extends Model
     {
         return [
             'star' => 'integer',
+            'edited_at' => 'datetime',
         ];
     }
 }

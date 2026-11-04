@@ -143,4 +143,96 @@ class EntryModelTest extends TestCase
             $this->assertFalse($freshModel->is_in_trash);
         }
     }
+
+    /**
+     * 編集対象の属性ごとに、変更後の値を返す。
+     *
+     * @return array<string, array{0: Memo|BookMark, 1: array<string, int|string>}>
+     */
+    private function createEntriesWithEditedValues(): array
+    {
+        return [
+            'memo-title' => [Memo::factory()->create(), ['title' => '新しいタイトル']],
+            'memo-body' => [Memo::factory()->create(), ['body' => '新しい本文']],
+            'memo-star' => [Memo::factory()->create(['star' => 1]), ['star' => 2]],
+            'bookmark-title' => [BookMark::factory()->create(), ['title' => '新しいタイトル']],
+            'bookmark-url' => [BookMark::factory()->create(), ['url' => 'https://example.com/new']],
+            'bookmark-star' => [BookMark::factory()->create(['star' => 1]), ['star' => 2]],
+        ];
+    }
+
+    private function fetchEditedAt(Memo|BookMark $model): ?string
+    {
+        return $model->fresh()?->edited_at?->toIso8601String();
+    }
+
+    public function test_作成時はedited_atがcreated_atと同じ時刻になること(): void
+    {
+        foreach ([Memo::factory()->create(), BookMark::factory()->create()] as $model) {
+            $fresh = $model->fresh();
+
+            $this->assertNotNull($fresh?->edited_at);
+            $this->assertSame($fresh->created_at?->toIso8601String(), $fresh->edited_at->toIso8601String());
+        }
+    }
+
+    public function test_編集対象の属性が変わるとedited_atが更新されること(): void
+    {
+        foreach ($this->createEntriesWithEditedValues() as $case => [$model, $editedValues]) {
+            $beforeEditedAt = $this->fetchEditedAt($model);
+
+            $this->travel(1)->minutes();
+            $model->update($editedValues);
+
+            $fresh = $model->fresh();
+            $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String(), $case);
+            $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String(), $case);
+        }
+    }
+
+    public function test_変更なしで保存してもedited_atとupdated_atは変わらないこと(): void
+    {
+        foreach ([Memo::factory()->create(), BookMark::factory()->create()] as $model) {
+            $beforeEditedAt = $this->fetchEditedAt($model);
+            $beforeUpdatedAt = $model->updated_at?->toIso8601String();
+
+            $this->travel(1)->minutes();
+            $model->update(['title' => $model->title]);
+
+            $fresh = $model->fresh();
+            $this->assertSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
+            $this->assertSame($beforeUpdatedAt, $fresh?->updated_at?->toIso8601String());
+        }
+    }
+
+    public function test_ゴミ箱への移動と復元ではedited_atは変わらないこと(): void
+    {
+        foreach ([Memo::factory()->create(), BookMark::factory()->create()] as $model) {
+            $beforeEditedAt = $this->fetchEditedAt($model);
+
+            $this->travel(1)->minutes();
+            $model->delete();
+            $editedAtAfterDelete = $model->fresh()?->edited_at?->toIso8601String();
+
+            $this->travel(1)->minutes();
+            $model->salvage();
+
+            $this->assertSame($beforeEditedAt, $editedAtAfterDelete);
+            $this->assertSame($beforeEditedAt, $this->fetchEditedAt($model));
+        }
+    }
+
+    public function test_mark_as_editedだけでedited_atが更新されること(): void
+    {
+        foreach ([Memo::factory()->create(), BookMark::factory()->create()] as $model) {
+            $beforeEditedAt = $this->fetchEditedAt($model);
+
+            $this->travel(1)->minutes();
+            $model->markAsEdited()->save();
+
+            $fresh = $model->fresh();
+            $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
+            $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        }
+    }
 }

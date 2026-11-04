@@ -83,6 +83,33 @@ class UpdateMemoApiTest extends TestCase
         $this->assertSame($newTagUpdatedAt, $newTag->fresh()?->updated_at?->toIso8601String());
     }
 
+    public function test_タグを付け替えて使用回数が増減してもタグのedited_atは更新されないこと(): void
+    {
+        $user = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        $oldTag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
+        $newTag = Tag::factory()->create(['user_id' => $user->id]);
+        $memo->tags()->attach($oldTag->id);
+        $oldTagEditedAt = $oldTag->fresh()?->edited_at?->toIso8601String();
+        $newTagEditedAt = $newTag->fresh()?->edited_at?->toIso8601String();
+
+        $this->travel(1)->minutes();
+
+        $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
+            'tags' => [$newTag->id],
+            'fetched_at' => now()->toIso8601String(),
+        ]);
+
+        $response->assertStatus(200);
+        $freshOldTag = $oldTag->fresh(['status']);
+        $freshNewTag = $newTag->fresh(['status']);
+        $this->assertSame(0, $freshOldTag?->status?->count);
+        $this->assertSame(1, $freshNewTag?->status?->count);
+        $this->assertNotNull($oldTagEditedAt);
+        $this->assertSame($oldTagEditedAt, $freshOldTag->edited_at?->toIso8601String());
+        $this->assertSame($newTagEditedAt, $freshNewTag->edited_at?->toIso8601String());
+    }
+
     public function test_タグを全て外すとhas_tagsがfalseになること(): void
     {
         $user = User::factory()->create();
