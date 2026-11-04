@@ -18,16 +18,26 @@ class CopyCountAndHasTagsToStatusTablesMigrationTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * コピー元の本体の`count`・`has_tags`は後続のマイグレーションで削除されるため、その`down()`で復元してから検証する。
+     * コピー元の本体の`count`・`has_tags`は後続のマイグレーションで削除されるため、後続のマイグレーションを新しい順に`down()`して復元してから検証する。
+     * 本体へ`has_tags`を戻すマイグレーション(2026_11_04_092911以降)も先に取り消し、カラムの重複を避ける。
      * テストDB(SQLite)ではDDLもトランザクション内で実行されるので、テスト終了時に元のスキーマへ戻る。
      */
     protected function setUp(): void
     {
         parent::setUp();
 
-        $migration = require database_path('migrations/2026_11_03_043655_drop_count_and_has_tags_from_articles_book_marks_and_tags_tables.php');
-        assert($migration instanceof Migration && method_exists($migration, 'down'));
-        $migration->down();
+        // 新しい順に取り消す
+        $laterMigrationFileNames = [
+            '2026_11_04_093018_fill_edited_at_and_copy_has_tags_to_articles_book_marks_and_tags_tables.php',
+            '2026_11_04_092911_add_edited_at_and_has_tags_to_articles_book_marks_and_tags_tables.php',
+            '2026_11_03_043655_drop_count_and_has_tags_from_articles_book_marks_and_tags_tables.php',
+        ];
+
+        foreach ($laterMigrationFileNames as $fileName) {
+            $migration = require database_path("migrations/{$fileName}");
+            assert($migration instanceof Migration && method_exists($migration, 'down'));
+            $migration->down();
+        }
     }
 
     private function runCopyMigration(string $method): void
