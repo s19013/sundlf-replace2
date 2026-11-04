@@ -28,6 +28,7 @@ class CopyCountAndHasTagsToStatusTablesMigrationTest extends TestCase
 
         // 新しい順に取り消す
         $laterMigrationFileNames = [
+            '2026_11_04_093018_fill_edited_at_and_copy_has_tags_to_articles_book_marks_and_tags_tables.php',
             '2026_11_04_092911_add_edited_at_and_has_tags_to_articles_book_marks_and_tags_tables.php',
             '2026_11_03_043655_drop_count_and_has_tags_from_articles_book_marks_and_tags_tables.php',
         ];
