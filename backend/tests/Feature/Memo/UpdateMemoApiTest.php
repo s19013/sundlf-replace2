@@ -6,6 +6,7 @@ use App\Models\Memo;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -28,7 +29,7 @@ class UpdateMemoApiTest extends TestCase
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id, 'title' => '旧タイトル']);
-        $fetchedAt = $memo->updated_at?->copy()->addMinute()->toIso8601String();
+        $fetchedAt = $memo->edited_at?->copy()->addMinute()->toIso8601String();
 
         $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
             'title' => '新タイトル',
@@ -47,7 +48,7 @@ class UpdateMemoApiTest extends TestCase
         $oldTag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $newTag = Tag::factory()->usageCount(0)->create(['user_id' => $user->id]);
         $memo->tags()->attach($oldTag->id);
-        $fetchedAt = $memo->updated_at?->copy()->addMinute()->toIso8601String();
+        $fetchedAt = $memo->edited_at?->copy()->addMinute()->toIso8601String();
 
         $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
             'tags' => [$newTag->id],
@@ -141,12 +142,12 @@ class UpdateMemoApiTest extends TestCase
         $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => true]);
     }
 
-    public function test_タグだけを付け替えるとupdated_atが更新されること(): void
+    public function test_タグだけを付け替えるとedited_atが更新されること(): void
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
         $tag = Tag::factory()->create(['user_id' => $user->id]);
-        $beforeUpdatedAt = $memo->updated_at?->toIso8601String();
+        $beforeEditedAt = $memo->fresh()?->edited_at?->toIso8601String();
 
         $this->travel(1)->minutes();
 
@@ -156,16 +157,18 @@ class UpdateMemoApiTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $this->assertNotSame($beforeUpdatedAt, $memo->fresh()?->updated_at?->toIso8601String());
+        $fresh = $memo->fresh();
+        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
+        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
     }
 
-    public function test_タグを同じ内容で送るとupdated_atが更新されないこと(): void
+    public function test_タグを同じ内容で送るとedited_atもupdated_atも更新されないこと(): void
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
         $tag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
-        $beforeUpdatedAt = $memo->updated_at?->toIso8601String();
+        $before = $memo->fresh();
 
         $this->travel(1)->minutes();
 
@@ -175,7 +178,30 @@ class UpdateMemoApiTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $this->assertSame($beforeUpdatedAt, $memo->fresh()?->updated_at?->toIso8601String());
+        $fresh = $memo->fresh();
+        $this->assertSame($before?->edited_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        $this->assertSame($before?->updated_at?->toIso8601String(), $fresh?->updated_at?->toIso8601String());
+    }
+
+    public function test_fetched_atより後の更新が編集以外だけなら競合にならず更新されること(): void
+    {
+        $user = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id, 'title' => '旧タイトル']);
+        $editedAt = $memo->fresh()?->edited_at;
+        if ($editedAt === null) {
+            $this->fail('edited_at was not set.');
+        }
+        $fetchedAt = $editedAt->copy()->addMinute()->toIso8601String();
+        // 取得後に、編集以外の理由で行だけが更新された状態にする
+        DB::table('articles')->where('id', $memo->id)->update(['updated_at' => $editedAt->copy()->addMinutes(5)]);
+
+        $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
+            'title' => '新タイトル',
+            'fetched_at' => $fetchedAt,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'title' => '新タイトル']);
     }
 
     // --- 異常系 ---
@@ -198,7 +224,7 @@ class UpdateMemoApiTest extends TestCase
         $owner = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $owner->id]);
         $otherUser = User::factory()->create();
-        $fetchedAt = $memo->updated_at?->copy()->addMinute()->toIso8601String();
+        $fetchedAt = $memo->edited_at?->copy()->addMinute()->toIso8601String();
 
         $response = $this->actingAs($otherUser)->spaPatch("/api/memos/{$memo->id}", [
             'title' => '新タイトル',
@@ -209,15 +235,15 @@ class UpdateMemoApiTest extends TestCase
         $response->assertJson(['messages' => ['メモが見つかりませんでした。']]);
     }
 
-    public function test_fetched_atより後に更新されていた場合409が返ること(): void
+    public function test_fetched_atより後に編集されていた場合409が返ること(): void
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
-        $updatedAt = $memo->updated_at;
-        if ($updatedAt === null) {
-            $this->fail('updated_at was not set.');
+        $editedAt = $memo->fresh()?->edited_at;
+        if ($editedAt === null) {
+            $this->fail('edited_at was not set.');
         }
-        $fetchedAt = $updatedAt->copy()->subMinute()->toIso8601String();
+        $fetchedAt = $editedAt->copy()->subMinute()->toIso8601String();
 
         $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
             'title' => '新タイトル',
