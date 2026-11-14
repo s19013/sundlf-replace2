@@ -124,7 +124,7 @@ class UpdateMemoApiTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => false]);
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => false]);
     }
 
     public function test_タグ無しのメモにタグを付けるとhas_tagsがtrueになること(): void
@@ -139,7 +139,7 @@ class UpdateMemoApiTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => true]);
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => true]);
     }
 
     public function test_タグだけを付け替えるとedited_atが更新されること(): void
