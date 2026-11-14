@@ -85,15 +85,15 @@ class SearchMemosUsecase
             $query->where('created_at', '<=', $request->date('created_at_range_end'));
         }
 
-        if ($request->filled('updated_at_range_start')) {
-            $query->where('updated_at', '>=', $request->date('updated_at_range_start'));
+        if ($request->filled('edited_at_range_start')) {
+            $query->where('edited_at', '>=', $request->date('edited_at_range_start'));
         }
 
-        if ($request->filled('updated_at_range_end')) {
-            $query->where('updated_at', '<=', $request->date('updated_at_range_end'));
+        if ($request->filled('edited_at_range_end')) {
+            $query->where('edited_at', '<=', $request->date('edited_at_range_end'));
         }
 
-        $sort = $request->string('sort', 'updated_at')->toString();
+        $sort = $request->string('sort', 'edited_at')->toString();
         $itemNumber = $request->integer('item_number') ?: 10;
         $page = $request->integer('page', 1);
 
@@ -105,7 +105,7 @@ class SearchMemosUsecase
                 ? MemoStatus::select('count')->whereColumn('article_statuses.article_id', 'articles.id')
                 : $sort;
 
-            // updated_at等は同値になりやすく、順序が不定だとページ間で重複・欠落するためidを第2キーにする
+            // edited_at等は同値になりやすく、順序が不定だとページ間で重複・欠落するためidを第2キーにする
             $query->orderBy($sortColumn, 'desc')->orderBy('id', 'desc');
         }
 
