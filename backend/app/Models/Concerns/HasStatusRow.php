@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 trait HasStatusRow
 {
     /**
-     * ユーザーが直接変更しない項目(閲覧数・使用回数・タグもちフラグ)を管理するstatus行。
+     * ユーザーが直接変更しない`count`(閲覧数・使用回数)を管理するstatus行。
      *
      * @return HasOne<covariant Model, $this>
      */

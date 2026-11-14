@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 本体(メモ・ブックマーク・タグ)のうち、ユーザーが直接変更しない項目を管理するstatus行の基底クラス。
- * 本体の`updated_at`に影響させずに更新するため、本体とは別テーブルにしている。
+ * 本体(メモ・ブックマーク・タグ)のうち、ユーザーが直接変更しない`count`(閲覧数・使用回数)を管理するstatus行の基底クラス。
+ * `count`は書き込みが頻繁で、編集日時(`edited_at`)とも検索の絞り込みとも関係しないため、本体とは別テーブルにしている。
  * 本体1件につき1行なので、サブクラスで本体のidを主キー(`$primaryKey`)に指定する。
  */
 abstract class StatusRow extends Model

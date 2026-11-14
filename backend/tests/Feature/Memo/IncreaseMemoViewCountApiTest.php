@@ -32,25 +32,27 @@ class IncreaseMemoViewCountApiTest extends TestCase
         $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'count' => 1]);
     }
 
-    public function test_updated_atが更新されないこと(): void
+    public function test_updated_atとedited_atが更新されないこと(): void
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create([
             'user_id' => $user->id,
             'updated_at' => now()->subMinutes(5),
+            'edited_at' => now()->subMinutes(5),
         ]);
-        $originalUpdatedAt = $memo->updated_at;
-        if ($originalUpdatedAt === null) {
-            $this->fail('updated_at was not set.');
+        $before = $memo->fresh();
+        if ($before?->updated_at === null || $before->edited_at === null) {
+            $this->fail('updated_at or edited_at was not set.');
         }
 
         $this->actingAs($user)->spaPost("/api/memos/view-count/increase/{$memo->id}");
 
         $freshMemo = $memo->fresh();
-        if ($freshMemo === null || $freshMemo->updated_at === null) {
+        if ($freshMemo === null || $freshMemo->updated_at === null || $freshMemo->edited_at === null) {
             $this->fail('Memo was not found after refresh.');
         }
-        $this->assertTrue($freshMemo->updated_at->eq($originalUpdatedAt));
+        $this->assertTrue($freshMemo->updated_at->eq($before->updated_at));
+        $this->assertTrue($freshMemo->edited_at->eq($before->edited_at));
     }
 
     // --- 異常系 ---

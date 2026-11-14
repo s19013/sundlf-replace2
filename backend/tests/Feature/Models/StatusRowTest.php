@@ -3,7 +3,9 @@
 namespace Tests\Feature\Models;
 
 use App\Models\BookMark;
+use App\Models\BookMarkStatus;
 use App\Models\Memo;
+use App\Models\MemoStatus;
 use App\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,7 +20,6 @@ class StatusRowTest extends TestCase
 
         $this->assertDatabaseHas('article_statuses', [
             'article_id' => $memo->id,
-            'has_tags' => false,
             'count' => 0,
         ]);
     }
@@ -29,9 +30,16 @@ class StatusRowTest extends TestCase
 
         $this->assertDatabaseHas('book_mark_statuses', [
             'book_mark_id' => $bookMark->id,
-            'has_tags' => false,
             'count' => 0,
         ]);
+    }
+
+    public function test_メモとブックマークのstatus行はhas_tagsを扱わないこと(): void
+    {
+        foreach ([new MemoStatus, new BookMarkStatus] as $status) {
+            $this->assertArrayNotHasKey('has_tags', $status->getAttributes());
+            $this->assertArrayNotHasKey('has_tags', $status->getCasts());
+        }
     }
 
     public function test_タグを作成するとstatus行が作成されること(): void
