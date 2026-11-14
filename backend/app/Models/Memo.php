@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $edited_at
+ * @property bool $has_tags
  * @property-read bool $is_deadline_approaching
  * @property-read bool $is_in_trash
  * @property-read \App\Models\MemoStatus|null $status

@@ -70,8 +70,8 @@ class DeleteTagApiTest extends TestCase
 
         $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
 
-        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => false]);
-        $this->assertDatabaseHas('book_mark_statuses', ['book_mark_id' => $bookMark->id, 'has_tags' => false]);
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => false]);
+        $this->assertDatabaseHas('book_marks', ['id' => $bookMark->id, 'has_tags' => false]);
     }
 
     public function test_他のタグが残っているメモのhas_tagsはtrueのままであること(): void
@@ -84,7 +84,7 @@ class DeleteTagApiTest extends TestCase
 
         $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
 
-        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => true]);
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => true]);
     }
 
     public function test_ゴミ箱内のメモもhas_tagsがfalseになること(): void
@@ -97,22 +97,92 @@ class DeleteTagApiTest extends TestCase
 
         $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
 
-        $this->assertDatabaseHas('article_statuses', ['article_id' => $memo->id, 'has_tags' => false]);
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'has_tags' => false]);
     }
 
-    public function test_タグを削除してもメモのupdated_atは更新されないこと(): void
+    public function test_ゴミ箱内のブックマークもhas_tagsがfalseになること(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id]);
+        $bookMark = BookMark::factory()->create(['user_id' => $user->id]);
+        $bookMark->tags()->attach($tag->id);
+        $bookMark->delete();
+
+        $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
+
+        $this->assertDatabaseHas('book_marks', ['id' => $bookMark->id, 'has_tags' => false]);
+    }
+
+    public function test_タグを削除するとメモのupdated_atは更新されedited_atは変わらないこと(): void
     {
         $user = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $user->id]);
         $memo = Memo::factory()->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
-        $beforeUpdatedAt = $memo->updated_at?->toIso8601String();
+        $before = $memo->fresh();
 
         $this->travel(1)->minutes();
 
         $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}");
 
-        $this->assertSame($beforeUpdatedAt, $memo->fresh()?->updated_at?->toIso8601String());
+        $fresh = $memo->fresh();
+        $this->assertNotSame($before?->updated_at?->toIso8601String(), $fresh?->updated_at?->toIso8601String());
+        $this->assertSame($before?->edited_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+    }
+
+    public function test_タグを削除した後にメモを更新しても競合にならないこと(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id]);
+        $memo = Memo::factory()->create(['user_id' => $user->id, 'title' => '旧タイトル']);
+        $memo->tags()->attach($tag->id);
+
+        $this->travel(1)->minutes();
+        $fetchedAt = now()->toIso8601String();
+        $this->travel(1)->minutes();
+
+        $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}")->assertStatus(200);
+
+        $response = $this->withHeader('Referer', 'http://localhost')->patchJson("/api/memos/{$memo->id}", [
+            'title' => '新タイトル',
+            'fetched_at' => $fetchedAt,
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'title' => '新タイトル']);
+    }
+
+    public function test_タグを削除しても編集日時順の並びが変わらないこと(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id]);
+        $olderMemo = Memo::factory()->create(['user_id' => $user->id, 'edited_at' => '2026-01-01 00:00:00']);
+        $newerMemo = Memo::factory()->create(['user_id' => $user->id, 'edited_at' => '2026-01-02 00:00:00']);
+        $olderMemo->tags()->attach($tag->id);
+
+        $this->actingAs($user)->spaDelete("/api/tags/{$tag->id}")->assertStatus(200);
+
+        $response = $this->withHeader('Referer', 'http://localhost')->getJson('/api/memos/search');
+
+        $response->assertStatus(200);
+        $this->assertSame([$newerMemo->id, $olderMemo->id], $response->json('memos.*.id'));
+    }
+
+    public function test_タグ名を変更してもメモのedited_atは変わらないこと(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id, 'name' => '旧タグ']);
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        $memo->tags()->attach($tag->id);
+        $beforeEditedAt = $memo->fresh()?->edited_at?->toIso8601String();
+
+        $this->travel(1)->minutes();
+
+        $this->actingAs($user)->withHeader('Referer', 'http://localhost')
+            ->patchJson("/api/tags/{$tag->id}", ['name' => '新タグ'])
+            ->assertStatus(200);
+
+        $this->assertSame($beforeEditedAt, $memo->fresh()?->edited_at?->toIso8601String());
     }
 
     // --- 異常系 ---

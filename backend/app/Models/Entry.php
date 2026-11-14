@@ -22,6 +22,15 @@ abstract class Entry extends Model
         Trashable;
 
     /**
+     * `has_tags`は中間モデルのイベント(SyncsEntryHasTags)とタグ削除(DeleteTagUsecase)だけが書くため、$fillableには含めない。
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'has_tags' => false,
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -31,6 +40,7 @@ abstract class Entry extends Model
         return [
             'star' => 'integer',
             'edited_at' => 'datetime',
+            'has_tags' => 'boolean',
         ];
     }
 }

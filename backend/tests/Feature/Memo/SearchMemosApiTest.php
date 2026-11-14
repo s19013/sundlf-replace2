@@ -187,6 +187,57 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonPath('memos.0.id', $memo->id);
     }
 
+    public function test_is_tag_not_attachedは本体のhas_tagsで絞り込むこと(): void
+    {
+        $user = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        $memoMarkedAsTagged = Memo::factory()->create(['user_id' => $user->id]);
+        DB::table('articles')->where('id', $memoMarkedAsTagged->id)->update(['has_tags' => true]);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'is_tag_not_attached' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertSame([$memo->id], $response->json('memos.*.id'));
+    }
+
+    public function test_is_tag_not_attachedの結果に他ユーザーのタグ無しメモは含まれないこと(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $memo = Memo::factory()->create(['user_id' => $user->id]);
+        Memo::factory()->create(['user_id' => $otherUser->id]);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'is_tag_not_attached' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertSame([$memo->id], $response->json('memos.*.id'));
+        $response->assertJsonPath('pagination.total', 1);
+    }
+
+    public function test_is_tag_not_attachedとis_in_trashboxを組み合わせるとゴミ箱内のタグ無しメモだけ返ること(): void
+    {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['user_id' => $user->id]);
+        $trashedWithoutTag = Memo::factory()->create(['user_id' => $user->id]);
+        $trashedWithTag = Memo::factory()->create(['user_id' => $user->id]);
+        $trashedWithTag->tags()->attach($tag->id);
+        Memo::factory()->create(['user_id' => $user->id]);
+        $trashedWithoutTag->delete();
+        $trashedWithTag->delete();
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'is_tag_not_attached' => '1',
+            'is_in_trashbox' => '1',
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertSame([$trashedWithoutTag->id], $response->json('memos.*.id'));
+    }
+
     public function test_starsで星数を絞り込めること(): void
     {
         $user = User::factory()->create();
