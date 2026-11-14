@@ -32,8 +32,9 @@ class AllTagsApiTest extends TestCase
         $response->assertStatus(200);
         $response->assertJsonCount(2, 'tags');
         $response->assertJsonStructure([
-            'tags' => [['id', 'name', 'count', 'created_at', 'updated_at']],
+            'tags' => [['id', 'name', 'count', 'created_at', 'edited_at']],
         ]);
+        $response->assertJsonMissingPath('tags.0.updated_at');
     }
 
     public function test_他ユーザーのタグは含まれないこと(): void

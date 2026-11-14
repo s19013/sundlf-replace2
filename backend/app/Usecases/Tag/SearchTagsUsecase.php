@@ -31,7 +31,7 @@ class SearchTagsUsecase
             }
         }
 
-        $sort = $request->string('sort', 'updated_at')->toString();
+        $sort = $request->string('sort', 'edited_at')->toString();
         $itemNumber = $request->integer('item_number') ?: 10;
         $page = $request->integer('page', 1);
 
