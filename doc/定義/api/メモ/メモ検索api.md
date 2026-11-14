@@ -23,7 +23,7 @@ get /api/memos/search
 | keyword                | string | no   | null       |                                    |
 | item_number            | int    | no   | 10         | 表示数(1〜100)                     |
 | page                   | int    | no   | 1          | ページ番号(1以上)                  |
-| sort                   | string | no   | updated_at | 何でソートするか                   |
+| sort                   | string | no   | edited_at  | 何でソートするか                   |
 | target                 | string | no   | title      | 何を対象に検索するか               |
 | is_tag_not_attached    | bool   | no   | null       | タグ無しのデータを検索するか       |
 | exact_match_tags       | array  | no   | null       | 紐付けする完全一致タグのid         |
@@ -32,8 +32,8 @@ get /api/memos/search
 | stars                  | int    | no   | null       | メモにつけた星の数                 |
 | created_at_range_start | string | no   | null       | "/" 区切りで渡される               |
 | created_at_range_end   | string | no   | null       | "/" 区切りで渡される               |
-| updated_at_range_start | string | no   | null       | "/" 区切りで渡される               |
-| updated_at_range_end   | string | no   | null       | "/" 区切りで渡される               |
+| edited_at_range_start  | string | no   | null       | "/" 区切りで渡される               |
+| edited_at_range_end    | string | no   | null       | "/" 区切りで渡される               |
 | is_in_trashbox         | bool   | no   | null       | trueなら論理削除のデータのみを対象 |
 
 # レスポンス
@@ -71,7 +71,7 @@ get /api/memos/search
 keyword:['nullable', 'string']
 item_number:['nullable', 'integer', 'min:1', 'max:100']
 page:['nullable', 'integer', 'min:1']
-sort:['nullable', 'string', 'in:updated_at,created_at,title,count,random']
+sort:['nullable', 'string', 'in:edited_at,created_at,title,count,random']
 target:['nullable', 'string', 'in:title,body,both']
 is_tag_not_attached:['nullable', 'boolean']
 exact_match_tags:['nullable', 'array']
@@ -83,8 +83,12 @@ exclusion_match_tags.\*:['integer']
 stars:['nullable', 'integer', 'min:0', 'max:5']
 created_at_range_start:['nullable', 'date']
 created_at_range_end:['nullable', 'date']
-updated_at_range_start:['nullable', 'date']
-updated_at_range_end:['nullable', 'date']
+edited_at_range_start:['nullable', 'date']
+edited_at_range_end:['nullable', 'date']
+updated_at_range_start:['prohibited']
+updated_at_range_end:['prohibited']
+
+旧名のパラメータ(`sort=updated_at`、`updated_at_range_start`、`updated_at_range_end`)は受け付けず、422 を返す(#134 で `edited_at` に改名)。`updated_at_range_*` はルールに無いだけだと無視されてしまうため、`prohibited` で明示的に拒否している。
 is_in_trashbox:['nullable', 'boolean']
 
 # 処理の流れ
@@ -122,6 +126,8 @@ is_in_trashbox:['nullable', 'boolean']
 
 - 並び順は`sort`で指定した項目の降順。値が同じメモ同士は`id`の降順で決まる(ページ間で重複・欠落しないようにするため)。
 - `sort=count`の場合は、`article_statuses`の`count`をサブクエリで取得して並べ替える(JOINすると`created_at`などの列名が重複するため)。
-- `is_tag_not_attached`は`article_statuses.has_tags`で判定する。
+- `sort=edited_at`(既定)と`edited_at_range_*`は、ユーザーが内容を編集した日時(`articles.edited_at`)を使う。行の更新日時(`updated_at`)は、タグ削除による`has_tags`の変化などでも変わるため使わない(`articles.md`参照)。
+- ゴミ箱への移動・復元でも`edited_at`は変わらないため、ゴミ箱一覧も編集した順に並ぶ。
+- `is_tag_not_attached`は本体の`articles.has_tags`で判定する(`(user_id, has_tags, deleted_at, edited_at)`のインデックスを使う)。
 - `sort=random`はリクエストごとにシャッフルされるため、ページを切り替えると同じメモが再び現れたり、抜けたりすることがある。ページ間の整合性は保証しない。
 - フロントは`pagination.current_page`と`pagination.last_page`から、ページネーション(先頭・前へ・直接リンク・プルダウン・次へ・末尾)を組み立てる。

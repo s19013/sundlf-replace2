@@ -49,7 +49,7 @@ fetched_at:['nullable', 'date']
 
 - メモ取得
 - メモの作成者idとログイン者のid確認
-- `fetched_at`があれば取得したメモの`updated_at`を比較(楽観的排他制御)
+- `fetched_at`があれば取得したメモの`edited_at`を比較(楽観的排他制御)
 - レスポンス返却
 
 # エラー
@@ -78,7 +78,7 @@ fetched_at:['nullable', 'date']
 }
 ```
 
-## fetched_at < updated_at だった
+## fetched_at < edited_at だった
 
 ステータスコード:409
 
@@ -89,3 +89,6 @@ fetched_at:['nullable', 'date']
 ```
 
 # 備考
+
+- 更新済みかの判定は、ユーザーによる編集の日時(`edited_at`)で行う。編集以外の更新(タグ削除による`has_tags`の変化など)では 409 にならない。
+- レスポンスのメモモデル・タグモデルは、`updated_at`ではなく`edited_at`を含む。

@@ -4,6 +4,8 @@
 
 count(使用回数)は [tag_statuses.md](../db/tag_statuses.md) で管理する
 
+edited_at(編集日時)は datetime にキャストする。`updated_at`(行の更新日時)との違いは [tags.md](../db/tags.md) を参照。
+
 # 追加属性
 
 なし
@@ -18,6 +20,11 @@ count(使用回数)は [tag_statuses.md](../db/tag_statuses.md) で管理する
 
 user_id と 引数userId が同じなら true
 
+## editableAttributes
+
+編集とみなす属性。タグ名(`name`)だけ。これが変わった保存で `edited_at` を更新する(`TracksEditedAt` トレイト)。
+タグ名の変更(`UpdateTagUsecase`)で同じ名前を送った場合は変更なしとなり、何も書かない。
+
 # リレーション
 
 ほかはテーブル定義を参照
@@ -30,7 +37,7 @@ user_id と 引数userId が同じなら true
 
 ## count(使用回数)の増減
 
-増減の対象は `tag_statuses.count`。`tags` 側を更新しないので、`tags.updated_at` は変わらない(タグ検索の更新日順に影響しない)。
+増減の対象は `tag_statuses.count`。`tags` 側を更新しないので、`tags.updated_at` も `tags.edited_at` も変わらない(タグ検索の編集日時順に影響しない)。
 
 当初は「リポジトリに作成予定」としていたが、実装ではモデルやリポジトリにメソッドは作らず、
 メモ関連のUsecase内で増減処理(`increment('count')` / `decrement('count')`)を直接呼んでいる。

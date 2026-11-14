@@ -47,7 +47,9 @@ tags.\*:['integer']
 
 - `DB::transaction`内で以下をまとめて実行する(タグ同期に失敗した場合に、メモだけ作成された状態が残らないようにするため)
   - 作成処理
-  - status行(`article_statuses`)の作成(`has_tags` は付与したタグの有無で設定)
+  - status行(`article_statuses`)の作成
+  - 付与したタグがあれば、中間モデルのイベントで`articles.has_tags`を true にする
+  - `edited_at`は`created_at`と同じ時刻にする
   - 新しく付与されたタグはincrease
 - レスポンス返却
 

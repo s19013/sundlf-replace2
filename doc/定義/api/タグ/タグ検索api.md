@@ -23,7 +23,7 @@ get `/api/tags`
 | keywords    | string | no   | null       |                  |
 | item_number | int    | no   | 10         | 表示数           |
 | page        | int    | no   | 1          | ページ番号(1以上) |
-| sort        | string | no   | updated_at | 何でソートするか |
+| sort        | string | no   | edited_at  | 何でソートするか |
 
 # レスポンス
 
@@ -58,7 +58,9 @@ get `/api/tags`
 keywords:['nullable', 'string']
 item_number:['nullable', 'integer', 'min:1']
 page:['nullable', 'integer', 'min:1']
-sort:['nullable', 'string', 'in:name,count,created_at,updated_at']
+sort:['nullable', 'string', 'in:name,count,created_at,edited_at']
+
+旧名の`sort=updated_at`は受け付けず、422 を返す(#134 で `edited_at` に改名)。
 
 # 処理の流れ
 
@@ -95,5 +97,7 @@ sort:['nullable', 'string', 'in:name,count,created_at,updated_at']
 
 - 並び順は`sort`で指定した項目の降順。値が同じタグ同士は`id`の降順で決まる(ページ間で重複・欠落しないようにするため)。
 - `sort=count`の場合は、`tag_statuses`の`count`をサブクエリで取得して並べ替える(JOINすると`created_at`などの列名が重複するため)。
+- `sort=edited_at`(既定)は、ユーザーがタグ名を編集した日時(`tags.edited_at`)を使う。使用回数の増減では変わらない(`tags.md`参照)。
+- レスポンスのタグモデルは、`updated_at`ではなく`edited_at`を含む。
 - フロントは`pagination.current_page`と`pagination.last_page`から、ページネーション(先頭・前へ・直接リンク・プルダウン・次へ・末尾)を組み立てる。
 - タグモーダルは全件取得(`tags.all`)を使うため、このAPIのページネーションは使わない。

@@ -45,3 +45,5 @@ get `/api/tags/all`
 ```
 
 # 備考
+
+- レスポンスのタグモデルは、`updated_at`ではなく`edited_at`を含む(#134)。

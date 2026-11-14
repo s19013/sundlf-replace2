@@ -64,7 +64,7 @@ fetched_at:['required', 'date']
 - メモの作成者idとログイン者のid確認
 - `DB::transaction`内で以下をまとめて実行する
   - 対象メモを行ロック(`lockForUpdate`)して再取得
-  - メモの`updated_at`と`fetched_at`を比較(楽観的排他制御)
+  - メモの`edited_at`と`fetched_at`を比較(楽観的排他制御)
   - 更新作業
   - 新しく付与されたタグはincrease,外されたタグはdecrease
 - レスポンス返却
@@ -96,7 +96,7 @@ fetched_at:['required', 'date']
 }
 ```
 
-## fetched_at < updated_at だった
+## fetched_at < edited_at だった
 
 ステータスコード:409
 
@@ -116,3 +116,6 @@ fetched_at:['required', 'date']
 - `title`・`body`・`stars`は`null`(未送信の場合を含む)の場合は更新されない。
 - `tags`キーが送信された場合のみタグを同期する。未送信の場合はタグを変更しない。空配列`[]`が送信された場合は全てのタグが外される。
 - ログイン者が所有していないタグのidが指定された場合は無視される。
+- 楽観的排他制御は、ユーザーによる編集の日時(`edited_at`)で判定する。タグ削除による`has_tags`の変化や閲覧数の加算など、編集以外の更新では競合にならない。
+- タグだけを付け替えた場合も編集とみなし、`edited_at`を更新する(`markAsEdited()`)。内容が同じなら何も書かない。
+- 409 の`saved`(メモモデル)は、`updated_at`ではなく`edited_at`を含む。
