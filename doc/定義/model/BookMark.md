@@ -2,7 +2,11 @@
 
 [book_mark.md](../db/book_marks.md)
 
-count(閲覧数)・has_tags(タグもちフラグ)は [book_mark_statuses.md](../db/book_mark_statuses.md) で管理する
+count(閲覧数)は [book_mark_statuses.md](../db/book_mark_statuses.md) で管理する
+
+has_tags(タグもちフラグ)は本体で持つ。既定値は false、boolean にキャストする。中間モデルのイベントとタグ削除だけが書くため、`$fillable` には含めない。
+
+edited_at(編集日時)は datetime にキャストする。`updated_at`(行の更新日時)との違いは [book_marks.md](../db/book_marks.md) を参照。
 
 # 追加属性
 
@@ -32,17 +36,34 @@ user_id と 引数userId が同じなら true
 
 `book_mark_statuses.count` を +1
 
-※ status テーブル側を更新するので、本体の updated_at は変わらない -> 検索に影響がでないようにするため
+※ status テーブル側を更新するので、本体の updated_at も edited_at も変わらない
 
-## hasBeenUpdatedSinceRetrieval
+## hasBeenEditedSinceRetrieval
 
 ### 引数
 
 - string:fetched_at
 
-`updated_at` > `fetched_at` の 場合 true
+`edited_at` > `fetched_at` の 場合 true
 
-データベースにあるデータが、自分が取得した後に更新されてないか確認する。
+自分が取得した後に、ユーザーによる編集が行われていないか確認する(楽観的排他制御)。
+`updated_at` だけが変わる編集以外の更新(has_tags の同期など)は、競合とみなさない。
+`fetched_at` を解析できない場合は、上書きを防ぐため true を返す。
+
+## markAsEdited
+
+本体の属性が変わらない編集(タグの付け替え)を、次の `save()` で編集として扱う。`save()` で `edited_at` が `updated_at` と同じ時刻になる。印は保存後に消える。
+
+## editableAttributes
+
+編集とみなす属性。タイトル(`title`)・URL(`url`)・星(`star`)。これらが変わった保存で `edited_at` を更新する。
+編集対象の属性を追加した場合は、この一覧も更新すること。
+
+`edited_at` の設定は `TracksEditedAt` トレイト(`backend/app/Models/Concerns/TracksEditedAt.php`)が行う。
+
+- 作成時: `created_at` と同じ時刻(呼び出し側が明示した場合はその値)
+- 編集対象の属性が変わった保存、または `markAsEdited()` 後の保存: `updated_at` と同じ時刻
+- それ以外の保存、クエリビルダーの `update()`、論理削除(`delete()`)、status テーブルの更新: 変えない
 
 ## salvage
 

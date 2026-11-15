@@ -28,6 +28,7 @@
 
 [`article_statuses.md`](./article_statuses.md)の「分離した理由」と同じ。
 タグの `count` を `tags` に置いていたときは、増減のたびに `tags.updated_at` まで更新され、タグ検索の更新日順に影響していた（#122）。
+現在、タグ検索の並べ替えは編集日時（`tags.edited_at`）で行う（#134）。
 
 ## 行の作成・削除
 

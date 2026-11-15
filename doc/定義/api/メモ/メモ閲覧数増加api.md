@@ -66,7 +66,7 @@ id:['required', 'integer']
 
 # 備考
 
-- 閲覧数(`count`)は`article_statuses`で管理しているため、加算しても`articles.updated_at`は変わらない。検索での更新日順ソートや、楽観的排他制御(`fetched_at`との比較)に影響を与えない。
+- 閲覧数(`count`)は`article_statuses`で管理しているため、加算しても`articles.updated_at`も`articles.edited_at`も変わらない。検索の編集日時順や、楽観的排他制御(`fetched_at`との比較)に影響を与えない。
 
 ## なぜ個別に増加apiを設けるのか
 

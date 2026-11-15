@@ -43,8 +43,10 @@ id:['required', 'integer']
 - バリデーションチェック
 - タグ情報取得
 - タグの作成者idとログイン者のid確認
-- タグテーブルから物理削除
-  - 中間テーブル(`article_tags`等)のデータは、DBの外部キー制約(`ON DELETE CASCADE`)により自動的に削除される
+- `DB::transaction`内で以下をまとめて実行する
+  - このタグ以外にタグが紐付いていないメモ・ブックマーク(ゴミ箱内を含む)の`has_tags`を false にする
+  - タグテーブルから物理削除
+    - 中間テーブル(`article_tags`等)のデータは、DBの外部キー制約(`ON DELETE CASCADE`)により自動的に削除される
 - レスポンス返却
 
 # エラー
@@ -72,3 +74,6 @@ id:['required', 'integer']
 ```
 
 # 備考
+
+- 中間テーブルの行は CASCADE で消え、中間モデルのイベント(`has_tags`の同期)が発火しないため、削除前に本体(`articles`・`book_marks`)の`has_tags`を同期する。
+- 同期は Eloquent Builder の`update()`で行うため、対象のメモの`updated_at`は更新されるが、`edited_at`は変わらない。タグ削除によって、メモの並び順が変わったり、メモの保存が競合になったりしない。
