@@ -5,6 +5,7 @@ namespace Tests\Feature\Tag;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -221,6 +222,40 @@ class SearchTagsApiTest extends TestCase
         $this->assertSame($tags->pluck('id')->sortDesc()->values()->all(), $ids);
     }
 
+    public function test_sortを指定しない場合は編集日時の新しい順に並ぶこと(): void
+    {
+        $user = User::factory()->create();
+        [$older, $newer] = $this->createTagsWithReversedUpdatedAt($user);
+
+        $response = $this->actingAs($user)->spaGet('/api/tags');
+
+        $response->assertStatus(200);
+        $this->assertSame([$newer->id, $older->id], $response->json('tags.*.id'));
+    }
+
+    public function test_sortにedited_atを指定すると編集日時の新しい順に並ぶこと(): void
+    {
+        $user = User::factory()->create();
+        [$older, $newer] = $this->createTagsWithReversedUpdatedAt($user);
+
+        $response = $this->actingAs($user)->spaGet('/api/tags?'.http_build_query(['sort' => 'edited_at']));
+
+        $response->assertStatus(200);
+        $this->assertSame([$newer->id, $older->id], $response->json('tags.*.id'));
+    }
+
+    public function test_レスポンスにedited_atが含まれupdated_atは含まれないこと(): void
+    {
+        $user = User::factory()->create();
+        Tag::factory()->create(['user_id' => $user->id, 'edited_at' => '2026-01-01 00:00:00']);
+
+        $response = $this->actingAs($user)->spaGet('/api/tags');
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('tags.0.edited_at', '2026-01-01T00:00:00.000000Z');
+        $response->assertJsonMissingPath('tags.0.updated_at');
+    }
+
     // --- 異常系 ---
 
     public function test_該当タグが無い場合404が返ること(): void
@@ -238,6 +273,16 @@ class SearchTagsApiTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->spaGet('/api/tags?'.http_build_query(['sort' => 'invalid_column']));
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('sort');
+    }
+
+    public function test_sortに旧名のupdated_atを指定すると422が返ること(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->spaGet('/api/tags?'.http_build_query(['sort' => 'updated_at']));
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors('sort');
@@ -283,5 +328,21 @@ class SearchTagsApiTest extends TestCase
         $response = $this->spaGet('/api/tags');
 
         $response->assertStatus(401);
+    }
+
+    /**
+     * 編集日時と行の更新日時の前後が逆になった2件のタグを作る。
+     * 並べ替えがupdated_atではなくedited_atに基づくことを確かめるため。
+     *
+     * @return array{0: Tag, 1: Tag} [編集日時が古いタグ, 編集日時が新しいタグ]
+     */
+    private function createTagsWithReversedUpdatedAt(User $user): array
+    {
+        $older = Tag::factory()->create(['user_id' => $user->id, 'edited_at' => '2026-01-01 00:00:00']);
+        $newer = Tag::factory()->create(['user_id' => $user->id, 'edited_at' => '2026-01-02 00:00:00']);
+        DB::table('tags')->where('id', $older->id)->update(['updated_at' => '2026-01-05 00:00:00']);
+        DB::table('tags')->where('id', $newer->id)->update(['updated_at' => '2026-01-04 00:00:00']);
+
+        return [$older, $newer];
     }
 }

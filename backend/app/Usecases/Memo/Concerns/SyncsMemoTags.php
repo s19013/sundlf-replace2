@@ -12,7 +12,7 @@ trait SyncsMemoTags
      * ログインユーザーが所有するタグに絞り込んだ上でメモへの紐付けを同期し、
      * 新しく付与されたタグは使用回数(`tag_statuses.count`)をincrease、外されたタグはdecreaseする。
      * `has_tags`(`article_statuses`)は中間モデル(MemoTag)のイベントで同期される。
-     * タグの付け替えはユーザーによる編集とみなすため、戻り値で増減の有無を返し、呼び出し側で`updated_at`を更新する。
+     * タグの付け替えはユーザーによる編集とみなすため、戻り値で増減の有無を返し、呼び出し側で`edited_at`を更新する。
      *
      * @param  array<int, int>|null  $tagIds
      * @return bool タグの増減があったかどうか

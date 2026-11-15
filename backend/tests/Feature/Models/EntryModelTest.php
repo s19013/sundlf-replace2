@@ -46,32 +46,50 @@ class EntryModelTest extends TestCase
         }
     }
 
-    public function test_has_been_updated_since_retrieval_detects_staleness(): void
+    public function test_has_been_edited_since_retrieval_detects_staleness(): void
     {
         $memo = Memo::factory()->create();
         $bookMark = BookMark::factory()->create();
 
         foreach ([$memo, $bookMark] as $model) {
-            $updatedAt = $model->updated_at;
-            if ($updatedAt === null) {
-                $this->fail('updated_at was not set.');
+            $editedAt = $model->edited_at;
+            if ($editedAt === null) {
+                $this->fail('edited_at was not set.');
             }
 
-            $fetchedAfterLastUpdate = $updatedAt->copy()->addMinute()->toIso8601String();
-            $this->assertFalse($model->hasBeenUpdatedSinceRetrieval($fetchedAfterLastUpdate));
+            $fetchedAfterLastEdit = $editedAt->copy()->addMinute()->toIso8601String();
+            $this->assertFalse($model->hasBeenEditedSinceRetrieval($fetchedAfterLastEdit));
 
-            $fetchedBeforeLastUpdate = $updatedAt->copy()->subMinute()->toIso8601String();
-            $this->assertTrue($model->hasBeenUpdatedSinceRetrieval($fetchedBeforeLastUpdate));
+            $fetchedBeforeLastEdit = $editedAt->copy()->subMinute()->toIso8601String();
+            $this->assertTrue($model->hasBeenEditedSinceRetrieval($fetchedBeforeLastEdit));
         }
     }
 
-    public function test_has_been_updated_since_retrieval_returns_true_for_invalid_format(): void
+    public function test_has_been_edited_since_retrieval_ignores_updated_at(): void
     {
         $memo = Memo::factory()->create();
         $bookMark = BookMark::factory()->create();
 
         foreach ([$memo, $bookMark] as $model) {
-            $this->assertTrue($model->hasBeenUpdatedSinceRetrieval('not-a-valid-date'));
+            $editedAt = $model->edited_at;
+            if ($editedAt === null) {
+                $this->fail('edited_at was not set.');
+            }
+
+            // 取得後に、編集以外の理由で行だけが更新された状態
+            $model->updated_at = $editedAt->copy()->addMinutes(5);
+
+            $this->assertFalse($model->hasBeenEditedSinceRetrieval($editedAt->copy()->addMinute()->toIso8601String()));
+        }
+    }
+
+    public function test_has_been_edited_since_retrieval_returns_true_for_invalid_format(): void
+    {
+        $memo = Memo::factory()->create();
+        $bookMark = BookMark::factory()->create();
+
+        foreach ([$memo, $bookMark] as $model) {
+            $this->assertTrue($model->hasBeenEditedSinceRetrieval('not-a-valid-date'));
         }
     }
 

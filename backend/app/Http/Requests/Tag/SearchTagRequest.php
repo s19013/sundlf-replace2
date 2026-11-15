@@ -20,7 +20,7 @@ class SearchTagRequest extends FormRequest
             'keywords' => ['nullable', 'string'],
             'item_number' => ['nullable', 'integer', 'min:1'],
             'page' => ['nullable', 'integer', 'min:1'],
-            'sort' => ['nullable', 'string', 'in:name,count,created_at,updated_at'],
+            'sort' => ['nullable', 'string', 'in:name,count,created_at,edited_at'],
         ];
     }
 }

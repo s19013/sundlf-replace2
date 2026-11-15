@@ -37,7 +37,7 @@ class UpdateMemoUsecase
                 throw new NotFoundException('メモが見つかりませんでした。');
             }
 
-            if ($request->filled('fetched_at') && $locked->hasBeenUpdatedSinceRetrieval($request->string('fetched_at')->toString())) {
+            if ($request->filled('fetched_at') && $locked->hasBeenEditedSinceRetrieval($request->string('fetched_at')->toString())) {
                 $locked->load(['status', 'tags.status']);
 
                 throw new StaleDataException(
@@ -54,12 +54,12 @@ class UpdateMemoUsecase
 
             $isTagsChanged = $request->has('tags') && $this->syncTags($locked, $user, $request->input('tags'));
 
-            // タグの付け替えも編集とみなし、updated_atの更新と変更した属性の保存を1回のUPDATEで行う
+            // タグの付け替えも編集とみなし、edited_atの更新と変更した属性の保存を1回のUPDATEで行う
             if ($isTagsChanged) {
-                $locked->touch();
-            } else {
-                $locked->save();
+                $locked->markAsEdited();
             }
+
+            $locked->save();
         });
 
         return response()->json([

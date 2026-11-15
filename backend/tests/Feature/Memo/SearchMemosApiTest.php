@@ -7,6 +7,7 @@ use App\Models\MemoStatus;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
@@ -264,6 +265,61 @@ class SearchMemosApiTest extends TestCase
         $this->assertSame([3, 1], $response->json('memos.*.count'));
     }
 
+    public function test_sortを指定しない場合は編集日時の新しい順に取得できること(): void
+    {
+        $user = User::factory()->create();
+        [$older, $newer] = $this->createMemosWithReversedUpdatedAt($user);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search');
+
+        $response->assertStatus(200);
+        $this->assertSame([$newer->id, $older->id], $response->json('memos.*.id'));
+    }
+
+    public function test_sortにedited_atを指定すると編集日時の新しい順に取得できること(): void
+    {
+        $user = User::factory()->create();
+        [$older, $newer] = $this->createMemosWithReversedUpdatedAt($user);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query(['sort' => 'edited_at']));
+
+        $response->assertStatus(200);
+        $this->assertSame([$newer->id, $older->id], $response->json('memos.*.id'));
+    }
+
+    public function test_edited_atの期間で絞り込めること(): void
+    {
+        $user = User::factory()->create();
+        [$older, $newer] = $this->createMemosWithReversedUpdatedAt($user);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'edited_at_range_start' => '2026-01-02T00:00:00Z',
+            'edited_at_range_end' => '2026-01-03T00:00:00Z',
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertSame([$newer->id], $response->json('memos.*.id'));
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
+            'edited_at_range_end' => '2026-01-01T12:00:00Z',
+        ]));
+
+        $response->assertStatus(200);
+        $this->assertSame([$older->id], $response->json('memos.*.id'));
+    }
+
+    public function test_レスポンスにedited_atが含まれupdated_atは含まれないこと(): void
+    {
+        $user = User::factory()->create();
+        Memo::factory()->create(['user_id' => $user->id, 'edited_at' => '2026-01-01 00:00:00']);
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search');
+
+        $response->assertStatus(200);
+        $response->assertJsonPath('memos.0.edited_at', '2026-01-01T00:00:00.000000Z');
+        $response->assertJsonMissingPath('memos.0.updated_at');
+    }
+
     public function test_paginationに現在ページ・最終ページ・1ページの件数・総件数が含まれること(): void
     {
         $user = User::factory()->create();
@@ -373,18 +429,18 @@ class SearchMemosApiTest extends TestCase
         $response->assertJson(['pagination' => ['last_page' => 2, 'total' => 3]]);
     }
 
-    public function test_updated_atが同値の場合はid降順で並び全ページで重複なく取得できること(): void
+    public function test_edited_atが同値の場合はid降順で並び全ページで重複なく取得できること(): void
     {
         $user = User::factory()->create();
         $memos = Memo::factory()->count(5)->create([
             'user_id' => $user->id,
-            'updated_at' => '2026-01-01 00:00:00',
+            'edited_at' => '2026-01-01 00:00:00',
         ]);
 
         $ids = [];
         foreach ([1, 2, 3] as $page) {
             $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([
-                'sort' => 'updated_at',
+                'sort' => 'edited_at',
                 'item_number' => 2,
                 'page' => $page,
             ]));
@@ -433,6 +489,28 @@ class SearchMemosApiTest extends TestCase
         $response->assertJsonValidationErrors('sort');
     }
 
+    public function test_sortに旧名のupdated_atを指定すると422が返ること(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query(['sort' => 'updated_at']));
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('sort');
+    }
+
+    public function test_旧名のupdated_atの期間パラメータを指定すると422が返ること(): void
+    {
+        $user = User::factory()->create();
+
+        foreach (['updated_at_range_start', 'updated_at_range_end'] as $param) {
+            $response = $this->actingAs($user)->spaGet('/api/memos/search?'.http_build_query([$param => '2026-01-01T00:00:00Z']));
+
+            $response->assertStatus(422);
+            $response->assertJsonValidationErrors($param);
+        }
+    }
+
     public function test_存在しないページを指定すると404が返ること(): void
     {
         $user = User::factory()->create();
@@ -473,5 +551,21 @@ class SearchMemosApiTest extends TestCase
         $response = $this->spaGet('/api/memos/search');
 
         $response->assertStatus(401);
+    }
+
+    /**
+     * 編集日時と行の更新日時の前後が逆になった2件のメモを作る。
+     * 並べ替え・絞り込みがupdated_atではなくedited_atに基づくことを確かめるため。
+     *
+     * @return array{0: Memo, 1: Memo} [編集日時が古いメモ, 編集日時が新しいメモ]
+     */
+    private function createMemosWithReversedUpdatedAt(User $user): array
+    {
+        $older = Memo::factory()->create(['user_id' => $user->id, 'edited_at' => '2026-01-01 00:00:00']);
+        $newer = Memo::factory()->create(['user_id' => $user->id, 'edited_at' => '2026-01-02 12:00:00']);
+        DB::table('articles')->where('id', $older->id)->update(['updated_at' => '2026-01-05 00:00:00']);
+        DB::table('articles')->where('id', $newer->id)->update(['updated_at' => '2026-01-04 00:00:00']);
+
+        return [$older, $newer];
     }
 }

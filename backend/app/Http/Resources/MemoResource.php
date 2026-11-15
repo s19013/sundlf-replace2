@@ -23,7 +23,7 @@ class MemoResource extends JsonResource
             'is_in_trash' => (bool) $this->is_in_trash,
             'is_deadline_approaching' => (bool) $this->is_deadline_approaching,
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at,
+            'edited_at' => $this->edited_at,
             'deleted_at' => $this->deleted_at,
         ];
     }
