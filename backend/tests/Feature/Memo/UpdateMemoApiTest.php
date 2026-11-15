@@ -91,8 +91,8 @@ class UpdateMemoApiTest extends TestCase
         $oldTag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $newTag = Tag::factory()->create(['user_id' => $user->id]);
         $memo->tags()->attach($oldTag->id);
-        $oldTagEditedAt = $oldTag->fresh()?->edited_at?->toIso8601String();
-        $newTagEditedAt = $newTag->fresh()?->edited_at?->toIso8601String();
+        $oldTagEditedAt = $oldTag->fresh()?->edited_at->toIso8601String();
+        $newTagEditedAt = $newTag->fresh()?->edited_at->toIso8601String();
 
         $this->travel(1)->minutes();
 
@@ -147,7 +147,7 @@ class UpdateMemoApiTest extends TestCase
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
         $tag = Tag::factory()->create(['user_id' => $user->id]);
-        $beforeEditedAt = $memo->fresh()?->edited_at?->toIso8601String();
+        $beforeEditedAt = $memo->fresh()?->edited_at->toIso8601String();
 
         $this->travel(1)->minutes();
 
@@ -158,8 +158,8 @@ class UpdateMemoApiTest extends TestCase
 
         $response->assertStatus(200);
         $fresh = $memo->fresh();
-        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
-        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
+        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at->toIso8601String());
     }
 
     public function test_タグを同じ内容で送るとedited_atもupdated_atも更新されないこと(): void
@@ -179,7 +179,7 @@ class UpdateMemoApiTest extends TestCase
 
         $response->assertStatus(200);
         $fresh = $memo->fresh();
-        $this->assertSame($before?->edited_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        $this->assertSame($before?->edited_at->toIso8601String(), $fresh?->edited_at->toIso8601String());
         $this->assertSame($before?->updated_at?->toIso8601String(), $fresh?->updated_at?->toIso8601String());
     }
 

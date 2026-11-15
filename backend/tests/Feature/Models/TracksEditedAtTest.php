@@ -23,7 +23,7 @@ class TracksEditedAtTest extends TestCase
 
     private function fetchEditedAt(TracksEditedAtFixture $fixture): ?string
     {
-        return $fixture->fresh()?->edited_at?->toIso8601String();
+        return $fixture->fresh()?->edited_at->toIso8601String();
     }
 
     public function test_作成時はedited_atがcreated_atと同じ時刻になること(): void
@@ -69,8 +69,8 @@ class TracksEditedAtTest extends TestCase
         $fixture->update(['name' => '新しい名前']);
 
         $fresh = $fixture->fresh();
-        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
-        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
+        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at->toIso8601String());
     }
 
     public function test_編集対象外の属性だけが変わってもedited_atは変わらないこと(): void
@@ -86,7 +86,7 @@ class TracksEditedAtTest extends TestCase
 
         $fresh = $fixture->fresh();
         $this->assertNotSame($beforeUpdatedAt, $fresh?->updated_at?->toIso8601String());
-        $this->assertSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
+        $this->assertSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
     }
 
     public function test_変更のない保存では何も書かないこと(): void
@@ -104,7 +104,7 @@ class TracksEditedAtTest extends TestCase
         $this->assertSame([], $queries);
         $fresh = $fixture->fresh();
         $this->assertSame($beforeUpdatedAt, $fresh?->updated_at?->toIso8601String());
-        $this->assertSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
+        $this->assertSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
     }
 
     public function test_mark_as_editedだけでもedited_atがupdated_atと同じ時刻になること(): void
@@ -116,8 +116,8 @@ class TracksEditedAtTest extends TestCase
         $fixture->markAsEdited()->save();
 
         $fresh = $fixture->fresh();
-        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
-        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
+        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at->toIso8601String());
     }
 
     public function test_mark_as_editedの印は保存後に消えること(): void
@@ -159,7 +159,7 @@ class TracksEditedAtTest extends TestCase
  *
  * @property int $user_id
  * @property string $name
- * @property \Illuminate\Support\Carbon|null $edited_at
+ * @property \Illuminate\Support\Carbon $edited_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */

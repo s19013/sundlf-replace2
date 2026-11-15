@@ -173,7 +173,7 @@ class EntryModelTest extends TestCase
 
     private function fetchEditedAt(Memo|BookMark $model): ?string
     {
-        return $model->fresh()?->edited_at?->toIso8601String();
+        return $model->fresh()?->edited_at->toIso8601String();
     }
 
     public function test_作成時はedited_atがcreated_atと同じ時刻になること(): void
@@ -195,8 +195,8 @@ class EntryModelTest extends TestCase
             $model->update($editedValues);
 
             $fresh = $model->fresh();
-            $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String(), $case);
-            $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String(), $case);
+            $this->assertNotSame($beforeEditedAt, $fresh?->edited_at->toIso8601String(), $case);
+            $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at->toIso8601String(), $case);
         }
     }
 
@@ -210,7 +210,7 @@ class EntryModelTest extends TestCase
             $model->update(['title' => $model->title]);
 
             $fresh = $model->fresh();
-            $this->assertSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
+            $this->assertSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
             $this->assertSame($beforeUpdatedAt, $fresh?->updated_at?->toIso8601String());
         }
     }
@@ -222,7 +222,7 @@ class EntryModelTest extends TestCase
 
             $this->travel(1)->minutes();
             $model->delete();
-            $editedAtAfterDelete = $model->fresh()?->edited_at?->toIso8601String();
+            $editedAtAfterDelete = $model->fresh()?->edited_at->toIso8601String();
 
             $this->travel(1)->minutes();
             $model->salvage();
@@ -241,8 +241,8 @@ class EntryModelTest extends TestCase
             $model->markAsEdited()->save();
 
             $fresh = $model->fresh();
-            $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
-            $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+            $this->assertNotSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
+            $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at->toIso8601String());
         }
     }
 }

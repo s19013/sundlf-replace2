@@ -127,7 +127,7 @@ class DeleteTagApiTest extends TestCase
 
         $fresh = $memo->fresh();
         $this->assertNotSame($before?->updated_at?->toIso8601String(), $fresh?->updated_at?->toIso8601String());
-        $this->assertSame($before?->edited_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        $this->assertSame($before?->edited_at->toIso8601String(), $fresh?->edited_at->toIso8601String());
     }
 
     public function test_タグを削除した後にメモを更新しても競合にならないこと(): void
@@ -174,7 +174,7 @@ class DeleteTagApiTest extends TestCase
         $tag = Tag::factory()->create(['user_id' => $user->id, 'name' => '旧タグ']);
         $memo = Memo::factory()->create(['user_id' => $user->id]);
         $memo->tags()->attach($tag->id);
-        $beforeEditedAt = $memo->fresh()?->edited_at?->toIso8601String();
+        $beforeEditedAt = $memo->fresh()?->edited_at->toIso8601String();
 
         $this->travel(1)->minutes();
 
@@ -182,7 +182,7 @@ class DeleteTagApiTest extends TestCase
             ->patchJson("/api/tags/{$tag->id}", ['name' => '新タグ'])
             ->assertStatus(200);
 
-        $this->assertSame($beforeEditedAt, $memo->fresh()?->edited_at?->toIso8601String());
+        $this->assertSame($beforeEditedAt, $memo->fresh()?->edited_at->toIso8601String());
     }
 
     // --- 異常系 ---

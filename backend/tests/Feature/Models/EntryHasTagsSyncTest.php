@@ -130,14 +130,14 @@ class EntryHasTagsSyncTest extends TestCase
             $afterAttach = $entry->fresh();
 
             $this->assertNotSame($before?->updated_at?->toIso8601String(), $afterAttach?->updated_at?->toIso8601String());
-            $this->assertSame($before?->edited_at?->toIso8601String(), $afterAttach?->edited_at?->toIso8601String());
+            $this->assertSame($before?->edited_at->toIso8601String(), $afterAttach?->edited_at->toIso8601String());
 
             $this->travel(1)->minutes();
             $entry->tags()->detach($tag->id);
             $afterDetach = $entry->fresh();
 
             $this->assertNotSame($afterAttach?->updated_at?->toIso8601String(), $afterDetach?->updated_at?->toIso8601String());
-            $this->assertSame($before?->edited_at?->toIso8601String(), $afterDetach?->edited_at?->toIso8601String());
+            $this->assertSame($before?->edited_at->toIso8601String(), $afterDetach?->edited_at->toIso8601String());
         }
     }
 }

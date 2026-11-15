@@ -59,28 +59,28 @@ class UpdateTagApiTest extends TestCase
     {
         $user = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $user->id, 'name' => '旧タグ']);
-        $beforeEditedAt = $tag->fresh()?->edited_at?->toIso8601String();
+        $beforeEditedAt = $tag->fresh()?->edited_at->toIso8601String();
 
         $this->travel(1)->minutes();
         $this->actingAs($user)->spaPatch("/api/tags/{$tag->id}", ['name' => '新タグ']);
 
         $fresh = $tag->fresh();
-        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
-        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
+        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at->toIso8601String());
     }
 
     public function test_名前を変えずに更新するとedited_atとupdated_atは変わらないこと(): void
     {
         $user = User::factory()->create();
         $tag = Tag::factory()->create(['user_id' => $user->id, 'name' => '同じ名前']);
-        $beforeEditedAt = $tag->fresh()?->edited_at?->toIso8601String();
+        $beforeEditedAt = $tag->fresh()?->edited_at->toIso8601String();
         $beforeUpdatedAt = $tag->updated_at?->toIso8601String();
 
         $this->travel(1)->minutes();
         $this->actingAs($user)->spaPatch("/api/tags/{$tag->id}", ['name' => '同じ名前']);
 
         $fresh = $tag->fresh();
-        $this->assertSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
+        $this->assertSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
         $this->assertSame($beforeUpdatedAt, $fresh?->updated_at?->toIso8601String());
     }
 
