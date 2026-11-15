@@ -9,7 +9,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class TagResource extends JsonResource
 {
     /**
-     * @return array{id: int, name: string, count: int, created_at: \Illuminate\Support\Carbon|null, edited_at: \Illuminate\Support\Carbon|null}
+     * @return array{id: int, name: string, count: int, created_at: \Illuminate\Support\Carbon|null, edited_at: \Illuminate\Support\Carbon}
      */
     public function toArray(Request $request): array
     {

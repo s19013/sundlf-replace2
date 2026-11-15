@@ -67,7 +67,6 @@ class CreateTagApiTest extends TestCase
         $this->actingAs($user)->spaPost('/api/tags', ['name' => '新タグ']);
 
         $tag = Tag::where('user_id', $user->id)->where('name', '新タグ')->firstOrFail();
-        $this->assertNotNull($tag->edited_at);
         $this->assertSame($tag->created_at?->toIso8601String(), $tag->edited_at->toIso8601String());
     }
 

@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 /**
  * @phpstan-require-extends Model
  *
- * @property \Illuminate\Support\Carbon|null $edited_at
+ * @property \Illuminate\Support\Carbon $edited_at
  */
 trait DetectsStaleData
 {
@@ -26,6 +26,6 @@ trait DetectsStaleData
             return true;
         }
 
-        return $this->edited_at?->gt($fetchedAtTime) ?? false;
+        return $this->edited_at->gt($fetchedAtTime);
     }
 }

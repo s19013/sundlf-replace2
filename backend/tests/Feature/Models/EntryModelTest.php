@@ -53,10 +53,6 @@ class EntryModelTest extends TestCase
 
         foreach ([$memo, $bookMark] as $model) {
             $editedAt = $model->edited_at;
-            if ($editedAt === null) {
-                $this->fail('edited_at was not set.');
-            }
-
             $fetchedAfterLastEdit = $editedAt->copy()->addMinute()->toIso8601String();
             $this->assertFalse($model->hasBeenEditedSinceRetrieval($fetchedAfterLastEdit));
 
@@ -72,10 +68,6 @@ class EntryModelTest extends TestCase
 
         foreach ([$memo, $bookMark] as $model) {
             $editedAt = $model->edited_at;
-            if ($editedAt === null) {
-                $this->fail('edited_at was not set.');
-            }
-
             // 取得後に、編集以外の理由で行だけが更新された状態
             $model->updated_at = $editedAt->copy()->addMinutes(5);
 
