@@ -39,7 +39,6 @@ abstract class Entry extends Model
     {
         return [
             'star' => 'integer',
-            'edited_at' => 'datetime',
             'has_tags' => 'boolean',
         ];
     }

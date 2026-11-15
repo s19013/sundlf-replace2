@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Model;
  *
  * `updated_at`は行の更新日時で、編集以外の更新(has_tagsの同期など)でも変わる。
  * クエリビルダーの`update()`・SoftDeletesの論理削除・status行の更新は`updateTimestamps()`を通らないため、`edited_at`は変わらない。
- * 編集対象の属性を追加した場合は、`editableAttributes()`も更新すること。
+ * 編集対象は`$fillable`のうち`user_id`以外の属性。`$fillable`に追加すれば、`edited_at`の更新対象にもなる。
+ * `edited_at`のdatetimeキャストもこのトレイトが登録するため、モデル側の`casts()`には書かない。
  *
  * @phpstan-require-extends Model
  */
@@ -22,10 +23,19 @@ trait TracksEditedAt
 
     /**
      * 編集とみなす属性。これらが変更された保存で`edited_at`を更新する。
+     * 所有者(`user_id`)はユーザーが編集する項目ではないため除く。
      *
      * @return list<string>
      */
-    abstract protected function editableAttributes(): array;
+    protected function editableAttributes(): array
+    {
+        return array_values(array_diff($this->getFillable(), ['user_id']));
+    }
+
+    public function initializeTracksEditedAt(): void
+    {
+        $this->mergeCasts(['edited_at' => 'datetime']);
+    }
 
     protected static function bootTracksEditedAt(): void
     {

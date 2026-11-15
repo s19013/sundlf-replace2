@@ -23,6 +23,7 @@ user_id と 引数userId が同じなら true
 ## editableAttributes
 
 編集とみなす属性。タグ名(`name`)だけ。これが変わった保存で `edited_at` を更新する(`TracksEditedAt` トレイト)。
+`TracksEditedAt` の既定の実装で、`$fillable` のうち `user_id` 以外が編集対象になる。
 タグ名の変更(`UpdateTagUsecase`)で同じ名前を送った場合は変更なしとなり、何も書かない。
 
 # リレーション

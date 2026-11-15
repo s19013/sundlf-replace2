@@ -127,7 +127,8 @@ class TracksEditedAtTest extends TestCase
 }
 
 /**
- * TracksEditedAtを単体で検証するためのモデル。tagsテーブルの`name`を編集対象とする。
+ * TracksEditedAtを単体で検証するためのモデル。tagsテーブルを使う。
+ * `editableAttributes()`と`edited_at`のキャストはトレイトの既定に任せ、`$fillable`の`name`が編集対象になることを検証する。
  *
  * @property int $user_id
  * @property string $name
@@ -149,19 +150,4 @@ class TracksEditedAtFixture extends Model
         'name',
         'edited_at',
     ];
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'edited_at' => 'datetime',
-        ];
-    }
-
-    protected function editableAttributes(): array
-    {
-        return ['name'];
-    }
 }

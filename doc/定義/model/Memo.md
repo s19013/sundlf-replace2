@@ -63,7 +63,7 @@ user_id と 引数userId が同じなら true
 ## editableAttributes
 
 編集とみなす属性。タイトル(`title`)・本文(`body`)・星(`star`)。これらが変わった保存で `edited_at` を更新する。
-編集対象の属性を追加した場合は、この一覧も更新すること。
+`TracksEditedAt` の既定の実装で、`$fillable` のうち `user_id` 以外が編集対象になる。`$fillable` に属性を追加すれば、編集対象にも加わる。
 
 `edited_at` の設定は `TracksEditedAt` トレイト(`backend/app/Models/Concerns/TracksEditedAt.php`)が行う。
 

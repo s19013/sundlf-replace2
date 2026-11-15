@@ -34,23 +34,6 @@ class Tag extends Model
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'edited_at' => 'datetime',
-        ];
-    }
-
-    protected function editableAttributes(): array
-    {
-        return ['name'];
-    }
-
-    /**
      * ユーザーが直接変更しない項目(使用回数)を管理するstatus行。
      *
      * @return HasOne<TagStatus, $this>
