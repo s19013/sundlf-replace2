@@ -124,6 +124,7 @@ class CreateTagApiTest extends TestCase
                 'name' => '競合タグ',
                 'created_at' => now(),
                 'updated_at' => now(),
+                'edited_at' => now(),
             ]);
         });
 

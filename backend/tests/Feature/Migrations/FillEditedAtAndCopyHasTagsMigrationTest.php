@@ -16,6 +16,19 @@ class FillEditedAtAndCopyHasTagsMigrationTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * statusテーブルの`has_tags`は後続のマイグレーションで削除されるため、後続のマイグレーションを`down()`して復元してから検証する。
+     * テストDB(SQLite)ではDDLもトランザクション内で実行されるので、テスト終了時に元のスキーマへ戻る。
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $migration = require database_path('migrations/2026_11_14_132716_finalize_edited_at_and_has_tags_on_articles_book_marks_and_tags_tables.php');
+        assert($migration instanceof Migration && method_exists($migration, 'down'));
+        $migration->down();
+    }
+
     private function runMigration(string $method): void
     {
         $migration = require database_path('migrations/2026_11_04_093018_fill_edited_at_and_copy_has_tags_to_articles_book_marks_and_tags_tables.php');
