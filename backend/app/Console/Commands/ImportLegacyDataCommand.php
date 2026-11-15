@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -103,24 +104,31 @@ class ImportLegacyDataCommand extends Command
         $deletedTagsCount = $legacy->table('tags')->whereNotNull('deleted_at')->count();
         $this->line(sprintf('tags: 論理削除済みの%d件を移植しません', $deletedTagsCount));
 
-        $this->info('=== dry-run: has_tags 判定 / tag_id NULL行・論理削除済みタグ参照行のスキップ ===');
+        $this->info('=== dry-run: has_tags 判定 / tag_id NULL行・論理削除済みタグ参照行・所有者が異なる行のスキップ ===');
         $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
         $articleTagsNull = $legacy->table('article_tags')->whereNull('tag_id')->count();
         $bookMarkTagsNull = $legacy->table('book_mark_tags')->whereNull('tag_id')->count();
         $articleTagsDeletedTag = $legacy->table('article_tags')->whereNotNull('tag_id')->whereIn('tag_id', $deletedTagIds)->count();
         $bookMarkTagsDeletedTag = $legacy->table('book_mark_tags')->whereNotNull('tag_id')->whereIn('tag_id', $deletedTagIds)->count();
+        // 上の2つに当たらない行のうち、移行対象にならないものを所有者が異なる行として数える
+        $articleTagsOtherOwner = $legacy->table('article_tags')->count() - $articleTagsNull - $articleTagsDeletedTag
+            - $this->migratableTaggingQuery($legacy, 'article_tags', 'article_id', 'articles')->count();
+        $bookMarkTagsOtherOwner = $legacy->table('book_mark_tags')->count() - $bookMarkTagsNull - $bookMarkTagsDeletedTag
+            - $this->migratableTaggingQuery($legacy, 'book_mark_tags', 'book_mark_id', 'book_marks')->count();
         $this->line(sprintf('article_tags: tag_id NULLの%d件をスキップします', $articleTagsNull));
         $this->line(sprintf('article_tags: 論理削除済みタグを参照する%d件をスキップします', $articleTagsDeletedTag));
+        $this->line(sprintf('article_tags: タグとメモの所有者が異なる%d件をスキップします', $articleTagsOtherOwner));
         $this->line(sprintf('book_mark_tags: tag_id NULLの%d件をスキップします', $bookMarkTagsNull));
         $this->line(sprintf('book_mark_tags: 論理削除済みタグを参照する%d件をスキップします', $bookMarkTagsDeletedTag));
+        $this->line(sprintf('book_mark_tags: タグとブックマークの所有者が異なる%d件をスキップします', $bookMarkTagsOtherOwner));
         $this->line(sprintf(
             'has_tags=true になる articles: %d件 / %d件',
-            count($this->collectTaggedIds($legacy, 'article_tags', 'article_id')),
+            count($this->collectTaggedIds($legacy, 'article_tags', 'article_id', 'articles')),
             $legacy->table('articles')->count(),
         ));
         $this->line(sprintf(
             'has_tags=true になる book_marks: %d件 / %d件',
-            count($this->collectTaggedIds($legacy, 'book_mark_tags', 'book_mark_id')),
+            count($this->collectTaggedIds($legacy, 'book_mark_tags', 'book_mark_id', 'book_marks')),
             $legacy->table('book_marks')->count(),
         ));
 
@@ -153,25 +161,49 @@ class ImportLegacyDataCommand extends Command
     }
 
     /**
-     * 中間テーブル(article_tags/book_mark_tags)から、tag_idが設定されている行を持つ
-     * 親レコード(article_id/book_mark_id)のID集合を取得する。has_tags判定のため
-     * importArticles/importBookMarks実行前に集計しておくことで、行ごとにexists()相当の
-     * クエリを都度発行せずO(1)判定できるようにする。
+     * 中間テーブル(article_tags/book_mark_tags)のうち、新システムへ移行する行を絞り込むクエリ。
+     * has_tags判定(collectTaggedIds)と中間テーブルの移行で同じ条件を使い、両者を一致させる。
      *
-     * 論理削除済みタグ(移行対象外)への参照は実際にはarticle_tags/book_mark_tagsへ
-     * 移行されないため、has_tags判定からも除外する。
+     * 次の行は移行しない。
+     * - tag_idがNULLの行: 旧システムでの「タグなし」表現で、articles/book_marksのhas_tagsへ意味を統合したため
+     *   (新スキーマではtag_idがNOT NULLのため投入もできない)
+     * - 論理削除済みタグ(移行対象外)を参照する行
+     * - タグの所有者とエントリーの所有者が異なる行: タグ削除時のhas_tagsの更新(DeleteTagUsecase)は、
+     *   タグの所有者のエントリーだけを対象にするため、移行すると削除後もhas_tagsがtrueのまま残る
      *
      * @param  'article_tags'|'book_mark_tags'  $table
      * @param  'article_id'|'book_mark_id'  $foreignKeyColumn
-     * @return array<int|string, true>
+     * @param  'articles'|'book_marks'  $parentTable
      */
-    private function collectTaggedIds(ConnectionInterface $legacy, string $table, string $foreignKeyColumn): array
+    private function migratableTaggingQuery(ConnectionInterface $legacy, string $table, string $foreignKeyColumn, string $parentTable): Builder
     {
         $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
 
-        $ids = $legacy->table($table)
+        return $legacy->table($table)
             ->whereNotNull('tag_id')
             ->whereNotIn('tag_id', $deletedTagIds)
+            ->whereExists(function (Builder $query) use ($table, $foreignKeyColumn, $parentTable): void {
+                $query->selectRaw('1')
+                    ->from($parentTable)
+                    ->join('tags', 'tags.user_id', '=', "{$parentTable}.user_id")
+                    ->whereColumn("{$parentTable}.id", "{$table}.{$foreignKeyColumn}")
+                    ->whereColumn('tags.id', "{$table}.tag_id");
+            });
+    }
+
+    /**
+     * 移行する中間テーブルの行(migratableTaggingQuery)を持つ、親レコード(article_id/book_mark_id)のID集合を取得する。
+     * has_tags判定のためimportArticles/importBookMarks実行前に集計しておくことで、行ごとにexists()相当の
+     * クエリを都度発行せずO(1)判定できるようにする。
+     *
+     * @param  'article_tags'|'book_mark_tags'  $table
+     * @param  'article_id'|'book_mark_id'  $foreignKeyColumn
+     * @param  'articles'|'book_marks'  $parentTable
+     * @return array<int|string, true>
+     */
+    private function collectTaggedIds(ConnectionInterface $legacy, string $table, string $foreignKeyColumn, string $parentTable): array
+    {
+        $ids = $this->migratableTaggingQuery($legacy, $table, $foreignKeyColumn, $parentTable)
             ->distinct()
             ->pluck($foreignKeyColumn);
 
@@ -237,7 +269,7 @@ class ImportLegacyDataCommand extends Command
         $this->info('articles を移行しています...');
         $bar = $this->output->createProgressBar($legacy->table('articles')->count());
 
-        $articleIdsWithTags = $this->collectTaggedIds($legacy, 'article_tags', 'article_id');
+        $articleIdsWithTags = $this->collectTaggedIds($legacy, 'article_tags', 'article_id', 'articles');
 
         $legacy->table('articles')
             ->select('id', 'user_id', 'count', 'title', 'body', 'deleted_at', 'created_at', 'updated_at')
@@ -277,7 +309,7 @@ class ImportLegacyDataCommand extends Command
         $this->info('book_marks を移行しています...');
         $bar = $this->output->createProgressBar($legacy->table('book_marks')->count());
 
-        $bookMarkIdsWithTags = $this->collectTaggedIds($legacy, 'book_mark_tags', 'book_mark_id');
+        $bookMarkIdsWithTags = $this->collectTaggedIds($legacy, 'book_mark_tags', 'book_mark_id', 'book_marks');
 
         $legacy->table('book_marks')
             ->select('id', 'user_id', 'count', 'title', 'url', 'deleted_at', 'created_at', 'updated_at')
@@ -419,21 +451,15 @@ class ImportLegacyDataCommand extends Command
     {
         $this->info('article_tags を移行しています...');
 
-        $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
-
         $bar = $this->output->createProgressBar(
-            $legacy->table('article_tags')->whereNotNull('tag_id')->whereNotIn('tag_id', $deletedTagIds)->count()
+            $this->migratableTaggingQuery($legacy, 'article_tags', 'article_id', 'articles')->count()
         );
 
-        // tag_idがNULLの行(旧システムでの「タグなし」表現)はarticles.has_tagsへ意味を
-        // 統合したため移行しない(新スキーマではtag_idがNOT NULLのため投入もできない)。
-        // 論理削除済みタグ(移行対象外)を参照する行も同様に移行しない。
+        // tag_idがNULLの行・論理削除済みタグを参照する行・所有者が異なる行は移行しない(migratableTaggingQuery参照)。
         // article_id/tag_idの複合ユニークキーのみで単一の主キーがないためchunkByIdが使えず、
         // orderByによるオフセット方式で読み込む(legacyは読み取り専用でこの間に行が変化しないため安全)
-        $legacy->table('article_tags')
+        $this->migratableTaggingQuery($legacy, 'article_tags', 'article_id', 'articles')
             ->select('article_id', 'tag_id', 'created_at', 'updated_at')
-            ->whereNotNull('tag_id')
-            ->whereNotIn('tag_id', $deletedTagIds)
             ->orderBy('article_id')
             ->orderBy('tag_id')
             ->chunk($chunk, function (Collection $rows) use ($bar): void {
@@ -456,17 +482,13 @@ class ImportLegacyDataCommand extends Command
     {
         $this->info('book_mark_tags を移行しています...');
 
-        $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
-
         $bar = $this->output->createProgressBar(
-            $legacy->table('book_mark_tags')->whereNotNull('tag_id')->whereNotIn('tag_id', $deletedTagIds)->count()
+            $this->migratableTaggingQuery($legacy, 'book_mark_tags', 'book_mark_id', 'book_marks')->count()
         );
 
-        // tag_idがNULLの行、および論理削除済みタグを参照する行はimportArticleTagsと同様の理由で移行しない
-        $legacy->table('book_mark_tags')
+        // 移行しない行と読み込み方式はimportArticleTagsと同様
+        $this->migratableTaggingQuery($legacy, 'book_mark_tags', 'book_mark_id', 'book_marks')
             ->select('book_mark_id', 'tag_id', 'created_at', 'updated_at')
-            ->whereNotNull('tag_id')
-            ->whereNotIn('tag_id', $deletedTagIds)
             ->orderBy('book_mark_id')
             ->orderBy('tag_id')
             ->chunk($chunk, function (Collection $rows) use ($bar): void {
