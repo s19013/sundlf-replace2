@@ -4,8 +4,8 @@ namespace App\Usecases\Tag;
 
 use App\Facades\Authenticated;
 use App\Http\Requests\Tag\DeleteTagRequest;
-use App\Models\BookMarkStatus;
-use App\Models\MemoStatus;
+use App\Models\BookMark;
+use App\Models\Memo;
 use App\Models\Tag;
 use App\Usecases\Concerns\AssertOwner;
 use App\Usecases\Concerns\FindsModelOrFail;
@@ -29,9 +29,11 @@ class DeleteTagUsecase
 
         DB::transaction(function () use ($tag): void {
             // 中間テーブルの行はCASCADEで消え、中間モデルのイベントが発火しないため、削除前にhas_tagsを落としておく。
-            // このタグ以外に紐付きが無いエントリー(ゴミ箱内も含む)のstatus行が対象。UPDATEで対象行がロックされるため、同時に走るメモ更新とは直列化される。
-            foreach ([MemoStatus::class, BookMarkStatus::class] as $statusClass) {
-                $statusClass::whereHas('tags', fn ($query) => $query->whereKey($tag->id))
+            // このタグ以外に紐付きが無いエントリー(ゴミ箱内も含む)が対象。UPDATEで対象行がロックされるため、同時に走るメモ更新とは直列化される。
+            // ユーザーの編集ではないため、updated_atだけが更新され、edited_atは変わらない。
+            foreach ([Memo::class, BookMark::class] as $entryClass) {
+                $entryClass::withTrashed()
+                    ->whereHas('tags', fn ($query) => $query->whereKey($tag->id))
                     ->whereDoesntHave('tags', fn ($query) => $query->whereKeyNot($tag->id))
                     ->update(['has_tags' => false]);
             }

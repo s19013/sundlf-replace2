@@ -19,10 +19,10 @@ class BookMarkTag extends Pivot
     protected $table = 'book_mark_tags';
 
     /**
-     * @return Builder<BookMarkStatus>
+     * @return Builder<BookMark>
      */
-    protected function parentStatusQuery(): Builder
+    protected function parentEntryQuery(): Builder
     {
-        return BookMarkStatus::whereKey($this->book_mark_id);
+        return BookMark::withTrashed()->whereKey($this->book_mark_id);
     }
 }

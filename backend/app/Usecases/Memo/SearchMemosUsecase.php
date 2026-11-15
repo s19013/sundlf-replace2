@@ -55,8 +55,7 @@ class SearchMemosUsecase
         }
 
         if ($request->boolean('is_tag_not_attached')) {
-            // status行が無い場合も既定値(タグなし)として扱うため、「has_tagsがtrueの行が無い」で絞り込む
-            $query->whereDoesntHave('status', fn ($statusQuery) => $statusQuery->where('has_tags', true));
+            $query->where('has_tags', false);
         }
 
         foreach (array_map('intval', $request->array('exact_match_tags')) as $tagId) {
