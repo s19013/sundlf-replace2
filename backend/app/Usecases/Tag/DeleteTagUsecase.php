@@ -31,8 +31,11 @@ class DeleteTagUsecase
             // 中間テーブルの行はCASCADEで消え、中間モデルのイベントが発火しないため、削除前にhas_tagsを落としておく。
             // このタグ以外に紐付きが無いエントリー(ゴミ箱内も含む)が対象。UPDATEで対象行がロックされるため、同時に走るメモ更新とは直列化される。
             // ユーザーの編集ではないため、updated_atだけが更新され、edited_atは変わらない。
+            // 全ユーザーの行を走査・ロックしないよう、タグの所有者とhas_tagsで絞り込み、(user_id, has_tags, …)のインデックスを使わせる。
             foreach ([Memo::class, BookMark::class] as $entryClass) {
                 $entryClass::withTrashed()
+                    ->where('user_id', $tag->user_id)
+                    ->where('has_tags', true)
                     ->whereHas('tags', fn ($query) => $query->whereKey($tag->id))
                     ->whereDoesntHave('tags', fn ($query) => $query->whereKeyNot($tag->id))
                     ->update(['has_tags' => false]);
