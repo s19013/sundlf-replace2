@@ -48,6 +48,12 @@ class ImportLegacyDataCommand extends Command
         'users',
     ];
 
+    /** dry-run用。中間テーブル => [親テーブルへの外部キー, 親テーブル, 親の表示名] */
+    private const TAGGING_TABLES = [
+        'article_tags' => ['article_id', 'articles', 'メモ'],
+        'book_mark_tags' => ['book_mark_id', 'book_marks', 'ブックマーク'],
+    ];
+
     public function handle(): int
     {
         $legacy = DB::connection('legacy');
@@ -105,32 +111,22 @@ class ImportLegacyDataCommand extends Command
         $this->line(sprintf('tags: 論理削除済みの%d件を移植しません', $deletedTagsCount));
 
         $this->info('=== dry-run: has_tags 判定 / tag_id NULL行・論理削除済みタグ参照行・所有者が異なる行のスキップ ===');
-        $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
-        $articleTagsNull = $legacy->table('article_tags')->whereNull('tag_id')->count();
-        $bookMarkTagsNull = $legacy->table('book_mark_tags')->whereNull('tag_id')->count();
-        $articleTagsDeletedTag = $legacy->table('article_tags')->whereNotNull('tag_id')->whereIn('tag_id', $deletedTagIds)->count();
-        $bookMarkTagsDeletedTag = $legacy->table('book_mark_tags')->whereNotNull('tag_id')->whereIn('tag_id', $deletedTagIds)->count();
-        // 上の2つに当たらない行のうち、移行対象にならないものを所有者が異なる行として数える
-        $articleTagsOtherOwner = $legacy->table('article_tags')->count() - $articleTagsNull - $articleTagsDeletedTag
-            - $this->migratableTaggingQuery($legacy, 'article_tags', 'article_id', 'articles')->count();
-        $bookMarkTagsOtherOwner = $legacy->table('book_mark_tags')->count() - $bookMarkTagsNull - $bookMarkTagsDeletedTag
-            - $this->migratableTaggingQuery($legacy, 'book_mark_tags', 'book_mark_id', 'book_marks')->count();
-        $this->line(sprintf('article_tags: tag_id NULLの%d件をスキップします', $articleTagsNull));
-        $this->line(sprintf('article_tags: 論理削除済みタグを参照する%d件をスキップします', $articleTagsDeletedTag));
-        $this->line(sprintf('article_tags: タグとメモの所有者が異なる%d件をスキップします', $articleTagsOtherOwner));
-        $this->line(sprintf('book_mark_tags: tag_id NULLの%d件をスキップします', $bookMarkTagsNull));
-        $this->line(sprintf('book_mark_tags: 論理削除済みタグを参照する%d件をスキップします', $bookMarkTagsDeletedTag));
-        $this->line(sprintf('book_mark_tags: タグとブックマークの所有者が異なる%d件をスキップします', $bookMarkTagsOtherOwner));
-        $this->line(sprintf(
-            'has_tags=true になる articles: %d件 / %d件',
-            count($this->collectTaggedIds($legacy, 'article_tags', 'article_id', 'articles')),
-            $legacy->table('articles')->count(),
-        ));
-        $this->line(sprintf(
-            'has_tags=true になる book_marks: %d件 / %d件',
-            count($this->collectTaggedIds($legacy, 'book_mark_tags', 'book_mark_id', 'book_marks')),
-            $legacy->table('book_marks')->count(),
-        ));
+        foreach (self::TAGGING_TABLES as $table => [$foreignKeyColumn, $parentTable, $parentLabel]) {
+            $nullTagCount = $legacy->table($table)->whereNull('tag_id')->count();
+            $deletedTagCount = $legacy->table($table)
+                ->whereIn('tag_id', fn (Builder $query) => $query->select('id')->from('tags')->whereNotNull('deleted_at'))
+                ->count();
+            $otherOwnerCount = $this->taggingWithLiveTagQuery($legacy, $table, $foreignKeyColumn, $parentTable, '<>')->count();
+            $this->line(sprintf('%s: tag_id NULLの%d件をスキップします', $table, $nullTagCount));
+            $this->line(sprintf('%s: 論理削除済みタグを参照する%d件をスキップします', $table, $deletedTagCount));
+            $this->line(sprintf('%s: タグと%sの所有者が異なる%d件をスキップします', $table, $parentLabel, $otherOwnerCount));
+            $this->line(sprintf(
+                'has_tags=true になる %s: %d件 / %d件',
+                $parentTable,
+                count($this->collectTaggedIds($legacy, $table, $foreignKeyColumn, $parentTable)),
+                $legacy->table($parentTable)->count(),
+            ));
+        }
 
         $this->info('=== dry-run: tags の重複(user_id + name)検出 ===');
         $duplicates = $this->detectDuplicateTags($legacy);
@@ -177,17 +173,28 @@ class ImportLegacyDataCommand extends Command
      */
     private function migratableTaggingQuery(ConnectionInterface $legacy, string $table, string $foreignKeyColumn, string $parentTable): Builder
     {
-        $deletedTagIds = array_keys($this->collectDeletedTagIds($legacy));
+        return $this->taggingWithLiveTagQuery($legacy, $table, $foreignKeyColumn, $parentTable, '=');
+    }
 
+    /**
+     * 中間テーブルのうち、親レコードと論理削除されていないタグが存在し、両者の所有者(user_id)が
+     * $ownerOperatorの関係にある行を絞り込むクエリ。tagsとの結合で、tag_idがNULLの行も除かれる。
+     *
+     * @param  'article_tags'|'book_mark_tags'  $table
+     * @param  'article_id'|'book_mark_id'  $foreignKeyColumn
+     * @param  'articles'|'book_marks'  $parentTable
+     * @param  '='|'<>'  $ownerOperator
+     */
+    private function taggingWithLiveTagQuery(ConnectionInterface $legacy, string $table, string $foreignKeyColumn, string $parentTable, string $ownerOperator): Builder
+    {
         return $legacy->table($table)
-            ->whereNotNull('tag_id')
-            ->whereNotIn('tag_id', $deletedTagIds)
-            ->whereExists(function (Builder $query) use ($table, $foreignKeyColumn, $parentTable): void {
+            ->whereExists(function (Builder $query) use ($table, $foreignKeyColumn, $parentTable, $ownerOperator): void {
                 $query->selectRaw('1')
                     ->from($parentTable)
-                    ->join('tags', 'tags.user_id', '=', "{$parentTable}.user_id")
+                    ->join('tags', 'tags.user_id', $ownerOperator, "{$parentTable}.user_id")
                     ->whereColumn("{$parentTable}.id", "{$table}.{$foreignKeyColumn}")
-                    ->whereColumn('tags.id', "{$table}.tag_id");
+                    ->whereColumn('tags.id', "{$table}.tag_id")
+                    ->whereNull('tags.deleted_at');
             });
     }
 
@@ -206,19 +213,6 @@ class ImportLegacyDataCommand extends Command
         $ids = $this->migratableTaggingQuery($legacy, $table, $foreignKeyColumn, $parentTable)
             ->distinct()
             ->pluck($foreignKeyColumn);
-
-        return array_fill_keys($ids->all(), true);
-    }
-
-    /**
-     * 論理削除済み(deleted_atが非NULL)のtagのID集合を取得する。移植対象外のタグへの
-     * article_tags/book_mark_tags参照を除外するために使用する。
-     *
-     * @return array<int|string, true>
-     */
-    private function collectDeletedTagIds(ConnectionInterface $legacy): array
-    {
-        $ids = $legacy->table('tags')->whereNotNull('deleted_at')->pluck('id');
 
         return array_fill_keys($ids->all(), true);
     }
