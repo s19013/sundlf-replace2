@@ -42,6 +42,14 @@ class BookMark extends Entry
     ];
 
     /**
+     * @return list<string>
+     */
+    protected function editableAttributes(): array
+    {
+        return ['title', 'url', 'star'];
+    }
+
+    /**
      * @return BelongsToMany<Tag, $this, BookMarkTag>
      */
     public function tags(): BelongsToMany

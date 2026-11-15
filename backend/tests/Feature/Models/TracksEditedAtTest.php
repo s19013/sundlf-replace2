@@ -49,6 +49,17 @@ class TracksEditedAtTest extends TestCase
         $this->assertSame($editedAt->toIso8601String(), $this->fetchEditedAt($fixture));
     }
 
+    public function test_更新時にedited_atを明示した場合はその値が使われること(): void
+    {
+        $fixture = $this->createFixture();
+        $editedAt = Carbon::parse('2020-01-01 00:00:00');
+
+        $this->travel(1)->minutes();
+        $fixture->update(['name' => '新しい名前', 'edited_at' => $editedAt]);
+
+        $this->assertSame($editedAt->toIso8601String(), $this->fetchEditedAt($fixture));
+    }
+
     public function test_編集対象の属性が変わるとedited_atがupdated_atと同じ時刻になること(): void
     {
         $fixture = $this->createFixture();
@@ -144,7 +155,7 @@ class TracksEditedAtTest extends TestCase
 
 /**
  * TracksEditedAtを単体で検証するためのモデル。tagsテーブルを使う。
- * `editableAttributes()`と`edited_at`のキャストはトレイトの既定に任せ、`$fillable`の`name`が編集対象になることを検証する。
+ * `edited_at`のキャストはトレイトに任せる。`$fillable`の`user_id`・`edited_at`は編集対象に含めず、`name`だけを編集対象にする。
  *
  * @property int $user_id
  * @property string $name
@@ -166,4 +177,12 @@ class TracksEditedAtFixture extends Model
         'name',
         'edited_at',
     ];
+
+    /**
+     * @return list<string>
+     */
+    protected function editableAttributes(): array
+    {
+        return ['name'];
+    }
 }

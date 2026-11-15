@@ -34,6 +34,14 @@ class Tag extends Model
     ];
 
     /**
+     * @return list<string>
+     */
+    protected function editableAttributes(): array
+    {
+        return ['name'];
+    }
+
+    /**
      * ユーザーが直接変更しない項目(使用回数)を管理するstatus行。
      *
      * @return HasOne<TagStatus, $this>

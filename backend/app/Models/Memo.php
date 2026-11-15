@@ -47,6 +47,14 @@ class Memo extends Entry
     ];
 
     /**
+     * @return list<string>
+     */
+    protected function editableAttributes(): array
+    {
+        return ['title', 'body', 'star'];
+    }
+
+    /**
      * @return BelongsToMany<Tag, $this, MemoTag>
      */
     public function tags(): BelongsToMany
