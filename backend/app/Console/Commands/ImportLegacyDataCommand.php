@@ -191,6 +191,17 @@ class ImportLegacyDataCommand extends Command
         return array_fill_keys($ids->all(), true);
     }
 
+    /**
+     * 旧データの行からedited_at(NOT NULL)に入れる日時を決める。
+     *
+     * 旧システムのupdated_atは、ユーザーが最後に編集した日時として使われていた。
+     * 旧スキーマではupdated_at・created_atともにNULLを許すため、updated_at、created_at、現在時刻の順に補う。
+     */
+    private function legacyEditedAt(stdClass $row): string
+    {
+        return $row->updated_at ?? $row->created_at ?? now()->toDateTimeString();
+    }
+
     private function importUsers(ConnectionInterface $legacy, int $chunk): void
     {
         $this->info('users を移行しています...');
@@ -243,8 +254,7 @@ class ImportLegacyDataCommand extends Command
                         'deleted_at' => $row->deleted_at,
                         'created_at' => $row->created_at,
                         'updated_at' => $row->updated_at,
-                        // 旧システムのupdated_atは、ユーザーが最後に編集した日時として使われていた
-                        'edited_at' => $row->updated_at,
+                        'edited_at' => $this->legacyEditedAt($row),
                     ];
                 })->all());
                 // 生クエリのためcreatedイベントが発火しない。status行もここで作成する
@@ -284,8 +294,7 @@ class ImportLegacyDataCommand extends Command
                         'deleted_at' => $row->deleted_at,
                         'created_at' => $row->created_at,
                         'updated_at' => $row->updated_at,
-                        // 旧システムのupdated_atは、ユーザーが最後に編集した日時として使われていた
-                        'edited_at' => $row->updated_at,
+                        'edited_at' => $this->legacyEditedAt($row),
                     ];
                 })->all());
                 // 生クエリのためcreatedイベントが発火しない。status行もここで作成する
@@ -386,7 +395,7 @@ class ImportLegacyDataCommand extends Command
                 'user_id' => $row->user_id,
                 'created_at' => $row->created_at,
                 'updated_at' => $row->updated_at,
-                'edited_at' => $row->updated_at,
+                'edited_at' => $this->legacyEditedAt($row),
             ];
         });
         $counts = $rows->pluck('count', 'id');

@@ -169,4 +169,33 @@ class ImportLegacyDataCommandTest extends TestCase
         $this->assertDatabaseHas('tags', ['id' => 1, 'updated_at' => '2020-01-02 00:00:00', 'edited_at' => '2020-01-02 00:00:00']);
         $this->assertDatabaseMissing('tags', ['id' => 2]);
     }
+
+    public function test_旧データの更新日時がnullの行は作成日時を編集日時に設定し両方nullなら現在時刻を設定すること(): void
+    {
+        $this->seedLegacyData();
+        $legacy = DB::connection('legacy');
+        $legacy->table('articles')->insert([
+            ['id' => 5, 'user_id' => 1, 'count' => 0, 'title' => 'メモ5', 'body' => '本文5', 'deleted_at' => null, 'created_at' => '2020-04-01 00:00:00', 'updated_at' => null],
+            ['id' => 6, 'user_id' => 1, 'count' => 0, 'title' => 'メモ6', 'body' => '本文6', 'deleted_at' => null, 'created_at' => null, 'updated_at' => null],
+        ]);
+        $legacy->table('book_marks')->insert([
+            ['id' => 3, 'user_id' => 1, 'count' => 0, 'title' => 'ブックマーク3', 'url' => 'https://example.com/3', 'deleted_at' => null, 'created_at' => '2020-04-02 00:00:00', 'updated_at' => null],
+            ['id' => 4, 'user_id' => 1, 'count' => 0, 'title' => 'ブックマーク4', 'url' => 'https://example.com/4', 'deleted_at' => null, 'created_at' => null, 'updated_at' => null],
+        ]);
+        $legacy->table('tags')->insert([
+            ['id' => 3, 'name' => 'タグ3', 'user_id' => 1, 'count' => 0, 'deleted_at' => null, 'created_at' => '2020-04-03 00:00:00', 'updated_at' => null],
+            ['id' => 4, 'name' => 'タグ4', 'user_id' => 1, 'count' => 0, 'deleted_at' => null, 'created_at' => null, 'updated_at' => null],
+        ]);
+        $this->freezeTime();
+        $now = now()->toDateTimeString();
+
+        $this->runImport();
+
+        $this->assertDatabaseHas('articles', ['id' => 5, 'edited_at' => '2020-04-01 00:00:00']);
+        $this->assertDatabaseHas('articles', ['id' => 6, 'edited_at' => $now]);
+        $this->assertDatabaseHas('book_marks', ['id' => 3, 'edited_at' => '2020-04-02 00:00:00']);
+        $this->assertDatabaseHas('book_marks', ['id' => 4, 'edited_at' => $now]);
+        $this->assertDatabaseHas('tags', ['id' => 3, 'edited_at' => '2020-04-03 00:00:00']);
+        $this->assertDatabaseHas('tags', ['id' => 4, 'edited_at' => $now]);
+    }
 }
