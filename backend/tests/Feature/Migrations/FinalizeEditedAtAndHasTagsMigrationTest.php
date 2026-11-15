@@ -80,6 +80,8 @@ class FinalizeEditedAtAndHasTagsMigrationTest extends TestCase
             $this->assertTrue(Schema::hasIndex($tableName, ['user_id', 'has_tags', 'deleted_at', 'edited_at']), $tableName);
             $this->assertFalse(Schema::hasIndex($tableName, ['user_id', 'deleted_at', 'updated_at']), $tableName);
         }
+
+        $this->assertTrue(Schema::hasIndex('tags', ['user_id', 'edited_at']));
     }
 
     public function test_upでstatusテーブルからhas_tagsが削除されること(): void
@@ -100,6 +102,8 @@ class FinalizeEditedAtAndHasTagsMigrationTest extends TestCase
             $this->assertFalse(Schema::hasIndex($tableName, ['user_id', 'deleted_at', 'edited_at']), $tableName);
             $this->assertFalse(Schema::hasIndex($tableName, ['user_id', 'has_tags', 'deleted_at', 'edited_at']), $tableName);
         }
+
+        $this->assertFalse(Schema::hasIndex('tags', ['user_id', 'edited_at']));
 
         foreach (['articles', 'book_marks', 'tags'] as $tableName) {
             $this->assertTrue($this->isNullable($tableName, 'edited_at'), $tableName);
