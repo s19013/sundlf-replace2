@@ -7,6 +7,7 @@ return new class extends Migration
 {
     /**
      * 既存行のedited_atに、そのときの行の更新日時(updated_at)を写す。
+     * edited_atは後続のマイグレーションでNOT NULLにするため、updated_atがNULLの行はcreated_at、それもNULLなら現在時刻で補う。
      * あわせて、statusテーブルのhas_tagsを本体へ写す。status行が無い本体は、タグなし検索での扱いに合わせてfalseにする。
      * ゴミ箱内の行も対象にし、エントリーの編集ではないためupdated_atは変えない。
      * statusテーブル側のカラムは、読み書きを本体へ切り替えた後に別のマイグレーションで削除する。
@@ -14,17 +15,17 @@ return new class extends Migration
     public function up(): void
     {
         DB::table('articles')->update([
-            'edited_at' => DB::raw('updated_at'),
+            'edited_at' => DB::raw('COALESCE(updated_at, created_at, CURRENT_TIMESTAMP)'),
             'has_tags' => DB::raw('COALESCE((SELECT article_statuses.has_tags FROM article_statuses WHERE article_statuses.article_id = articles.id), 0)'),
         ]);
 
         DB::table('book_marks')->update([
-            'edited_at' => DB::raw('updated_at'),
+            'edited_at' => DB::raw('COALESCE(updated_at, created_at, CURRENT_TIMESTAMP)'),
             'has_tags' => DB::raw('COALESCE((SELECT book_mark_statuses.has_tags FROM book_mark_statuses WHERE book_mark_statuses.book_mark_id = book_marks.id), 0)'),
         ]);
 
         DB::table('tags')->update([
-            'edited_at' => DB::raw('updated_at'),
+            'edited_at' => DB::raw('COALESCE(updated_at, created_at, CURRENT_TIMESTAMP)'),
         ]);
     }
 

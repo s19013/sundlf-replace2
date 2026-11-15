@@ -29,7 +29,7 @@ class UpdateMemoApiTest extends TestCase
     {
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id, 'title' => '旧タイトル']);
-        $fetchedAt = $memo->edited_at?->copy()->addMinute()->toIso8601String();
+        $fetchedAt = $memo->edited_at->copy()->addMinute()->toIso8601String();
 
         $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
             'title' => '新タイトル',
@@ -48,7 +48,7 @@ class UpdateMemoApiTest extends TestCase
         $oldTag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $newTag = Tag::factory()->usageCount(0)->create(['user_id' => $user->id]);
         $memo->tags()->attach($oldTag->id);
-        $fetchedAt = $memo->edited_at?->copy()->addMinute()->toIso8601String();
+        $fetchedAt = $memo->edited_at->copy()->addMinute()->toIso8601String();
 
         $response = $this->actingAs($user)->spaPatch("/api/memos/{$memo->id}", [
             'tags' => [$newTag->id],
@@ -91,8 +91,8 @@ class UpdateMemoApiTest extends TestCase
         $oldTag = Tag::factory()->usageCount(1)->create(['user_id' => $user->id]);
         $newTag = Tag::factory()->create(['user_id' => $user->id]);
         $memo->tags()->attach($oldTag->id);
-        $oldTagEditedAt = $oldTag->fresh()?->edited_at?->toIso8601String();
-        $newTagEditedAt = $newTag->fresh()?->edited_at?->toIso8601String();
+        $oldTagEditedAt = $oldTag->fresh()?->edited_at->toIso8601String();
+        $newTagEditedAt = $newTag->fresh()?->edited_at->toIso8601String();
 
         $this->travel(1)->minutes();
 
@@ -107,8 +107,8 @@ class UpdateMemoApiTest extends TestCase
         $this->assertSame(0, $freshOldTag?->status?->count);
         $this->assertSame(1, $freshNewTag?->status?->count);
         $this->assertNotNull($oldTagEditedAt);
-        $this->assertSame($oldTagEditedAt, $freshOldTag->edited_at?->toIso8601String());
-        $this->assertSame($newTagEditedAt, $freshNewTag->edited_at?->toIso8601String());
+        $this->assertSame($oldTagEditedAt, $freshOldTag->edited_at->toIso8601String());
+        $this->assertSame($newTagEditedAt, $freshNewTag->edited_at->toIso8601String());
     }
 
     public function test_タグを全て外すとhas_tagsがfalseになること(): void
@@ -147,7 +147,7 @@ class UpdateMemoApiTest extends TestCase
         $user = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $user->id]);
         $tag = Tag::factory()->create(['user_id' => $user->id]);
-        $beforeEditedAt = $memo->fresh()?->edited_at?->toIso8601String();
+        $beforeEditedAt = $memo->fresh()?->edited_at->toIso8601String();
 
         $this->travel(1)->minutes();
 
@@ -158,8 +158,8 @@ class UpdateMemoApiTest extends TestCase
 
         $response->assertStatus(200);
         $fresh = $memo->fresh();
-        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at?->toIso8601String());
-        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        $this->assertNotSame($beforeEditedAt, $fresh?->edited_at->toIso8601String());
+        $this->assertSame($fresh?->updated_at?->toIso8601String(), $fresh?->edited_at->toIso8601String());
     }
 
     public function test_タグを同じ内容で送るとedited_atもupdated_atも更新されないこと(): void
@@ -179,7 +179,7 @@ class UpdateMemoApiTest extends TestCase
 
         $response->assertStatus(200);
         $fresh = $memo->fresh();
-        $this->assertSame($before?->edited_at?->toIso8601String(), $fresh?->edited_at?->toIso8601String());
+        $this->assertSame($before?->edited_at->toIso8601String(), $fresh?->edited_at->toIso8601String());
         $this->assertSame($before?->updated_at?->toIso8601String(), $fresh?->updated_at?->toIso8601String());
     }
 
@@ -224,7 +224,7 @@ class UpdateMemoApiTest extends TestCase
         $owner = User::factory()->create();
         $memo = Memo::factory()->create(['user_id' => $owner->id]);
         $otherUser = User::factory()->create();
-        $fetchedAt = $memo->edited_at?->copy()->addMinute()->toIso8601String();
+        $fetchedAt = $memo->edited_at->copy()->addMinute()->toIso8601String();
 
         $response = $this->actingAs($otherUser)->spaPatch("/api/memos/{$memo->id}", [
             'title' => '新タイトル',

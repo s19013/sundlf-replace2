@@ -145,6 +145,61 @@ class ImportLegacyDataCommandTest extends TestCase
         $this->assertDatabaseHas('book_marks', ['id' => 2, 'has_tags' => false]);
     }
 
+    public function test_タグとエントリーの所有者が異なる紐付けは取り込まずhas_tagsもfalseにすること(): void
+    {
+        $this->seedLegacyData();
+        $legacy = DB::connection('legacy');
+        $legacy->table('users')->insert([
+            'id' => 2, 'name' => '別の旧ユーザー', 'email' => 'other@example.com', 'password' => 'hashed',
+            'created_at' => '2020-01-01 00:00:00', 'updated_at' => '2020-01-01 00:00:00',
+        ]);
+        $legacy->table('tags')->insert([
+            'id' => 3, 'name' => '別ユーザーのタグ', 'user_id' => 2, 'count' => 2, 'deleted_at' => null, 'created_at' => '2020-01-01 00:00:00', 'updated_at' => '2020-01-01 00:00:00',
+        ]);
+        // ユーザー1のメモ5・ブックマーク3に、ユーザー2のタグだけが付いている
+        $legacy->table('articles')->insert([
+            'id' => 5, 'user_id' => 1, 'count' => 0, 'title' => 'メモ5', 'body' => '本文5',
+            'deleted_at' => null, 'created_at' => '2020-02-01 00:00:00', 'updated_at' => '2020-02-05 12:00:00',
+        ]);
+        $legacy->table('book_marks')->insert([
+            'id' => 3, 'user_id' => 1, 'count' => 0, 'title' => 'ブックマーク3', 'url' => 'https://example.com/3',
+            'deleted_at' => null, 'created_at' => '2020-03-01 00:00:00', 'updated_at' => '2020-03-03 12:00:00',
+        ]);
+        $legacy->table('article_tags')->insert(['article_id' => 5, 'tag_id' => 3]);
+        $legacy->table('book_mark_tags')->insert(['book_mark_id' => 3, 'tag_id' => 3]);
+
+        $this->runImport();
+
+        $this->assertDatabaseMissing('article_tags', ['article_id' => 5]);
+        $this->assertDatabaseMissing('book_mark_tags', ['book_mark_id' => 3]);
+        $this->assertDatabaseHas('articles', ['id' => 5, 'has_tags' => false]);
+        $this->assertDatabaseHas('book_marks', ['id' => 3, 'has_tags' => false]);
+        // 所有者が同じ紐付けは今までどおり取り込む
+        $this->assertDatabaseHas('article_tags', ['article_id' => 1, 'tag_id' => 1]);
+        $this->assertDatabaseHas('book_mark_tags', ['book_mark_id' => 1, 'tag_id' => 1]);
+    }
+
+    public function test_dry_runでスキップする紐付けの件数を理由ごとに表示すること(): void
+    {
+        $this->seedLegacyData();
+        $legacy = DB::connection('legacy');
+        $legacy->table('tags')->insert([
+            'id' => 3, 'name' => '別ユーザーのタグ', 'user_id' => 2, 'count' => 1, 'deleted_at' => null, 'created_at' => '2020-01-01 00:00:00', 'updated_at' => '2020-01-01 00:00:00',
+        ]);
+        $legacy->table('article_tags')->insert(['article_id' => 4, 'tag_id' => 3]);
+
+        $command = $this->artisan('legacy:import', ['--dry-run' => true]);
+        assert($command instanceof PendingCommand);
+        $command
+            ->expectsOutputToContain('article_tags: tag_id NULLの1件をスキップします')
+            ->expectsOutputToContain('article_tags: 論理削除済みタグを参照する1件をスキップします')
+            ->expectsOutputToContain('article_tags: タグとメモの所有者が異なる1件をスキップします')
+            ->expectsOutputToContain('book_mark_tags: タグとブックマークの所有者が異なる0件をスキップします')
+            ->expectsOutputToContain('has_tags=true になる articles: 1件 / 4件')
+            ->assertSuccessful()
+            ->run();
+    }
+
     public function test_status行には閲覧数と使用回数が取り込まれること(): void
     {
         $this->seedLegacyData();
@@ -168,5 +223,34 @@ class ImportLegacyDataCommandTest extends TestCase
 
         $this->assertDatabaseHas('tags', ['id' => 1, 'updated_at' => '2020-01-02 00:00:00', 'edited_at' => '2020-01-02 00:00:00']);
         $this->assertDatabaseMissing('tags', ['id' => 2]);
+    }
+
+    public function test_旧データの更新日時がnullの行は作成日時を編集日時に設定し両方nullなら現在時刻を設定すること(): void
+    {
+        $this->seedLegacyData();
+        $legacy = DB::connection('legacy');
+        $legacy->table('articles')->insert([
+            ['id' => 5, 'user_id' => 1, 'count' => 0, 'title' => 'メモ5', 'body' => '本文5', 'deleted_at' => null, 'created_at' => '2020-04-01 00:00:00', 'updated_at' => null],
+            ['id' => 6, 'user_id' => 1, 'count' => 0, 'title' => 'メモ6', 'body' => '本文6', 'deleted_at' => null, 'created_at' => null, 'updated_at' => null],
+        ]);
+        $legacy->table('book_marks')->insert([
+            ['id' => 3, 'user_id' => 1, 'count' => 0, 'title' => 'ブックマーク3', 'url' => 'https://example.com/3', 'deleted_at' => null, 'created_at' => '2020-04-02 00:00:00', 'updated_at' => null],
+            ['id' => 4, 'user_id' => 1, 'count' => 0, 'title' => 'ブックマーク4', 'url' => 'https://example.com/4', 'deleted_at' => null, 'created_at' => null, 'updated_at' => null],
+        ]);
+        $legacy->table('tags')->insert([
+            ['id' => 3, 'name' => 'タグ3', 'user_id' => 1, 'count' => 0, 'deleted_at' => null, 'created_at' => '2020-04-03 00:00:00', 'updated_at' => null],
+            ['id' => 4, 'name' => 'タグ4', 'user_id' => 1, 'count' => 0, 'deleted_at' => null, 'created_at' => null, 'updated_at' => null],
+        ]);
+        $this->freezeTime();
+        $now = now()->toDateTimeString();
+
+        $this->runImport();
+
+        $this->assertDatabaseHas('articles', ['id' => 5, 'edited_at' => '2020-04-01 00:00:00']);
+        $this->assertDatabaseHas('articles', ['id' => 6, 'edited_at' => $now]);
+        $this->assertDatabaseHas('book_marks', ['id' => 3, 'edited_at' => '2020-04-02 00:00:00']);
+        $this->assertDatabaseHas('book_marks', ['id' => 4, 'edited_at' => $now]);
+        $this->assertDatabaseHas('tags', ['id' => 3, 'edited_at' => '2020-04-03 00:00:00']);
+        $this->assertDatabaseHas('tags', ['id' => 4, 'edited_at' => $now]);
     }
 }

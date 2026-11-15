@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Model;
  *
  * `updated_at`は行の更新日時で、編集以外の更新(has_tagsの同期など)でも変わる。
  * クエリビルダーの`update()`・SoftDeletesの論理削除・status行の更新は`updateTimestamps()`を通らないため、`edited_at`は変わらない。
- * 編集対象の属性を追加した場合は、`editableAttributes()`も更新すること。
+ * 編集対象の属性は各モデルが`editableAttributes()`で明示する。`$fillable`とは連動しない。
+ * `edited_at`のdatetimeキャストもこのトレイトが登録するため、モデル側の`casts()`には書かない。
  *
  * @phpstan-require-extends Model
  */
@@ -22,21 +23,21 @@ trait TracksEditedAt
 
     /**
      * 編集とみなす属性。これらが変更された保存で`edited_at`を更新する。
+     * 一括代入を許可する属性(`$fillable`)でも、ユーザーが編集する項目でなければ含めない。
      *
      * @return list<string>
      */
     abstract protected function editableAttributes(): array;
 
-    protected static function bootTracksEditedAt(): void
+    public function initializeTracksEditedAt(): void
     {
-        static::saved(function (self $model): void {
-            $model->isMarkedAsEdited = false;
-        });
+        $this->mergeCasts(['edited_at' => 'datetime']);
     }
 
     /**
      * 本体の属性が変わらない編集(タグの付け替えなど)を、次の`save()`で編集として扱う。
      * モデルをdirtyにするため、`save()`は必ずUPDATEを発行する。
+     * 印は保存時のタイムスタンプ更新で消えるため、`saveQuietly()`などイベントを発火しない保存の後にも残らない。
      */
     public function markAsEdited(): static
     {
@@ -61,6 +62,8 @@ trait TracksEditedAt
         if ($sourceColumn !== null && $this->shouldStampEditedAt()) {
             $this->setAttribute('edited_at', $this->getAttribute($sourceColumn));
         }
+
+        $this->isMarkedAsEdited = false;
 
         return $this;
     }

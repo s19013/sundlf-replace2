@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $edited_at
+ * @property \Illuminate\Support\Carbon $edited_at
  * @property bool $has_tags
  * @property-read bool $is_deadline_approaching
  * @property-read bool $is_in_trash
@@ -41,6 +41,9 @@ class BookMark extends Entry
         'star',
     ];
 
+    /**
+     * @return list<string>
+     */
     protected function editableAttributes(): array
     {
         return ['title', 'url', 'star'];

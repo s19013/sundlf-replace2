@@ -41,14 +41,14 @@ class IncreaseMemoViewCountApiTest extends TestCase
             'edited_at' => now()->subMinutes(5),
         ]);
         $before = $memo->fresh();
-        if ($before?->updated_at === null || $before->edited_at === null) {
-            $this->fail('updated_at or edited_at was not set.');
+        if ($before?->updated_at === null) {
+            $this->fail('updated_at was not set.');
         }
 
         $this->actingAs($user)->spaPost("/api/memos/view-count/increase/{$memo->id}");
 
         $freshMemo = $memo->fresh();
-        if ($freshMemo === null || $freshMemo->updated_at === null || $freshMemo->edited_at === null) {
+        if ($freshMemo === null || $freshMemo->updated_at === null) {
             $this->fail('Memo was not found after refresh.');
         }
         $this->assertTrue($freshMemo->updated_at->eq($before->updated_at));

@@ -62,6 +62,41 @@ class FillEditedAtAndCopyHasTagsMigrationTest extends TestCase
         $this->assertDatabaseHas('tags', ['id' => $tag->id, 'edited_at' => '2020-01-01 00:00:05']);
     }
 
+    public function test_upでupdated_atがnullの行はedited_atにcreated_atが写されること(): void
+    {
+        $memo = Memo::factory()->create();
+        $bookMark = BookMark::factory()->create();
+        $tag = Tag::factory()->create();
+
+        DB::table('articles')->where('id', $memo->id)->update(['created_at' => '2020-01-01 00:00:01', 'updated_at' => null]);
+        DB::table('book_marks')->where('id', $bookMark->id)->update(['created_at' => '2020-01-01 00:00:02', 'updated_at' => null]);
+        DB::table('tags')->where('id', $tag->id)->update(['created_at' => '2020-01-01 00:00:03', 'updated_at' => null]);
+
+        $this->runMigration('up');
+
+        $this->assertDatabaseHas('articles', ['id' => $memo->id, 'edited_at' => '2020-01-01 00:00:01']);
+        $this->assertDatabaseHas('book_marks', ['id' => $bookMark->id, 'edited_at' => '2020-01-01 00:00:02']);
+        $this->assertDatabaseHas('tags', ['id' => $tag->id, 'edited_at' => '2020-01-01 00:00:03']);
+    }
+
+    public function test_upでupdated_atとcreated_atがともにnullの行もedited_atがnullにならないこと(): void
+    {
+        $memo = Memo::factory()->create();
+        $bookMark = BookMark::factory()->create();
+        $tag = Tag::factory()->create();
+
+        // 後続のマイグレーションでNOT NULLにできるよう、現在時刻で補われることを確認する
+        DB::table('articles')->where('id', $memo->id)->update(['created_at' => null, 'updated_at' => null]);
+        DB::table('book_marks')->where('id', $bookMark->id)->update(['created_at' => null, 'updated_at' => null]);
+        DB::table('tags')->where('id', $tag->id)->update(['created_at' => null, 'updated_at' => null]);
+
+        $this->runMigration('up');
+
+        $this->assertNotNull(DB::table('articles')->where('id', $memo->id)->value('edited_at'));
+        $this->assertNotNull(DB::table('book_marks')->where('id', $bookMark->id)->value('edited_at'));
+        $this->assertNotNull(DB::table('tags')->where('id', $tag->id)->value('edited_at'));
+    }
+
     public function test_upでstatusのhas_tagsがゴミ箱内も含めて本体へ写されること(): void
     {
         $memo = Memo::factory()->create();

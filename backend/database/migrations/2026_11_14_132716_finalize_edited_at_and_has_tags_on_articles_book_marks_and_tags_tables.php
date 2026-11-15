@@ -13,6 +13,7 @@ return new class extends Migration
      * - 一覧・タグなし検索の並び順(edited_at降順)をインデックスで処理できるよう、updated_atの複合インデックスをedited_atに作り直す。
      *   外部キーにはuser_idを先頭に持つインデックスが必須なため、新しいインデックスを先に作ってから古いものを削除する。
      *   並び順の第2キーのidは、InnoDBがセカンダリインデックスの末尾に主キーとして持つため含めない。
+     * - タグ一覧の既定の並び順(edited_at降順)用に、tagsにも(user_id, edited_at)のインデックスを作る。
      * - アプリは本体のhas_tagsを読み書きするようになったため、statusテーブルのhas_tagsを削除する。
      */
     public function up(): void
@@ -33,6 +34,10 @@ return new class extends Migration
                 $table->dropIndex(['user_id', 'deleted_at', 'updated_at']);
             });
         }
+
+        Schema::table('tags', function (Blueprint $table) {
+            $table->index(['user_id', 'edited_at']);
+        });
 
         foreach (['article_statuses', 'book_mark_statuses'] as $tableName) {
             Schema::table($tableName, function (Blueprint $table) {
@@ -69,6 +74,10 @@ return new class extends Migration
                 $table->dropIndex(['user_id', 'deleted_at', 'edited_at']);
             });
         }
+
+        Schema::table('tags', function (Blueprint $table) {
+            $table->dropIndex(['user_id', 'edited_at']);
+        });
 
         foreach (['articles', 'book_marks', 'tags'] as $tableName) {
             Schema::table($tableName, function (Blueprint $table) {

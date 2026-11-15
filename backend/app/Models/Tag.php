@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property int $user_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $edited_at
+ * @property \Illuminate\Support\Carbon $edited_at
  * @property-read \App\Models\TagStatus|null $status
  */
 class Tag extends Model
@@ -34,17 +34,8 @@ class Tag extends Model
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * @return list<string>
      */
-    protected function casts(): array
-    {
-        return [
-            'edited_at' => 'datetime',
-        ];
-    }
-
     protected function editableAttributes(): array
     {
         return ['name'];
