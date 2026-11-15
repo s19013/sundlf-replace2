@@ -124,6 +124,22 @@ class TracksEditedAtTest extends TestCase
 
         $this->assertSame($editedAtAfterMark, $this->fetchEditedAt($fixture));
     }
+
+    public function test_イベントを発火しない保存でもmark_as_editedの印が消えること(): void
+    {
+        $fixture = $this->createFixture();
+        $otherUser = User::factory()->create();
+
+        $this->travel(1)->minutes();
+        $fixture->markAsEdited()->saveQuietly();
+        $editedAtAfterMark = $this->fetchEditedAt($fixture);
+
+        $this->travel(1)->minutes();
+        $fixture->user_id = $otherUser->id;
+        $fixture->save();
+
+        $this->assertSame($editedAtAfterMark, $this->fetchEditedAt($fixture));
+    }
 }
 
 /**

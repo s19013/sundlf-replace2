@@ -37,16 +37,10 @@ trait TracksEditedAt
         $this->mergeCasts(['edited_at' => 'datetime']);
     }
 
-    protected static function bootTracksEditedAt(): void
-    {
-        static::saved(function (self $model): void {
-            $model->isMarkedAsEdited = false;
-        });
-    }
-
     /**
      * 本体の属性が変わらない編集(タグの付け替えなど)を、次の`save()`で編集として扱う。
      * モデルをdirtyにするため、`save()`は必ずUPDATEを発行する。
+     * 印は保存時のタイムスタンプ更新で消えるため、`saveQuietly()`などイベントを発火しない保存の後にも残らない。
      */
     public function markAsEdited(): static
     {
@@ -71,6 +65,8 @@ trait TracksEditedAt
         if ($sourceColumn !== null && $this->shouldStampEditedAt()) {
             $this->setAttribute('edited_at', $this->getAttribute($sourceColumn));
         }
+
+        $this->isMarkedAsEdited = false;
 
         return $this;
     }
